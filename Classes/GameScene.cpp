@@ -53,9 +53,8 @@ void GameScene::init_main_variable() {
     options_state = OPTIONS_HIDE;
     player = Utils::get_player();
     this->addChild(player);
-    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 100);
-    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen - 0.15 * y_screen)));
-    score->setVisible(false);
+    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 20);
+    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen) - (y_screen * 0.30)));
     addChild(score, 10);
 
     bullet_state = 0;
@@ -73,6 +72,13 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     init_pool_objects();
     init_options_menu();
+
+
+    int *test = Utils::get_list();
+    char result[10];
+    sprintf(result, "%i, %i, %i, %i, %i, %i,\n %i, %i, %i, %i", test[0], test[1], test[2], test[3],
+            test[4], test[5], test[6], test[7], test[8], test[9]);
+    score->setString(result);
 }
 
 Menu *GameScene::get_continue_menu() {

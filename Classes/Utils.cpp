@@ -1,3 +1,5 @@
+#include        <iostream>
+#include        <random>
 #include        "Utils.h"
 #include        "GameScene.h"
 #include        "UserLocalStore.h"
@@ -14,6 +16,33 @@ Sprite *Utils::get_player() {
             setPosition(Vec2(static_cast<float>(winSize.width * 0.5),
                              static_cast<float>(winSize.height * 0.25)));
     return (player);
+}
+
+
+int Utils::array_sum(int *array) {
+    int sum = 0;
+
+    for (int a = 0; a < 5; a++) {
+        sum += array[a];
+    }
+    return (sum);
+}
+
+int *Utils::get_distribution_points(int total_number, int nbr_of_group) {
+    int array[nbr_of_group];
+    int t = 0;
+    int loose_pcc = total_number / nbr_of_group;
+
+    int i = 1;
+    for (; i < nbr_of_group; i++, t++) {
+        int ten_pcc = static_cast<int>(loose_pcc * 0.1);
+        int rand_num = cocos2d::RandomHelper::random_int((loose_pcc - ten_pcc),
+                                                         (loose_pcc + ten_pcc));
+        array[t] = rand_num;
+    }
+    int numbers_total = array_sum(array);
+    array[t] = total_number - numbers_total;
+    return (array);
 }
 
 float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2]) {

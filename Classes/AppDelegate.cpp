@@ -61,7 +61,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->getOpenGLView()->setDesignResolutionSize(
             designSize.width, designSize.height, ResolutionPolicy::FIXED_HEIGHT);
     director->setDisplayStats(true);
-    director->setAnimationInterval(1 / 65);
+    director->setAnimationInterval(1.0f / 60);
     register_all_packages();
 
     auto spritecache = SpriteFrameCache::getInstance();
