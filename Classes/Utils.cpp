@@ -1,0 +1,129 @@
+#include        "Utils.h"
+#include        "GameScene.h"
+#include        "UserLocalStore.h"
+#include        "ShootUp.h"
+
+USING_NS_CC;
+
+
+Sprite *Utils::get_player() {
+    auto winSize = Director::getInstance()->getVisibleSize();
+    int current_shooter = UserLocalStore::get_current_shooter();
+    Sprite *player = Sprite::create(shooters[current_shooter]);
+    player->
+            setPosition(Vec2(static_cast<float>(winSize.width * 0.5),
+                             static_cast<float>(winSize.height * 0.25)));
+    return (player);
+}
+
+float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2]) {
+    auto screen_height = Director::getInstance()->getVisibleSize().height;
+
+    auto line_height = next_line_size[HEIGHT] / 2;
+    if (current_type >= LINE_TYPE_STARTUP_2 && current_type <= LINE_TYPE_STARTUP_5)
+        return (-line_height);
+    if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_4)
+        return static_cast<float>(screen_height * 0.62 + line_height);
+    if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_5)
+        return static_cast<float>(screen_height * 0.30 + line_height);
+    if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)
+        return static_cast<float>(screen_height * 0.50 + line_height);
+    if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)
+        return static_cast<float>(screen_height * 0.52 + line_height);
+    if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
+        return static_cast<float>(screen_height * 0.23 + line_height);
+    if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
+        return static_cast<float>(screen_height * 0.25 + line_height);
+    return (-1);
+}
+
+int Utils::get_random_line_type() {
+    int result = cocos2d::RandomHelper::random_int(0, 20);
+    if (result > 7)
+        return (LINE_TYPE_SIMPLE_OF_5);
+    switch (result) {
+        case 0:
+            return (LINE_TYPE_COMPLEX_0);
+        case 1:
+            return (LINE_TYPE_COMPLEX_1);
+        case 2:
+            return (LINE_TYPE_COMPLEX_2);
+        case 3:
+            return (LINE_TYPE_COMPLEX_3);
+        case 4:
+            return (LINE_TYPE_COMPLEX_4);
+        case 5:
+            return (LINE_TYPE_COMPLEX_5);
+        case 6:
+            return (LINE_TYPE_COMPLEX_6);
+        case 7:
+            return (LINE_TYPE_COMPLEX_7);
+        default:
+            break;
+    }
+    return -1;
+}
+
+int *Utils::get_container_range_research(int type) {
+    int *range = new int[2];
+
+    switch (type) {
+        case 4:
+            range[0] = 4;
+            range[1] = 6;
+            break;
+        case 5:
+            range[0] = 7;
+            range[1] = 9;
+            break;
+        case 6:
+            range[0] = 10;
+            range[1] = 11;
+            break;
+        case 7:
+            range[0] = 12;
+            range[1] = 13;
+            break;
+        case 8:
+            range[0] = 14;
+            range[1] = 15;
+            break;
+        case 9:
+            range[0] = 16;
+            range[1] = 17;
+            break;
+        case 10:
+            range[0] = 18;
+            range[1] = 19;
+            break;
+        case 11:
+            range[0] = 20;
+            range[1] = 21;
+            break;
+        case 12:
+            range[0] = 22;
+            range[1] = 23;
+            break;
+        case 13:
+            range[0] = 24;
+            range[1] = 25;
+            break;
+        default:
+            break;
+    }
+    return (range);
+}
+
+Vec2 Utils::get_coordinate_from_id(int id, int column) {
+    return (Vec2(id % column, id / column));
+}
+
+float Utils::line_speed_converter(float y_value) {
+    auto winSize = Director::getInstance()->getVisibleSize();
+    float old_min = winSize.height;
+    float old_max = -300;
+    float new_max = 0;
+    float new_min = 3.5;
+    return ((((y_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
+}
+
