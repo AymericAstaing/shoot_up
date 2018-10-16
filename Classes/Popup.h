@@ -5,6 +5,8 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 
+using namespace cocos2d;
+
 namespace UICustom {
     
     
@@ -33,7 +35,8 @@ namespace UICustom {
         
     public:
         static Popup* create(const std::string &title, const std::string &msg, const std::function<void ()> &YesFunc);
-        
+        static void increase_speed(MenuItemFont *pFont);
+        static void increase_power(MenuItemFont *pFont);
         
     private:
         void initBg();

@@ -10,13 +10,16 @@ USING_NS_CC;
 #define HEIGHT                          1
 #define FIRE_UP_FONT                    "fonts/fire_up.ttf"
 #define FIRE_UP_FONT_NUMBERS            "fonts/numbers.ttf"
-#define TITLE                           "F I R E  U P !"
+#define TITLE                           "S H O O T  U P !"
 #define PARTICLE_ANIM                   "spritesheet/hit.plist"
 #define SURCLASSEMENT                   "SURCLASSEMENT"
 #define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
 #define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "explode.png"
+#define POWER_LEVEL_BTN_TAG             34
+#define SPEED_LEVEL_BTN_TAG             35
+#define MAIN_MENU_TAG                   36
 #define DEFAULT_CHAR_LENGHT             10
 #define BULLET_LEFT                     0
 #define BULLET_RIGHT                    1
@@ -82,6 +85,7 @@ USING_NS_CC;
 #define HAND                            "menu/play_anim_hand.png"
 #define HAND_RAIL                       "menu/play_anim.png"
 #define BEST_IMG                        "menu/best_score.png"
+#define BEST_SCORE_IMG                  "menu/best_img.png"
 #define SHOP_UNSELECTED                 "menu/shop.png"
 #define SHOP_SELECTED                   "menu/shop_selected.png"
 

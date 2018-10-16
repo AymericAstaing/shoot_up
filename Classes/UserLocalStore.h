@@ -158,6 +158,7 @@ public:
     static int              get_first_launch();
     static void             set_first_launch();
     static void             init_asset_arrays();
+    static void             store_achievement_variable_float(const char*, float);
     static void             store_asset_shooter(int[31]);
     static void             store_asset_ball(int[8]);
     static int*             get_asset_shooter();
@@ -167,6 +168,7 @@ public:
     static const char*      get_shooter_key_with_index(int);
     static const char*      get_ball_key_with_index(int);
     static int              get_achievement_variable(const char*);
+    static float            get_achievement_variable_float(const char*);
     static void             store_achievement_variable(const char*, int);
     static int              get_shooter_achievement_target(int);
     static int              get_ball_achievement_target(int);

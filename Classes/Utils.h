@@ -51,8 +51,10 @@ class Utils {
 
 public:
     static float        line_speed_converter(float);
-    static int*         get_distribution_points(int, int);
-    static int          array_sum(int*);
+    static int*         get_distribution_points(int*, int, int);
+    static int          get_random_number(int, int);
+    static bool         is_into_list(int*, int, int);
+    static int          array_sum(int*,int);
     static int*         get_container_range_research(int);
     static Sprite*      get_player();
     static float        get_spawn_y(int, int, float[2]);

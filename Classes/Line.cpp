@@ -12,25 +12,90 @@
 #include    "ShootUp.h"
 #include "GameScene.h"
 
-
 Line::Line(int type) {
 }
 
 Line::~Line() {
 }
 
-void Line::move() {
+
+void Line::set_active(int factor_h, int min, int max) {
     setVisible(true);
     line_active = true;
-    auto callback = CallFuncN::create(
-            [&](Node *sender) {
-                reset();
-                line_active = false;
-                setVisible(false);
-            });
-    auto actionMove = MoveTo::create(Utils::line_speed_converter(getPositionY()),
-                                     Vec2(getPosition().x, 0 - getContentSize().height));
-    runAction(Sequence::create(actionMove, callback, nullptr));
+    if (get_type() <= LINE_TYPE_STARTUP_5)
+        assign_startup_line_points(factor_h);
+    else
+        assign_line_points(factor_h, min, max);
+}
+
+int Line::get_index_random(int *choosen, int max) {
+    int i = 0;
+
+    while (i == 0) {
+        int rand = Utils::get_random_number(0, max);
+        if (!Utils::is_into_list(choosen, max, rand))
+            return (rand);
+    }
+}
+
+void Line::assign_line_points(int h_factor, int min_h, int max_h) {
+    int type = get_type();
+
+    int total = 0;
+
+    if (type == LINE_TYPE_SIMPLE_OF_4)
+        total = static_cast<int>(0.6 * h_factor);
+    else
+        total = Utils::get_random_number(min_h, max_h);
+    int *distrib = new int[this->square_nbr];
+    int *choosen = new int[this->square_nbr];
+    distrib = Utils::get_distribution_points(distrib, total, this->square_nbr);
+    int i = 0;
+    int index = 0;
+
+    while (i == 0) {
+        auto child = getChildByTag(index);
+        Square *sq = ((Square *) child);
+        if (!child || !sq) {
+            i = 1;
+        } else {
+            choosen[index] = get_index_random(choosen, this->square_nbr - 1);
+            sq->assign_point(distrib[choosen[index]]);
+        }
+        index++;
+    }
+}
+
+void Line::assign_startup_line_points(int h_factor) {
+    int type = get_type();
+    int lines_nbr = square_nbr / 5;
+    if (h_factor < 25)
+        h_factor = 25;
+
+    for (int i = 0; i < lines_nbr; i++) {
+        float ratio = 0;
+        if (type == LINE_TYPE_STARTUP_3)
+            ratio = line_0[i];
+        if (type == LINE_TYPE_STARTUP_4)
+            ratio = line_1[i];
+        if (type == LINE_TYPE_STARTUP_5)
+            ratio = line_2[i];
+        int *distrib = new int[5];
+
+        distrib = Utils::get_distribution_points(distrib, static_cast<int>(h_factor * ratio), 5);
+
+        int index = i * 5;
+        int k = 0;
+        for (int j = index; j < (i * 5 + 5); j++, k++) {
+            auto child = getChildByTag(j);
+            Square *sq = ((Square *) child);
+            if (!child || !sq) {
+                break;
+            } else {
+                sq->assign_point(distrib[k]);
+            }
+        }
+    }
 }
 
 Size Line::get_line_size(int type) {
@@ -69,7 +134,8 @@ void Line::apply_animation(Line *l, Sprite *s, Square *square, int struct_nbr, i
 }
 
 void
-Line::apply_full_translation(Square *s, Sprite *sprite, float rect_size[2], float line_size[2]) {
+Line::apply_full_translation(Square *s, Sprite *sprite, float rect_size[2],
+                             float line_size[2]) {
     float block_width = rect_size[WIDTH];
 
     auto actionMove1 = MoveBy::create(0.9,
@@ -236,6 +302,10 @@ Sprite *Line::get_texture(int i, float square_height, float square_width) {
 }
 
 void Line::load_startup_struct(Line *l, int line_nbr) {
+    SpriteBatchNode *spriteBatchNode = get_batch();
+    spriteBatchNode->setContentSize(l->getContentSize());
+    l->addChild(spriteBatchNode);
+
     int total_square = line_nbr * 5;
 
     for (int i = 0; i < total_square; i++) {
@@ -244,6 +314,10 @@ void Line::load_startup_struct(Line *l, int line_nbr) {
             sq->setTag(i);
             sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
+            auto sprite = get_texture(i, sq->getContentSize().height,
+                                      sq->getContentSize().width);
+            sprite->setPosition(sq->getPosition());
+            spriteBatchNode->addChild(sprite);
         }
     }
 }
@@ -263,9 +337,11 @@ void Line::load_complex_struct(Line *l, int struct_number) {
         if (sq) {
             sq->setTag(i);
             sq->setPosition(
-                    get_square_grid_pos(pos_struct[i], sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
+                    get_square_grid_pos(pos_struct[i], sq->get_rect_size(),
+                                        SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height, sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->getContentSize().height,
+                                      sq->getContentSize().width);
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
             if (struct_number == 3 || struct_number == 4)
@@ -285,7 +361,8 @@ void Line::load_simple_line_5(Line *l) {
             sq->setTag(i);
             sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height, sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->getContentSize().height,
+                                      sq->getContentSize().width);
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
         }
@@ -303,7 +380,8 @@ void Line::load_simple_line_4(Line *l) {
             sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_4));
             sq->setTag(i);
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height, sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->getContentSize().height,
+                                      sq->getContentSize().width);
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
 
@@ -315,23 +393,31 @@ int Line::get_type() {
     return (line_type);
 }
 
-int Line::get_complex_line_type(int type) {
+int Line::get_complex_line_type(int type, Line *l) {
     switch (type) {
         case 7:
+            l->square_nbr = 6;
             return (LINE_TYPE_COMPLEX_0);
         case 8:
+            l->square_nbr = 6;
             return (LINE_TYPE_COMPLEX_1);
         case 9:
+            l->square_nbr = 8;
             return (LINE_TYPE_COMPLEX_2);
         case 10:
+            l->square_nbr = 6;
             return (LINE_TYPE_COMPLEX_3);
         case 11:
+            l->square_nbr = 8;
             return (LINE_TYPE_COMPLEX_4);
         case 12:
+            l->square_nbr = 9;
             return (LINE_TYPE_COMPLEX_5);
         case 13:
+            l->square_nbr = 9;
             return (LINE_TYPE_COMPLEX_6);
         case 14:
+            l->square_nbr = 7;
             return (LINE_TYPE_COMPLEX_7);
         default:
             break;
@@ -342,32 +428,38 @@ int Line::get_complex_line_type(int type) {
 void Line::load_square(Line *l, int type) {
 
     if (type > STARTUP_LINE_5) {
-        l->line_type = get_complex_line_type(type);
+        l->line_type = get_complex_line_type(type, l);
         load_complex_struct(l, type);
         return;
     }
     switch (type) {
         case SIMPLE_LINE_4:
+            l->square_nbr = 4;
             l->line_type = LINE_TYPE_SIMPLE_OF_4;
             load_simple_line_4(l);
             break;
         case SIMPLE_LINE_5:
+            l->square_nbr = 5;
             l->line_type = LINE_TYPE_SIMPLE_OF_5;
             load_simple_line_5(l);
             break;
         case STARTUP_LINE_2:
+            l->square_nbr = 10;
             l->line_type = LINE_TYPE_STARTUP_2;
             load_startup_struct(l, 2);
             break;
         case STARTUP_LINE_3:
+            l->square_nbr = 15;
             l->line_type = LINE_TYPE_STARTUP_3;
             load_startup_struct(l, 3);
             break;
         case STARTUP_LINE_4:
+            l->square_nbr = 20;
             l->line_type = LINE_TYPE_STARTUP_4;
             load_startup_struct(l, 4);
             break;
         case STARTUP_LINE_5:
+            l->square_nbr = 25;
             l->line_type = LINE_TYPE_STARTUP_5;
             load_startup_struct(l, 5);
             break;
@@ -384,7 +476,6 @@ void Line::reset() {
     int index = 0;
     int batch_index = 0;
     auto batchnode = getChildByTag(LINE_BATCH_ID);
-
 
     while (j == 0) {
         if (batchnode) {
@@ -409,6 +500,8 @@ void Line::reset() {
         }
         index++;
     }
+    line_active = false;
+    setVisible(false);
     auto winSize = Director::getInstance()->getVisibleSize();
     setPosition(Vec2(0, static_cast<float>(winSize.height + getContentSize().height)));
 }

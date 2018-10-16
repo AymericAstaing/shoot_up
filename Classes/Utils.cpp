@@ -19,30 +19,35 @@ Sprite *Utils::get_player() {
 }
 
 
-int Utils::array_sum(int *array) {
+int Utils::array_sum(int *array, int size) {
     int sum = 0;
 
-    for (int a = 0; a < 5; a++) {
+    for (int a = 0; a < size; a++)
         sum += array[a];
-    }
     return (sum);
 }
 
-int *Utils::get_distribution_points(int total_number, int nbr_of_group) {
-    int array[nbr_of_group];
+bool Utils::is_into_list(int *list, int list_size,  int value) {
+    for (int i = 0; i < list_size; i++) {
+        if (list[i] == value)
+            return (true);
+    }
+    return (false);
+}
+
+int *Utils::get_distribution_points(int *distribution, int total_number, int nbr_of_group) {
     int t = 0;
     int loose_pcc = total_number / nbr_of_group;
 
-    int i = 1;
-    for (; i < nbr_of_group; i++, t++) {
+    for (int i = 1; i < nbr_of_group; i++, t++) {
         int ten_pcc = static_cast<int>(loose_pcc * 0.1);
         int rand_num = cocos2d::RandomHelper::random_int((loose_pcc - ten_pcc),
                                                          (loose_pcc + ten_pcc));
-        array[t] = rand_num;
+        distribution[t] = rand_num;
     }
-    int numbers_total = array_sum(array);
-    array[t] = total_number - numbers_total;
-    return (array);
+    int numbers_total = array_sum(distribution, nbr_of_group - 1);
+    distribution[t] = total_number - numbers_total;
+    return (distribution);
 }
 
 float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2]) {
@@ -91,6 +96,10 @@ int Utils::get_random_line_type() {
             break;
     }
     return -1;
+}
+
+int Utils::get_random_number(int min, int max) {
+    return (cocos2d::RandomHelper::random_int(min, max));
 }
 
 int *Utils::get_container_range_research(int type) {
@@ -152,7 +161,7 @@ float Utils::line_speed_converter(float y_value) {
     float old_min = winSize.height;
     float old_max = -300;
     float new_max = 0;
-    float new_min = 3.5;
+    float new_min = 3.3;
     return ((((y_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
 }
 

@@ -40,6 +40,13 @@ void Square::reset_square() {
     this->points->setString(st);
 }
 
+void Square::assign_point(int pv) {
+    this->square_pv = pv;
+    char pts[DEFAULT_CHAR_LENGHT];
+    sprintf(pts, "%i", square_pv);
+    this->points->setString(pts);
+}
+
 Square *Square::create(int line_size) {
     auto winSize = Director::getInstance()->getVisibleSize();
     Square *s = new Square(line_size);

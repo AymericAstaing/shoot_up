@@ -6,11 +6,16 @@
 
 USING_NS_CC;
 
+static const float line_0[3] = {0.20, 0.30, 0.50};
+static const float line_1[4] = {0.10, 0.20, 0.30, 0.40};
+static const float line_2[5] = {0.05, 0.10, 0.15, 0.20, 0.50};
+
 class Line : public cocos2d::Node {
 
 public:
     float                           line_size[2];
     int                             line_type;
+    int                             square_nbr;
     bool                            line_active;
 
 
@@ -19,18 +24,22 @@ public:
     static Line*                    create(int);
     static Size                     get_line_size(int);
     int                             get_type();
-    void                            move();
+    void                            set_active(int, int, int);
+    void                            move(int, int, int);
+    int                             get_index_random(int*, int);
     static void                     load_startup_struct(Line*, int);
     static void                     load_square(Line*, int);
     static void                     load_complex_struct(Line*, int);
     static void                     load_simple_line_4(Line*);
     static void                     load_simple_line_5(Line*);
+    void                            assign_startup_line_points(int);
     static const int*               struct_pos(int);
     static int                      struct_element_nbr(int);
     void                            reset();
+    void                            assign_line_points(int, int, int);
     static SpriteBatchNode*         get_batch();
     static Sprite*                  get_texture(int, float, float);
-    static int                      get_complex_line_type(int);
+    static int                      get_complex_line_type(int, Line*);
     static void                     apply_animation(Line*, Sprite*,  Square*, int, int);
     static  void                    apply_full_translation(Square *, Sprite*, float[2], float[2]);
     static void                     apply_middle_left_translation(Square *, Sprite*, float[2], float[2]);

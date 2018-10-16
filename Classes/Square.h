@@ -24,6 +24,7 @@ public:
     static Square*          create(int);
     float*                  get_rect_size();
     static Size             get_square_size(int);
+    void                    assign_point(int);
     int                     square_pv;
     Label*                  points;
 

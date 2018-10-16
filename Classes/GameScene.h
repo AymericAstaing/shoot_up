@@ -24,6 +24,7 @@ private:
     MenuItemImage*      share;
     Label*              score;
     Sprite*             sound;
+    Sprite*             best_img;
     Sprite*             tuto;
     Menu*               game_menu;
     Menu*               continue_menu;
@@ -48,6 +49,9 @@ private:
     int                 options_state = 0;
     int                 bullet_state;
     int                 game_state;
+    int                 current_factor_h = 0;
+    int                 current_max = 0;
+    int                 current_min = 0;
 
     /******************* LINE MANAGMENT ***************/
     int                 CURRENT_LINE_ID;
@@ -65,23 +69,28 @@ public:
     void                    remove_active_line(int);
     void                    reset_arrays();
     void                    main_menu_coming_animation();
-    void                    update_game_score();
+    void                    update_game_score(int);
+    float                   get_shoot_interval();
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2);
     void                    start_game();
+    void                    score_animation();
     bool                    is_sound_button_touched(Vec2);
     void                    init_options_menu();
     int                     get_next_line_type();
     void                    end_of_game();
     void                    play(cocos2d::Ref *);
+    int                     get_h_value();
     void                    run_game_loop();
     void                    stop_game_loop();
+    void                    move_active_lines();
     void                    check_into_line();
     Menu*                   get_continue_menu();
     void                    check_lines_out();
     bool                    point_into_square(Square*, Vec2);
     void                    check_bullet_contact();
     void                    check_player_collision();
+    void                    value_to_update();
     void                    back_to_menu(cocos2d::Ref *);
     void                    update(float) override;
     void                    surclassement(cocos2d::Ref *);

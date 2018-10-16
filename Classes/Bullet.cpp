@@ -24,10 +24,10 @@ void Bullet::Reset() {
 void Bullet::Launch(int bullet_state, Vec2 player_pos, Size player_size) {
     auto winSize = Director::getInstance()->getVisibleSize();
     if (bullet_state == 0)
-        setPosition(player_pos.x + player_size.width / 10,
+        setPosition(player_pos.x + player_size.width / 20,
                     static_cast<float>(player_pos.y + player_size.height / 2.5));
     else
-        setPosition(player_pos.x - player_size.width / 10,
+        setPosition(player_pos.x - player_size.width / 20,
                     static_cast<float>(player_pos.y + player_size.height / 2.5));
     auto actionMove = MoveTo::create(1, Vec2(player_pos.x,
                                              winSize.height + getContentSize().height));

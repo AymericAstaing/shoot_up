@@ -89,7 +89,7 @@ void UserLocalStore::init_achievement_variables() {
     def->setIntegerForKey(GLOBAL::KEY_SPEED_LEVEL_PRICE, 0);
     def->setIntegerForKey(GLOBAL::KEY_SOUND, 0);
     def->setIntegerForKey(GLOBAL::KEY_POWER_VALUE, 1);
-    def->setIntegerForKey(GLOBAL::KEY_SPEED_VALUE, 1);
+    def->setFloatForKey(GLOBAL::KEY_SPEED_VALUE, 1); // car de 0.5 en 0.5
     def->setIntegerForKey(STARTER_TANK::KEY_BLOCK_STARTER_TANK, 0);
     def->setIntegerForKey(STARTER_TANK::KEY_ITEM_STARTER_TANK, 0);
     def->setIntegerForKey(STARTER_TANK::KEY_GAME_STARTER_TANK, 0);
@@ -116,6 +116,17 @@ void UserLocalStore::store_achievement_variable(const char *key, int value) {
     UserDefault *def = UserDefault::sharedUserDefault();
     def->setIntegerForKey(key, value);
     def->flush();
+}
+
+void UserLocalStore::store_achievement_variable_float(const char *key, float value) {
+    UserDefault *def = UserDefault::sharedUserDefault();
+    def->setFloatForKey(key, value);
+    def->flush();
+}
+
+float UserLocalStore::get_achievement_variable_float(const char *key) {
+    UserDefault *def = UserDefault::sharedUserDefault();
+    return (def->getFloatForKey(key));
 }
 
 int UserLocalStore::get_achievement_variable(const char *key) {
@@ -369,7 +380,7 @@ int UserLocalStore::get_first_launch() {
 
 void UserLocalStore::set_first_launch() {
     UserDefault *def = UserDefault::sharedUserDefault();
-    def->getIntegerForKey(FIRST_LAUNCH, 1);
+    def->setIntegerForKey(FIRST_LAUNCH, 1);
 }
 
 int *UserLocalStore::get_asset_shooter() {

@@ -1,5 +1,6 @@
 #include    "Popup.h"
 #include    "ShootUp.h"
+#include    "GameScene.h"
 #include    "UserLocalStore.h"
 
 USING_NS_CC;
@@ -73,6 +74,21 @@ namespace UICustom {
                         this->convertToNodeSpace(touch->getLocation()))) {
                     auto scaleTo = ScaleTo::create(0.1f, 0);
                     runAction(scaleTo);
+                    Menu *menu = ((Menu *) getParent()->getChildByTag(MAIN_MENU_TAG));
+                    MenuItemFont *power = ((MenuItemFont *) menu->getChildByTag(
+                            POWER_LEVEL_BTN_TAG));
+                    MenuItemFont *speed = ((MenuItemFont *) menu->getChildByTag(
+                            SPEED_LEVEL_BTN_TAG));
+                    char power_value[DEFAULT_CHAR_LENGHT];
+                    sprintf(power_value, "%i",
+                            UserLocalStore::get_achievement_variable(POWER_VALUE));
+                    char speed_value[DEFAULT_CHAR_LENGHT];
+                    sprintf(speed_value, "%.1f",
+                            UserLocalStore::get_achievement_variable_float(SPEED_VALUE));
+                    if (speed && power) {
+                        speed->setString(speed_value);
+                        power->setString(power_value);
+                    }
                     this->dismiss(true);
                 }
             } else {
@@ -98,19 +114,32 @@ namespace UICustom {
                 MenuItemFont *point_nbr = MenuItemFont::create(user_points,
                                                                [=](Ref *sender) {
                                                                });
+                char power_level[DEFAULT_CHAR_LENGHT];
+                sprintf(power_level, "LEVEL %i",
+                        UserLocalStore::get_achievement_variable(POWER_LEVEL));
+                char speed_level[DEFAULT_CHAR_LENGHT];
+                sprintf(speed_level, "LEVEL %i",
+                        UserLocalStore::get_achievement_variable(SPEED_LEVEL));
+                MenuItemFont *power_level_txt = MenuItemFont::create(power_level,
+                                                                     [=](Ref *sender) {
+                                                                     });
+                MenuItemFont *speed_level_txt = MenuItemFont::create(speed_level,
+                                                                     [=](Ref *sender) {
+                                                                     });
                 point_nbr->setFontNameObj(FIRE_UP_FONT);
                 point_nbr->setFontSizeObj(70);
                 MenuItemImage *power_btn = MenuItemImage::create(POPUP_PATH::POWER,
                                                                  POPUP_PATH::POWER_SELECTED,
                                                                  [=](Ref *sender) {
-                                                                     YesFunc();
-                                                                     node->dismiss(true);
+                                                                     Popup::increase_power(
+                                                                             power_level_txt);
                                                                  });
 
                 MenuItemImage *speed_btn = MenuItemImage::create(POPUP_PATH::SPEED,
                                                                  POPUP_PATH::SPEED_SELECTED,
-                                                                 [node](Ref *sender) {
-                                                                     node->dismiss(true);
+                                                                 [=](Ref *sender) {
+                                                                     Popup::increase_speed(
+                                                                             speed_level_txt);
                                                                  });
                 speed_btn->setPosition(Vec2(
                         static_cast<float>(speed_btn->getPosition().x - popup_width / 4),
@@ -136,19 +165,6 @@ namespace UICustom {
                 MenuItemFont *speed_price_txt = MenuItemFont::create(power_price,
                                                                      [=](Ref *sender) {
                                                                      });
-                char power_level[DEFAULT_CHAR_LENGHT];
-                sprintf(power_level, "LEVEL %i",
-                        UserLocalStore::get_achievement_variable(POWER_LEVEL));
-                char speed_level[DEFAULT_CHAR_LENGHT];
-                sprintf(speed_level, "LEVEL %i",
-                        UserLocalStore::get_achievement_variable(SPEED_LEVEL));
-                MenuItemFont *power_level_txt = MenuItemFont::create(power_level,
-                                                                     [=](Ref *sender) {
-                                                                     });
-                MenuItemFont *speed_level_txt = MenuItemFont::create(speed_level,
-                                                                     [=](Ref *sender) {
-                                                                     });
-
                 Label *power_info_label = Label::createWithTTF("SHOOTING\nPOWER",
                                                                FIRE_UP_FONT, 24);
                 power_info_label->setHorizontalAlignment(TextHAlignment::CENTER);
@@ -209,6 +225,38 @@ namespace UICustom {
         return nullptr;
     }
 
+    void Popup::increase_speed(MenuItemFont *pFont) {
+        UserLocalStore::store_achievement_variable_float(SPEED_VALUE,
+                                                         (UserLocalStore::get_achievement_variable_float(
+                                                                 SPEED_VALUE) + 0.5));
+        UserLocalStore::store_achievement_variable(
+                SPEED_LEVEL,
+                UserLocalStore::get_achievement_variable(
+                        SPEED_LEVEL) +
+                1);
+        char s[DEFAULT_CHAR_LENGHT];
+        sprintf(s, "SPEED %i",
+                UserLocalStore::get_achievement_variable(
+                        SPEED_LEVEL));
+        pFont->setString(s);
+    }
+
+    void Popup::increase_power(MenuItemFont *pFont) {
+        UserLocalStore::store_achievement_variable(
+                POWER_VALUE,
+                UserLocalStore::get_achievement_variable(
+                        POWER_VALUE) +
+                2);
+        UserLocalStore::store_achievement_variable(
+                POWER_LEVEL,
+                UserLocalStore::get_achievement_variable(
+                        POWER_LEVEL) +
+                1);
+        char p[DEFAULT_CHAR_LENGHT];
+        sprintf(p, "LEVEL %i",
+                UserLocalStore::get_achievement_variable(POWER_LEVEL));
+        pFont->setString(p);
+    }
 
     void Popup::initBg() {
 

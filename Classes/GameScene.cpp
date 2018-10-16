@@ -1,3 +1,4 @@
+#include    <math.h>
 #include    "GameScene.h"
 #include    "Square.h"
 #include    "Line.h"
@@ -30,7 +31,9 @@ USING_NS_CC;
 Scene *GameScene::createScene() {
     auto scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, 0));
+    scene->getPhysicsWorld()->setUpdateRate(static_cast<int>(1.5));
     scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_NONE);
+    float filterFactor = 0.1;
     auto layer = GameScene::create();
     scene->addChild(layer);
     return scene;
@@ -53,8 +56,9 @@ void GameScene::init_main_variable() {
     options_state = OPTIONS_HIDE;
     player = Utils::get_player();
     this->addChild(player);
-    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 20);
-    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen) - (y_screen * 0.30)));
+    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 100);
+    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen - 0.15 * y_screen)));
+    score->setVisible(false);
     addChild(score, 10);
 
     bullet_state = 0;
@@ -64,6 +68,14 @@ void GameScene::init_main_variable() {
     listener->onTouchMoved = CC_CALLBACK_2(GameScene::onTouchMoved, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, player);
 
+    best_img = Sprite::create(BEST_SCORE_IMG);
+    best_img->setPosition(Vec2(x_screen + best_img->getContentSize().height, score->getPositionY() -
+                                                                             (score->getContentSize().height /
+                                                                              2 +
+                                                                              best_img->getContentSize().height /
+                                                                              2)));
+    best_img->setVisible(false);
+    addChild(best_img, 20);
     game_menu = get_main_menu();
     addChild(game_menu);
     if (UserLocalStore::get_achievement_variable(FROM_SHOP) == 0)
@@ -72,13 +84,9 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     init_pool_objects();
     init_options_menu();
+    pool_container[19]->setVisible(true);
+    this->scheduleUpdate();
 
-
-    int *test = Utils::get_list();
-    char result[10];
-    sprintf(result, "%i, %i, %i, %i, %i, %i,\n %i, %i, %i, %i", test[0], test[1], test[2], test[3],
-            test[4], test[5], test[6], test[7], test[8], test[9]);
-    score->setString(result);
 }
 
 Menu *GameScene::get_continue_menu() {
@@ -111,10 +119,23 @@ void GameScene::init_options_menu() {
     this->addChild(sound);
 }
 
+void GameScene::value_to_update() {
+    if (game_score > UserLocalStore::get_achievement_variable(SCORE))
+        UserLocalStore::store_achievement_variable(SCORE, game_score);
+    UserLocalStore::store_achievement_variable(POINT,
+                                               UserLocalStore::get_achievement_variable(POINT) +
+                                               game_score);
+}
+
 void GameScene::end_of_game() {
+    value_to_update();
     game_state = GAME_END;
     score->setVisible(false);
     player->setVisible(false);
+    if (best_img->isVisible()) {
+        best_img->setVisible(false);
+        best_img->setPositionX(x_screen + best_img->getContentSize().height);
+    }
     stop_bullet_shoot();
     continue_menu = get_continue_menu();
     addChild(continue_menu);
@@ -139,7 +160,7 @@ void GameScene::reset_lines() {
 void GameScene::init_pool_objects() {
     int index_struct = 7;
     pool_container = new Line *[27];
-    bullet_container = new Bullet *[31];
+    bullet_container = new Bullet *[41];
     active_lines = new int[5];
 
     pool_container[0] = Line::create(STARTUP_LINE_2);
@@ -149,12 +170,12 @@ void GameScene::init_pool_objects() {
 
     for (int i = 0; i < 4; i++)
         active_lines[i] = -1;
-    active_lines[4] = NULL;
-    for (int j = 0; j < 30; j++) {
+    active_lines[4] = '\0';
+    for (int j = 0; j < 40; j++) {
         bullet_container[j] = Bullet::create();
         addChild(bullet_container[j], 4);
     }
-    bullet_container[30] = NULL;
+    bullet_container[40] = NULL;
     for (int i = 4; i < 7; i++)
         pool_container[i] = Line::create(SIMPLE_LINE_4);
     for (int i = 7; i < 10; i++)
@@ -169,7 +190,7 @@ void GameScene::init_pool_objects() {
 }
 
 void GameScene::start_bullet_shoot() {
-    this->schedule(schedule_selector(GameScene::launch_bullet), 0.1);
+    this->schedule(schedule_selector(GameScene::launch_bullet), get_shoot_interval());
 }
 
 void GameScene::stop_bullet_shoot() {
@@ -265,7 +286,7 @@ int GameScene::get_line_index(int type) {
 }
 
 void GameScene::check_bullet_contact() {
-    for (int j = 0; active_lines[j] != NULL; j++) {
+    for (int j = 0; active_lines[j] != '\0'; j++) {
         for (int i = 0; bullet_container[i] != NULL; i++) {
             if (bullet_container[i]->bullet_active) {
                 int id = active_lines[j];
@@ -363,7 +384,8 @@ void GameScene::check_into_line() {
                 if (bullet_pos.y < 0)
                     bullet_pos.y = 0;
                 if (point_into_square(sq, bullet_pos) && sq->isVisible()) {
-                    if (sq->get_square_pv() == 1) {
+                    int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
+                    if (sq->get_square_pv() - bullet_hit <= 1) {
                         auto batch = current_line->getChildByTag(LINE_BATCH_ID);
                         if (batch) {
                             auto sprite = batch->getChildByTag(sq->getTag());
@@ -376,18 +398,19 @@ void GameScene::check_into_line() {
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
                         show_destruction_circle(square_pos, current_line->getPositionY(),
                                                 static_cast<int>(current_line->getContentSize().height));
-                        update_game_score();
+                        update_game_score(sq->square_pv);
+                        bullet_container[i]->Reset();
                         break;
                     } else {
-                        update_game_score();
+                        update_game_score(bullet_hit);
                         show_particle(bullet_container[i]->getPosition());
-                        sq->square_pv--;
+                        sq->square_pv = sq->square_pv - bullet_hit;
                         char pv[DEFAULT_CHAR_LENGHT];
                         sprintf(pv, "%i", sq->square_pv);
                         sq->points->setString(pv);
+                        bullet_container[i]->Reset();
                         break;
                     }
-                    bullet_container[i]->Reset();
                 }
                 index++;
             }
@@ -396,11 +419,21 @@ void GameScene::check_into_line() {
 }
 
 void GameScene::check_lines_out() {
-    for (int i = 0; active_lines[i] != NULL; i++) {
+    for (int i = 0; active_lines[i] != '\0'; i++) {
         if (active_lines[i] != -1 && pool_container[active_lines[i]]->getPositionY() +
-                                     pool_container[active_lines[i]]->getContentSize().height <
-                                     player->getPositionY() - player->getContentSize().height / 2)
+                                     pool_container[active_lines[i]]->getContentSize().height <=
+                                     0) {
+            pool_container[active_lines[i]]->reset();
             remove_active_line(i);
+        }
+    }
+}
+
+void GameScene::move_active_lines() {
+    for (int i = 0; active_lines[i] != '\0'; i++) {
+        if (active_lines[i] != -1)
+            pool_container[active_lines[i]]->setPositionY(
+                    pool_container[active_lines[i]]->getPositionY() - 4);
     }
 }
 
@@ -419,15 +452,49 @@ void GameScene::check_player_collision() {
                     j = 1;
                     break;
                 }
-                if (sq->isVisible() && sq->getBoundingBox().intersectsRect(
-                        Rect(player->getPositionX() - player->getContentSize().width / 2,
-                             player_y,
-                             player->getContentSize().width,
-                             player->getContentSize().height)))
+
+                if (sq->isVisible() && Rect(sq->getPositionX() - sq->getContentSize().width / 2,
+                                            sq->getPositionY() - sq->getContentSize().height / 2,
+                                            sq->getContentSize().width,
+                                            static_cast<float>(sq->getContentSize().height *
+                                                               0.15)).intersectsRect(
+                        Rect(
+                                player->getPositionX() - player->getContentSize().width / 2,
+                                static_cast<float>(player_y + sq->getContentSize().height / 2 +
+                                                   (0.08 * sq->getContentSize().height)),
+                                player->getContentSize().width,
+                                static_cast<float>(player->getContentSize().height * 0.10)))) {
                     if (game_state == GAME_RUNNING) {
                         end_of_game();
                         return;
                     }
+                } else if (sq->isVisible() && sq->getBoundingBox().intersectsRect(
+                        Rect(player->getPositionX() - player->getContentSize().width / 2,
+                             player_y,
+                             static_cast<float>(player->getContentSize().width * 0.05),
+                             static_cast<float>(player->getContentSize().height * 0.95)))) {
+                    player->setPositionX(sq->getPositionX() + sq->getContentSize().width / 2 +
+                                         player->getContentSize().width / 2);
+                    if (player->getPositionX() + player->getContentSize().width / 2 > x_screen) {
+                        if (game_state == GAME_RUNNING) {
+                            end_of_game();
+                            return;
+                        }
+                    }
+                } else if (sq->isVisible() && sq->getBoundingBox().intersectsRect(
+                        Rect(player->getPositionX() + player->getContentSize().width / 2,
+                             player_y,
+                             static_cast<float>(player->getContentSize().width * 0.05),
+                             static_cast<float>(player->getContentSize().height * 0.95)))) {
+                    player->setPositionX(sq->getPositionX() - sq->getContentSize().width / 2 -
+                                         player->getContentSize().width / 2);
+                    if (player->getPositionX() - player->getContentSize().width / 2 < 0) {
+                        if (game_state == GAME_RUNNING) {
+                            end_of_game();
+                            return;
+                        }
+                    }
+                }
                 index++;
             }
         }
@@ -435,18 +502,23 @@ void GameScene::check_player_collision() {
 }
 
 void GameScene::update(float ft) {
+    check_lines_out();
+    move_active_lines();
     if (game_state == GAME_RUNNING) {
         check_bullet_contact();
         check_into_line();
-        check_lines_out();
         check_player_collision();
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
-        pool_container[NEXT_LINE_ID]->move();
+        pool_container[NEXT_LINE_ID]->set_active(current_factor_h, current_min, current_max);
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
         NEXT_LINE_ID = get_line_index(get_next_line_type());
         LINE_GENERATED++;
+        current_min = static_cast<int>(current_min +
+                                       ceil(static_cast<float>(current_factor_h * 0.06)));
+        current_max = static_cast<int>(current_max +
+                                       ceil(static_cast<float>(current_factor_h * 0.06)));
         if (NEXT_LINE_ID != -1)
             NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
                                              pool_container[NEXT_LINE_ID]->get_type(),
@@ -462,7 +534,7 @@ void GameScene::update(float ft) {
 }
 
 void GameScene::store_active_line(int line_index) {
-    for (int i = 0; active_lines[i] != NULL; i++) {
+    for (int i = 0; active_lines[i] != '\0'; i++) {
         if (active_lines[i] == -1) {
             active_lines[i] = line_index;
             return;
@@ -471,12 +543,7 @@ void GameScene::store_active_line(int line_index) {
 }
 
 void GameScene::remove_active_line(int line_to_rm) {
-    for (int i = 0; active_lines[i] != NULL; i++) {
-        if (i == line_to_rm) {
-            active_lines[i] = -1;
-            return;
-        }
-    }
+    active_lines[line_to_rm] = -1;
 }
 
 int GameScene::get_next_line_type() {
@@ -498,16 +565,13 @@ void GameScene::run_game_loop() {
                                          pool_container[NEXT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->line_size);
     } else {
-        if (indicator > 2 && indicator < 20) {
-            CURRENT_LINE_ID = 0;
-            NEXT_LINE_ID = 4;
-        } else if (indicator >= 2 && indicator < 40) {
+        if (indicator < 30) {
             CURRENT_LINE_ID = 1;
             NEXT_LINE_ID = 4;
-        } else if (indicator >= 40 && indicator < 80) {
+        } else if (indicator < 80) {
             CURRENT_LINE_ID = 2;
             NEXT_LINE_ID = 4;
-        } else if (indicator >= 80) {
+        } else {
             CURRENT_LINE_ID = 3;
             NEXT_LINE_ID = 4;
         }
@@ -516,7 +580,10 @@ void GameScene::run_game_loop() {
                                          pool_container[CURRENT_LINE_ID]->line_size);
     }
     store_active_line(CURRENT_LINE_ID);
-    pool_container[CURRENT_LINE_ID]->move();
+    log("PPASSED");
+    pool_container[CURRENT_LINE_ID]->set_active(
+            current_factor_h, current_min, current_max);
+    log("PPASSED");
     LINE_GENERATED++;
     this->scheduleUpdate();
 }
@@ -525,15 +592,45 @@ void GameScene::stop_game_loop() {
     this->unscheduleUpdate();
 }
 
-void GameScene::update_game_score() {
-    game_score++;
+void GameScene::score_animation() {
+    auto scale_up = ScaleTo::create(0.05, 1.2f);
+    auto scale_down = ScaleTo::create(0.05, 1.0f);
+    auto sequence = Sequence::create(scale_up, scale_down, nullptr);
+    score->runAction(sequence);
+}
+
+void GameScene::update_game_score(int points) {
+    int best = UserLocalStore::get_achievement_variable(SCORE);
+    score_animation();
+    game_score += points;
+    if (game_score > best && !best_img->isVisible()) {
+        best_img->setVisible(true);
+        auto move = MoveTo::create(0.2, Vec2(x_screen / 2, best_img->getPositionY()));
+        best_img->runAction(move);
+    }
     char score_value[DEFAULT_CHAR_LENGHT];
     sprintf(score_value, "%i", game_score);
     score->setString(score_value);
 }
 
+float GameScene::get_shoot_interval() {
+    float factor = 5 * UserLocalStore::get_achievement_variable_float(SPEED_VALUE);
+    return static_cast<float>(1.0 / factor);
+}
+
+int GameScene::get_h_value() {
+    return static_cast<int>((10 * UserLocalStore::get_achievement_variable_float(SPEED_VALUE)) *
+                            UserLocalStore::get_achievement_variable(POWER_VALUE));
+}
+
 void GameScene::start_game() {
+    reset_arrays();
     game_score = 0;
+    current_factor_h = get_h_value();
+    current_min = static_cast<int>(static_cast<float>(current_factor_h +
+                                                      current_factor_h * 0.3));
+    current_max = static_cast<int>(static_cast<float>(current_factor_h +
+                                                      current_factor_h * 0.4));
     char score_value[DEFAULT_CHAR_LENGHT];
     sprintf(score_value, "%i", game_score);
     game_state = GAME_RUNNING;
@@ -577,8 +674,9 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
             });
     auto delay = DelayTime::create(0.2);
     auto delay2 = DelayTime::create(0.2);
-    auto move_to_share_0 = MoveTo::create(0.1, Vec2(share->getPositionX(), share->getPositionY() +
-                                                                           share->getContentSize().height));
+    auto move_to_share_0 = MoveTo::create(0.1,
+                                          Vec2(share->getPositionX(), share->getPositionY() +
+                                                                      share->getContentSize().height));
     auto move_to_rate_0 = MoveTo::create(0.1, Vec2(rate->getPositionX(), rate->getPositionY() +
                                                                          rate->getContentSize().height));
     auto move_to_share_1 = MoveTo::create(0.1, Vec2(share->getPositionX(),
@@ -658,39 +756,45 @@ void GameScene::main_menu_coming_animation() {
     menu_best_img->setOpacity(0);
 
     menu_title->setPositionY(y_screen + menu_title->getContentSize().height);
-    menu_surclassement_img->setPositionX(x_screen + menu_surclassement_img->getContentSize().width);
+    menu_surclassement_img->setPositionX(
+            x_screen + menu_surclassement_img->getContentSize().width);
     menu_surclassement_txt->setPositionX(menu_surclassement_img->getPosition().x -
                                          menu_surclassement_img->getContentSize().width / 2);
 
 
     auto move_title_0 = MoveTo::create(0.1, Vec2(menu_title->getPositionX(),
-                                                 static_cast<float>(static_cast<float>(y_screen -
-                                                                                       (y_screen /
-                                                                                        5)) -
-                                                                    y_screen * 0.05)));
+                                                 static_cast<float>(
+                                                         static_cast<float>(y_screen -
+                                                                            (y_screen /
+                                                                             5)) -
+                                                         y_screen * 0.05)));
     auto move_title_1 = MoveBy::create(0.1, Vec2(0, static_cast<float>(y_screen * 0.05)));
-    auto move_surclassement_img_0 = MoveTo::create(0.1, Vec2(static_cast<float>(x_screen * 0.95 -
-                                                                                x_screen * 0.03),
-                                                             menu_surclassement_img->getPositionY()));
+    auto move_surclassement_img_0 = MoveTo::create(0.1,
+                                                   Vec2(static_cast<float>(x_screen * 0.95 -
+                                                                           x_screen * 0.03),
+                                                        menu_surclassement_img->getPositionY()));
     auto move_surclassement_img_1 = MoveBy::create(0.1, Vec2(
             static_cast<float>(x_screen * 0.03),
             0));
-    auto move_surclassement_txt_0 = MoveTo::create(0.1, Vec2(static_cast<float>(x_screen * 0.95 -
-                                                                                x_screen * 0.03) -
-                                                             menu_surclassement_img->getContentSize().width /
-                                                             2,
-                                                             menu_surclassement_txt->getPositionY()));
+    auto move_surclassement_txt_0 = MoveTo::create(0.1,
+                                                   Vec2(static_cast<float>(x_screen * 0.95 -
+                                                                           x_screen * 0.03) -
+                                                        menu_surclassement_img->getContentSize().width /
+                                                        2,
+                                                        menu_surclassement_txt->getPositionY()));
 
     auto move_shop_img_0 = MoveTo::create(0.1, Vec2(static_cast<float>(static_cast<float>(
                                                                                menu_shop_img->getContentSize().width /
                                                                                2 +
-                                                                               x_screen * 0.05) +
+                                                                               x_screen *
+                                                                               0.05) +
                                                                        x_screen * 0.03),
                                                     menu_shop_img->getPositionY()));
     auto move_shop_img_1 = MoveBy::create(0.1, Vec2(static_cast<float>(-x_screen * 0.03), 0));
     auto fadeIn = FadeIn::create(0.5);
     auto seq0 = Sequence::create(move_surclassement_img_0, move_surclassement_img_1, NULL);
-    auto seq1 = Sequence::create(move_surclassement_txt_0, move_surclassement_img_1->clone(), NULL);
+    auto seq1 = Sequence::create(move_surclassement_txt_0, move_surclassement_img_1->clone(),
+                                 NULL);
     auto seq2 = Sequence::create(move_shop_img_0, move_shop_img_1, NULL);
     auto seq3 = Sequence::create(move_title_0, move_title_1, NULL);
     menu_surclassement_img->runAction(seq0);
@@ -711,13 +815,15 @@ Menu *GameScene::get_main_menu() {
     sprintf(power_level, "%i",
             UserLocalStore::get_achievement_variable(POWER_VALUE));
     char speed_level[DEFAULT_CHAR_LENGHT];
-    sprintf(speed_level, "%i",
-            UserLocalStore::get_achievement_variable(SPEED_VALUE));
+    sprintf(speed_level, "%.1f",
+            UserLocalStore::get_achievement_variable_float(SPEED_VALUE));
     char best_score[DEFAULT_CHAR_LENGHT];
     sprintf(best_score, "%i",
             UserLocalStore::get_achievement_variable(SCORE));
     menu_power_level = MenuItemFont::create(power_level);
+    menu_power_level->setTag(POWER_LEVEL_BTN_TAG);
     menu_speed_level = MenuItemFont::create(speed_level);
+    menu_speed_level->setTag(SPEED_LEVEL_BTN_TAG);
     menu_surclassement_txt = MenuItemFont::create(SURCLASSEMENT,
                                                   CC_CALLBACK_1(GameScene::surclassement,
                                                                 this));
@@ -744,7 +850,7 @@ Menu *GameScene::get_main_menu() {
     menu_speed_level->setFontSizeObj(20);
     menu_surclassement_txt->setFontNameObj(FIRE_UP_FONT);
     menu_anim_img_hand->setAnchorPoint(Vec2(0.45, 0.75));
-    menu_title->setFontSizeObj(105);
+    menu_title->setFontSizeObj(85);
     menu_best_txt->setFontSizeObj(30);
     menu_surclassement_txt->setFontSizeObj(20);
     menu_surclassement_img->setAnchorPoint(Vec2(1, 1));
@@ -801,12 +907,12 @@ Menu *GameScene::get_main_menu() {
     menu_stats_img->setPosition(Vec2(x_screen / 2 + player->getContentSize().width / 2,
                                      menu_shop_img->getPosition().y +
                                      menu_shop_img->getContentSize().height / 2));
-    menu_power_level->setPosition(
+    menu_speed_level->setPosition(
             Vec2(menu_stats_img->getPosition().x + menu_stats_img->getContentSize().width / 2,
                  static_cast<float>(menu_stats_img->getPosition().y +
                                     menu_stats_img->getContentSize().height / 2 +
                                     (0.08 * menu_stats_img->getContentSize().height))));
-    menu_speed_level->setPosition(
+    menu_power_level->setPosition(
             menu_stats_img->getPosition().x + menu_stats_img->getContentSize().width / 2,
             static_cast<float>(menu_stats_img->getPosition().y +
                                (0.27 * menu_stats_img->getContentSize().height)));
@@ -818,6 +924,7 @@ Menu *GameScene::get_main_menu() {
                                   menu_best_txt, options_btn, menu_stats_img, menu_power_level,
                                   menu_speed_level,
                                   NULL);
+    main_menu->setTag(MAIN_MENU_TAG);
     main_menu->setPosition(Point(0, 0));
     return (main_menu);
 }
@@ -839,7 +946,10 @@ Menu *GameScene::get_end_game_menu() {
     sprintf(current_speed, "LEVEL %i",
             UserLocalStore::get_achievement_variable(SPEED_LEVEL));
     stats = Layer::create();
-    Label *current_point = Label::createWithTTF(points, FIRE_UP_FONT, 40);
+    Label *current_point = Label::createWithTTF(points, FIRE_UP_FONT, 60);
+    char earned[DEFAULT_CHAR_LENGHT];
+    sprintf(earned, "+ %ipts", game_score);
+    Label *earned_point = Label::createWithTTF(earned, FIRE_UP_FONT, 25);
     Label *speed_price_txt = Label::createWithTTF(speed_price, FIRE_UP_FONT, 20);
     Label *power_price_txt = Label::createWithTTF(power_price, FIRE_UP_FONT, 20);
     Label *speed_info = Label::createWithTTF("SHOOTING SPEED", FIRE_UP_FONT, 24);
@@ -930,9 +1040,11 @@ Menu *GameScene::get_end_game_menu() {
                                       static_cast<float>(-(stats->getContentSize().height / 2) +
                                                          power_level_btn->getContentSize().height *
                                                          0.7)));
-    current_point->setPosition(Vec2(0, static_cast<float>(stats->getContentSize().height / 2 -
-                                                          current_point->getContentSize().height *
-                                                          1.5)));
+    current_point->setPosition(Vec2(0, stats->getContentSize().height / 2 -
+                                       (1.1 * current_point->getContentSize().height)));
+    earned_point->setPosition(Vec2(0, static_cast<float>(current_point->getPositionY() - (1.2 *
+                                                                                          current_point->getContentSize().height /
+                                                                                          2))));
     speed_price_txt->setPosition(Vec2(speed_level_btn->getPosition().x,
                                       static_cast<float>(speed_level_btn->getPosition().y -
                                                          (0.25 *
@@ -959,6 +1071,7 @@ Menu *GameScene::get_end_game_menu() {
                                                     power_current_level->getContentSize().height)));
     background->setContentSize(stats->getContentSize());
     stats->addChild(background);
+    stats->addChild(earned_point);
     stats->addChild(current_point);
     stats->addChild(power_level_btn);
     stats->addChild(speed_level_btn);

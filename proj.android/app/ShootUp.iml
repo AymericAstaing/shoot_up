@@ -30,6 +30,9 @@
     <output url="file://$MODULE_DIR$/build/intermediates/classes/debug" />
     <output-test url="file://$MODULE_DIR$/build/intermediates/classes/test/debug" />
     <exclude-output />
+    <content url="file:///Applications/Cocos/android-ndk-r18/sources/android/cpufeatures">
+      <sourceFolder url="file:///Applications/Cocos/android-ndk-r18/sources/android/cpufeatures" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$/../../Classes">
       <sourceFolder url="file://$MODULE_DIR$/../../Classes" isTestSource="false" />
     </content>
@@ -375,9 +378,6 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
-    </content>
-    <content url="file://$USER_HOME$/Library/Android/sdk/ndk-bundle/sources/android/cpufeatures">
-      <sourceFolder url="file://$USER_HOME$/Library/Android/sdk/ndk-bundle/sources/android/cpufeatures" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 27 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

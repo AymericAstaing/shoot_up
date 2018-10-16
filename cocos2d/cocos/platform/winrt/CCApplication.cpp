@@ -86,6 +86,7 @@ int Application::run()
 	return 0;
 }
 
+
 void Application::setAnimationInterval(float interval)
 {
     LARGE_INTEGER nFreq;
