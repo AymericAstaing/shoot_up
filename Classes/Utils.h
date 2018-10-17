@@ -55,6 +55,7 @@ public:
     static int          get_random_number(int, int);
     static bool         is_into_list(int*, int, int);
     static int          array_sum(int*,int);
+    static const char*  get_color(int);
     static int*         get_container_range_research(int);
     static Sprite*      get_player();
     static float        get_spawn_y(int, int, float[2]);

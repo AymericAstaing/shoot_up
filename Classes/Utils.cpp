@@ -27,7 +27,7 @@ int Utils::array_sum(int *array, int size) {
     return (sum);
 }
 
-bool Utils::is_into_list(int *list, int list_size,  int value) {
+bool Utils::is_into_list(int *list, int list_size, int value) {
     for (int i = 0; i < list_size; i++) {
         if (list[i] == value)
             return (true);
@@ -69,6 +69,21 @@ float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2
     if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.25 + line_height);
     return (-1);
+}
+
+const char *Utils::get_color(int color_id) {
+    switch (color_id) {
+        case 0:
+            return (BASIC_COLOR_RED);
+        case 1:
+            return (BASIC_COLOR_ORANGE);
+        case 2:
+            return (BASIC_COLOR_YELLOW);
+        case 3:
+            return (BASIC_COLOR_GREEN);
+        default:break;
+    }
+    return (nullptr);
 }
 
 int Utils::get_random_line_type() {

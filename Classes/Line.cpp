@@ -19,34 +19,60 @@ Line::~Line() {
 }
 
 
-void Line::set_active(int factor_h, int min, int max) {
+void Line::set_active(int factor_h) {
     setVisible(true);
     line_active = true;
     if (get_type() <= LINE_TYPE_STARTUP_5)
         assign_startup_line_points(factor_h);
     else
-        assign_line_points(factor_h, min, max);
+        assign_line_points(factor_h);
 }
 
 int Line::get_index_random(int *choosen, int max) {
-    int i = 0;
-
-    while (i == 0) {
+    while (1) {
         int rand = Utils::get_random_number(0, max);
         if (!Utils::is_into_list(choosen, max, rand))
             return (rand);
     }
+    return (0);
 }
 
-void Line::assign_line_points(int h_factor, int min_h, int max_h) {
-    int type = get_type();
+void Line::change_square_color(int index, int color) {
+    auto batchnode = getChildByTag(LINE_BATCH_ID);
+    if (batchnode) {
+        auto sprite = batchnode->getChildByTag(index);
+        Sprite *e = ((Sprite *) sprite);
+        SpriteFrame *tmp = (SpriteFrame *) Utils::get_color(color);
+        if (e->getSpriteFrame() != tmp)
+            e->setSpriteFrame(Utils::get_color(color));
+    }
+}
 
-    int total = 0;
+void Line::assign_color(int sq_id, int h_factor, int current_point) {
+    float factor_f = h_factor;
 
-    if (type == LINE_TYPE_SIMPLE_OF_4)
-        total = static_cast<int>(0.6 * h_factor);
+    if (current_point <= factor_f * (0.22))
+        change_square_color(sq_id, 3);
+    else if (current_point <= factor_f * (0.25))
+        change_square_color(sq_id, 2);
+    else if (current_point <= factor_f * (0.30))
+        change_square_color(sq_id, 1);
     else
+        change_square_color(sq_id, 0);
+}
+
+void Line::assign_line_points(int h_factor) {
+    int type = get_type();
+    int total = 0;
+    if (type == LINE_TYPE_SIMPLE_OF_4) {
+        total = static_cast<int>(0.6 * h_factor);
+    } else {
+        int min_h = static_cast<int>(h_factor +
+                                     ceil(static_cast<float>(h_factor * 0.3)));
+        int max_h = static_cast<int>(h_factor +
+                                     ceil(static_cast<float>(h_factor * 0.4)));
         total = Utils::get_random_number(min_h, max_h);
+    }
     int *distrib = new int[this->square_nbr];
     int *choosen = new int[this->square_nbr];
     distrib = Utils::get_distribution_points(distrib, total, this->square_nbr);
@@ -61,6 +87,8 @@ void Line::assign_line_points(int h_factor, int min_h, int max_h) {
         } else {
             choosen[index] = get_index_random(choosen, this->square_nbr - 1);
             sq->assign_point(distrib[choosen[index]]);
+            assign_color(index, total, distrib[choosen[index]]);
+
         }
         index++;
     }
@@ -82,7 +110,8 @@ void Line::assign_startup_line_points(int h_factor) {
             ratio = line_2[i];
         int *distrib = new int[5];
 
-        distrib = Utils::get_distribution_points(distrib, static_cast<int>(h_factor * ratio), 5);
+        distrib = Utils::get_distribution_points(distrib, static_cast<int>(h_factor * ratio),
+                                                 5);
 
         int index = i * 5;
         int k = 0;
@@ -101,14 +130,30 @@ void Line::assign_startup_line_points(int h_factor) {
 Size Line::get_line_size(int type) {
     auto winSize = Director::getInstance()->getVisibleSize();
     if (type == SIMPLE_LINE_4)
-        return (Size((static_cast<float>(winSize.width / 3.95)) * 4,
+        return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_4)) * 4,
                      static_cast<float>(winSize.height / 9.6)));
     else if (type == SIMPLE_LINE_5)
-        return (Size((static_cast<float>(winSize.width / 4.95)) * 5,
+        return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5)) * 5,
                      static_cast<float>(winSize.height / 10.5)));
-    else
+    else {
+        int line_nbr = 0;
+        switch (type) {
+            case LINE_TYPE_STARTUP_3:
+                line_nbr = 3;
+                break;
+            case LINE_TYPE_STARTUP_4:
+                line_nbr = 4;
+                break;
+            case LINE_TYPE_STARTUP_5:
+                line_nbr = 5;
+                break;
+            default:
+                line_nbr = 5;
+                break;
+        }
         return (Size((static_cast<float>(winSize.width / 4.95)) * 5,
-                     (static_cast<float>(winSize.height / 10.5)) * 3));
+                     (static_cast<float>(winSize.height / 10.5)) * line_nbr));
+    }
 }
 
 /********************************** BLOCKS TRANSLATIONS ****************************/
@@ -225,8 +270,7 @@ Vec2 Line::get_square_grid_pos(int requiered_pos, float rect_size[2], int line_s
         req_pos = Utils::get_coordinate_from_id(requiered_pos, SQUARE_SIZE_LINE_OF_5);
     else
         req_pos = Utils::get_coordinate_from_id(requiered_pos, SQUARE_SIZE_LINE_OF_4);
-    auto winSize = Director::getInstance()->getVisibleSize();
-    return (Size((rect_size[WIDTH] / 2) + (req_pos.x * rect_size[WIDTH]),
+    return (Vec2((rect_size[WIDTH] / 2) + (req_pos.x * rect_size[WIDTH]),
                  ((rect_size[HEIGHT]) / 2) + (req_pos.y * (rect_size[HEIGHT]))));
 }
 
@@ -283,15 +327,16 @@ int Line::struct_element_nbr(int id) {
 
 SpriteBatchNode *Line::get_batch() {
     SpriteBatchNode *spriteBatchNode;
-    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("spritesheet/atlas_blocks.plist");
-    spriteBatchNode = SpriteBatchNode::create("spritesheet/atlas_blocks.png");
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile(
+            "spritesheet/default_colors.plist");
+    spriteBatchNode = SpriteBatchNode::create("spritesheet/default_colors.png");
     spriteBatchNode->setAnchorPoint(Vec2(0, 0));
     spriteBatchNode->setTag(LINE_BATCH_ID);
     return (spriteBatchNode);
 }
 
 Sprite *Line::get_texture(int i, float square_height, float square_width) {
-    auto sprite = Sprite::createWithSpriteFrameName("block_green.png");
+    auto sprite = Sprite::createWithSpriteFrameName("green_b.png");
     sprite->setAnchorPoint(Vec2(0.5, 0.5));
     sprite->setTag(i);
     float sprite_height = sprite->getContentSize().height;
@@ -301,12 +346,12 @@ Sprite *Line::get_texture(int i, float square_height, float square_width) {
     return (sprite);
 }
 
-void Line::load_startup_struct(Line *l, int line_nbr) {
+void Line::load_startup_struct(Line *l) {
     SpriteBatchNode *spriteBatchNode = get_batch();
     spriteBatchNode->setContentSize(l->getContentSize());
     l->addChild(spriteBatchNode);
 
-    int total_square = line_nbr * 5;
+    int total_square = l->square_nbr;
 
     for (int i = 0; i < total_square; i++) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_5);
@@ -446,22 +491,22 @@ void Line::load_square(Line *l, int type) {
         case STARTUP_LINE_2:
             l->square_nbr = 10;
             l->line_type = LINE_TYPE_STARTUP_2;
-            load_startup_struct(l, 2);
+            load_startup_struct(l);
             break;
         case STARTUP_LINE_3:
             l->square_nbr = 15;
             l->line_type = LINE_TYPE_STARTUP_3;
-            load_startup_struct(l, 3);
+            load_startup_struct(l);
             break;
         case STARTUP_LINE_4:
             l->square_nbr = 20;
             l->line_type = LINE_TYPE_STARTUP_4;
-            load_startup_struct(l, 4);
+            load_startup_struct(l);
             break;
         case STARTUP_LINE_5:
             l->square_nbr = 25;
             l->line_type = LINE_TYPE_STARTUP_5;
-            load_startup_struct(l, 5);
+            load_startup_struct(l);
             break;
         default:
             break;

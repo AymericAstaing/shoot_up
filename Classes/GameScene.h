@@ -50,8 +50,7 @@ private:
     int                 bullet_state;
     int                 game_state;
     int                 current_factor_h = 0;
-    int                 current_max = 0;
-    int                 current_min = 0;
+    int                 shooter_never_updated = 0;
 
     /******************* LINE MANAGMENT ***************/
     int                 CURRENT_LINE_ID;

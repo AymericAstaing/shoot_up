@@ -8,6 +8,7 @@ USING_NS_CC;
 /*********************OTHER***********************/
 #define WIDTH                           0
 #define HEIGHT                          1
+#define EMPTY_VALUE                     -1
 #define FIRE_UP_FONT                    "fonts/fire_up.ttf"
 #define FIRE_UP_FONT_NUMBERS            "fonts/numbers.ttf"
 #define TITLE                           "S H O O T  U P !"
@@ -17,6 +18,8 @@ USING_NS_CC;
 #define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "explode.png"
+#define SQUARE_SIZE_5                   4.95
+#define SQUARE_SIZE_4                   3.95
 #define POWER_LEVEL_BTN_TAG             34
 #define SPEED_LEVEL_BTN_TAG             35
 #define MAIN_MENU_TAG                   36
@@ -30,6 +33,11 @@ USING_NS_CC;
 #define MENU                            0
 #define GAME_RUNNING                    1
 #define GAME_END                        2
+
+/******************* GAME PLAY MANAGMENT ***************/
+#define LINE_SPEED                      4
+#define SIMPLE_LINE_NBR                 10
+#define DEFAULT_BULLET_NBR              10 //this is the default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0
@@ -66,6 +74,12 @@ USING_NS_CC;
 #define SOUND_OFF                       1
 #define SQUARE_SIZE_LINE_OF_4           4
 #define SQUARE_SIZE_LINE_OF_5           5
+
+/******************* COLORS ***************/
+#define BASIC_COLOR_GREEN               "green_b.png"
+#define BASIC_COLOR_RED                 "red_b.png"
+#define BASIC_COLOR_YELLOW              "yellow_b.png"
+#define BASIC_COLOR_ORANGE              "orange_b.png"
 
 
 /******************* LINE STRUCT CONTAINERS ***************/

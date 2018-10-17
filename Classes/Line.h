@@ -24,10 +24,11 @@ public:
     static Line*                    create(int);
     static Size                     get_line_size(int);
     int                             get_type();
-    void                            set_active(int, int, int);
-    void                            move(int, int, int);
+    void                            set_active(int);
+    void                            change_square_color(int, int);
+    void                            assign_color(int, int, int);
     int                             get_index_random(int*, int);
-    static void                     load_startup_struct(Line*, int);
+    static void                     load_startup_struct(Line*);
     static void                     load_square(Line*, int);
     static void                     load_complex_struct(Line*, int);
     static void                     load_simple_line_4(Line*);
@@ -36,7 +37,7 @@ public:
     static const int*               struct_pos(int);
     static int                      struct_element_nbr(int);
     void                            reset();
-    void                            assign_line_points(int, int, int);
+    void                            assign_line_points(int);
     static SpriteBatchNode*         get_batch();
     static Sprite*                  get_texture(int, float, float);
     static int                      get_complex_line_type(int, Line*);

@@ -110,7 +110,11 @@ namespace UICustom {
         if (node && node->init()) {
             if (YesFunc) {
                 char user_points[DEFAULT_CHAR_LENGHT];
-                sprintf(user_points, "%i pts", UserLocalStore::get_achievement_variable(POINT));
+                if (UserLocalStore::get_achievement_variable(POINT) > 1000)
+                    sprintf(user_points, "%.1fK pts",
+                            static_cast<float>(UserLocalStore::get_achievement_variable(POINT) / 1000));
+                else
+                    sprintf(user_points, "%i pts", UserLocalStore::get_achievement_variable(POINT));
                 MenuItemFont *point_nbr = MenuItemFont::create(user_points,
                                                                [=](Ref *sender) {
                                                                });
@@ -227,8 +231,9 @@ namespace UICustom {
 
     void Popup::increase_speed(MenuItemFont *pFont) {
         UserLocalStore::store_achievement_variable_float(SPEED_VALUE,
-                                                         (UserLocalStore::get_achievement_variable_float(
-                                                                 SPEED_VALUE) + 0.5));
+                                                         static_cast<float>(
+                                                                 UserLocalStore::get_achievement_variable_float(
+                                                                         SPEED_VALUE) + 0.5));
         UserLocalStore::store_achievement_variable(
                 SPEED_LEVEL,
                 UserLocalStore::get_achievement_variable(

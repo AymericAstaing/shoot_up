@@ -4,22 +4,22 @@
     <dict>
         <key>frames</key>
         <dict>
-            <key>block_green.png</key>
+            <key>green_b.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{101,101}</string>
+                <string>{100,101}</string>
                 <key>spriteSourceSize</key>
-                <string>{101,101}</string>
+                <string>{100,101}</string>
                 <key>textureRect</key>
-                <string>{{1,1},{101,101}}</string>
+                <string>{{0,0},{100,101}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
-            <key>block_red.png</key>
+            <key>orange_b.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
@@ -30,22 +30,37 @@
                 <key>spriteSourceSize</key>
                 <string>{101,101}</string>
                 <key>textureRect</key>
-                <string>{{104,1},{101,101}}</string>
+                <string>{{100,0},{101,101}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
-            <key>block_yellow.png</key>
+            <key>red_b.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{101,101}</string>
+                <string>{100,101}</string>
                 <key>spriteSourceSize</key>
-                <string>{101,101}</string>
+                <string>{100,101}</string>
                 <key>textureRect</key>
-                <string>{{207,1},{101,101}}</string>
+                <string>{{201,0},{100,101}}</string>
+                <key>textureRotated</key>
+                <false/>
+            </dict>
+            <key>yellow_b.png</key>
+            <dict>
+                <key>aliases</key>
+                <array/>
+                <key>spriteOffset</key>
+                <string>{0,0}</string>
+                <key>spriteSize</key>
+                <string>{100,101}</string>
+                <key>spriteSourceSize</key>
+                <string>{100,101}</string>
+                <key>textureRect</key>
+                <string>{{301,0},{100,101}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -59,13 +74,13 @@
             <key>premultiplyAlpha</key>
             <false/>
             <key>realTextureFileName</key>
-            <string>atlas_blocks.png</string>
+            <string>default_colors.png</string>
             <key>size</key>
-            <string>{309,103}</string>
+            <string>{401,101}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:145d188617ebbe7262d6e597fc24cff9:f01fd4d9c72cc09097623c4095f445b0:ef5aa101c8346dbd8b930db67fbe05e7$</string>
+            <string>$TexturePacker:SmartUpdate:8a4335ef07bd9a0fcff57c1614ef2a9d:476eb100969c296cfe669d39be2b615d:53040a249c624793bbccf10bb3162aeb$</string>
             <key>textureFileName</key>
-            <string>atlas_blocks.png</string>
+            <string>default_colors.png</string>
         </dict>
     </dict>
 </plist>

@@ -25,7 +25,6 @@ Size Square::get_square_size(int line_size) {
     return (Size(0, 0));
 }
 
-
 float *Square::get_rect_size() {
     return (rect_size);
 }
@@ -43,7 +42,10 @@ void Square::reset_square() {
 void Square::assign_point(int pv) {
     this->square_pv = pv;
     char pts[DEFAULT_CHAR_LENGHT];
-    sprintf(pts, "%i", square_pv);
+    if (square_pv > 1000)
+        sprintf(pts, "%.1fK", static_cast<float>(square_pv) / 1000);
+    else
+        sprintf(pts, "%i", square_pv);
     this->points->setString(pts);
 }
 

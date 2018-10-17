@@ -84,7 +84,6 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     init_pool_objects();
     init_options_menu();
-    pool_container[19]->setVisible(true);
     this->scheduleUpdate();
 
 }
@@ -128,6 +127,8 @@ void GameScene::value_to_update() {
 }
 
 void GameScene::end_of_game() {
+    if (game_state != GAME_RUNNING)
+        return;
     value_to_update();
     game_state = GAME_END;
     score->setVisible(false);
@@ -143,7 +144,7 @@ void GameScene::end_of_game() {
 
 void GameScene::reset_arrays() {
     for (int j = 0; active_lines[j] != NULL; j++)
-        active_lines[j] = -1;
+        active_lines[j] = EMPTY_VALUE;
 }
 
 void GameScene::reset_lines() {
@@ -360,9 +361,6 @@ void GameScene::show_particle(Vec2 pos) {
 
 void GameScene::check_into_line() {
     for (int i = 0; bullet_container[i] != NULL; i++) {
-        if (bullet_container[i + 2] != NULL && !bullet_container[i]->bullet_active &&
-            !bullet_container[i + 1]->bullet_active)
-            return;
         if (bullet_container[i] && bullet_container[i]->bullet_active &&
             bullet_container[i]->contact) {
             int j = 0;
@@ -373,7 +371,8 @@ void GameScene::check_into_line() {
                 auto child = current_line->getChildByTag(index);
                 Square *sq = ((Square *) child);
                 if (!sq) {
-                    j = 1;
+                    if (!child)
+                        j = 1;
                     break;
                 }
                 Vec2 bullet_pos;
@@ -383,7 +382,10 @@ void GameScene::check_into_line() {
 
                 if (bullet_pos.y < 0)
                     bullet_pos.y = 0;
+                if (point_into_square(sq, bullet_pos))
+                    log("SQUARE VISIBLE  = %i", index);
                 if (point_into_square(sq, bullet_pos) && sq->isVisible()) {
+                    log("into square %i", index);
                     int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
                     if (sq->get_square_pv() - bullet_hit <= 1) {
                         auto batch = current_line->getChildByTag(LINE_BATCH_ID);
@@ -433,14 +435,15 @@ void GameScene::move_active_lines() {
     for (int i = 0; active_lines[i] != '\0'; i++) {
         if (active_lines[i] != -1)
             pool_container[active_lines[i]]->setPositionY(
-                    pool_container[active_lines[i]]->getPositionY() - 4);
+                    pool_container[active_lines[i]]->getPositionY() - LINE_SPEED);
     }
 }
 
 void GameScene::check_player_collision() {
     for (int i = 0; active_lines[i] != NULL; i++) {
         if (active_lines[i] != -1 && pool_container[active_lines[i]]->getPositionY() <
-                                     player->getPositionY() + player->getContentSize().height / 2) {
+                                     player->getPositionY() +
+                                     (1.1 * player->getContentSize().height / 2)) {
             int j = 0;
             int index = 0;
             float player_y =
@@ -452,48 +455,50 @@ void GameScene::check_player_collision() {
                     j = 1;
                     break;
                 }
+                float sq_width = sq->getContentSize().width;
+                float sq_height = sq->getContentSize().height;
+                float player_width = player->getContentSize().width;
+                float player_height = player->getContentSize().height;
 
-                if (sq->isVisible() && Rect(sq->getPositionX() - sq->getContentSize().width / 2,
-                                            sq->getPositionY() - sq->getContentSize().height / 2,
-                                            sq->getContentSize().width,
-                                            static_cast<float>(sq->getContentSize().height *
-                                                               0.15)).intersectsRect(
-                        Rect(
-                                player->getPositionX() - player->getContentSize().width / 2,
-                                static_cast<float>(player_y + sq->getContentSize().height / 2 +
-                                                   (0.08 * sq->getContentSize().height)),
-                                player->getContentSize().width,
-                                static_cast<float>(player->getContentSize().height * 0.10)))) {
-                    if (game_state == GAME_RUNNING) {
+                Rect player_left_side = Rect(
+                        player->getPositionX() - player_width / 2,
+                        player_y,
+                        static_cast<float>(player_width * 0.05),
+                        static_cast<float>(player_height * 0.95));
+                Rect player_right_side = Rect(
+                        player->getPositionX() + player_width / 2,
+                        player_y,
+                        static_cast<float>(player_width * 0.05),
+                        static_cast<float>(player_height * 0.95));
+                Rect player_top_side = Rect(
+                        player->getPositionX() - player_width / 2,
+                        static_cast<float>(player_y + sq_height / 2 +
+                                           (0.08 * sq_height)),
+                        player_width,
+                        static_cast<float>(player_height * 0.10));
+                Rect sq_bounding_box = Rect(sq->getPositionX() - sq_width / 2,
+                                            sq->getPositionY() + sq_height / 2, sq_width,
+                                            sq_height);
+                Rect sq_bottom_side = Rect(sq->getPositionX() - sq_width / 2,
+                                           sq->getPositionY() - sq_height / 2,
+                                           sq_width,
+                                           static_cast<float>(sq_height *
+                                                              0.15));
+                if (sq->isVisible() && sq_bottom_side.intersectsRect(
+                        player_top_side)) {
+                    end_of_game();
+                } else if (sq->isVisible() &&
+                           sq_bounding_box.intersectsRect(player_left_side)) {
+                    player->setPositionX(sq->getPositionX() + sq_width / 2 +
+                                         player_width / 2);
+                    if (player->getPositionX() + player_width / 2 > x_screen)
                         end_of_game();
-                        return;
-                    }
-                } else if (sq->isVisible() && sq->getBoundingBox().intersectsRect(
-                        Rect(player->getPositionX() - player->getContentSize().width / 2,
-                             player_y,
-                             static_cast<float>(player->getContentSize().width * 0.05),
-                             static_cast<float>(player->getContentSize().height * 0.95)))) {
-                    player->setPositionX(sq->getPositionX() + sq->getContentSize().width / 2 +
-                                         player->getContentSize().width / 2);
-                    if (player->getPositionX() + player->getContentSize().width / 2 > x_screen) {
-                        if (game_state == GAME_RUNNING) {
-                            end_of_game();
-                            return;
-                        }
-                    }
-                } else if (sq->isVisible() && sq->getBoundingBox().intersectsRect(
-                        Rect(player->getPositionX() + player->getContentSize().width / 2,
-                             player_y,
-                             static_cast<float>(player->getContentSize().width * 0.05),
-                             static_cast<float>(player->getContentSize().height * 0.95)))) {
-                    player->setPositionX(sq->getPositionX() - sq->getContentSize().width / 2 -
-                                         player->getContentSize().width / 2);
-                    if (player->getPositionX() - player->getContentSize().width / 2 < 0) {
-                        if (game_state == GAME_RUNNING) {
-                            end_of_game();
-                            return;
-                        }
-                    }
+                } else if (sq->isVisible() &&
+                           sq_bounding_box.intersectsRect(player_right_side)) {
+                    player->setPositionX(sq->getPositionX() - sq_width / 2 -
+                                         player_width / 2);
+                    if (player->getPositionX() - player_width / 2 < 0)
+                        end_of_game();
                 }
                 index++;
             }
@@ -510,15 +515,12 @@ void GameScene::update(float ft) {
         check_player_collision();
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
-        pool_container[NEXT_LINE_ID]->set_active(current_factor_h, current_min, current_max);
+        pool_container[NEXT_LINE_ID]->set_active(current_factor_h);
+        current_factor_h += current_factor_h * 0.05;
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
         NEXT_LINE_ID = get_line_index(get_next_line_type());
         LINE_GENERATED++;
-        current_min = static_cast<int>(current_min +
-                                       ceil(static_cast<float>(current_factor_h * 0.06)));
-        current_max = static_cast<int>(current_max +
-                                       ceil(static_cast<float>(current_factor_h * 0.06)));
         if (NEXT_LINE_ID != -1)
             NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
                                              pool_container[NEXT_LINE_ID]->get_type(),
@@ -535,7 +537,7 @@ void GameScene::update(float ft) {
 
 void GameScene::store_active_line(int line_index) {
     for (int i = 0; active_lines[i] != '\0'; i++) {
-        if (active_lines[i] == -1) {
+        if (active_lines[i] == EMPTY_VALUE) {
             active_lines[i] = line_index;
             return;
         }
@@ -543,13 +545,15 @@ void GameScene::store_active_line(int line_index) {
 }
 
 void GameScene::remove_active_line(int line_to_rm) {
-    active_lines[line_to_rm] = -1;
+    active_lines[line_to_rm] = EMPTY_VALUE;
 }
 
 int GameScene::get_next_line_type() {
-    if (LINE_GENERATED < 7)
+    if (shooter_never_updated)
         return (LINE_TYPE_SIMPLE_OF_4);
-    else if (LINE_GENERATED == 7)
+    if (LINE_GENERATED < SIMPLE_LINE_NBR)
+        return (LINE_TYPE_SIMPLE_OF_4);
+    else if (LINE_GENERATED == SIMPLE_LINE_NBR)
         return (LINE_TYPE_SIMPLE_OF_5);
     else
         return (Utils::get_random_line_type());
@@ -558,17 +562,20 @@ int GameScene::get_next_line_type() {
 void GameScene::run_game_loop() {
     int indicator = UserLocalStore::get_achievement_variable(POWER_LEVEL) +
                     UserLocalStore::get_achievement_variable(SPEED_LEVEL);
-    if (indicator == 2) {
+    if (indicator == 2)
+        shooter_never_updated = 1;
+    if (shooter_never_updated == 1) {
         CURRENT_LINE_ID = 4;
         NEXT_LINE_ID = 5;
         NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->line_size);
+        shooter_never_updated = 0;
     } else {
-        if (indicator < 30) {
+        if (current_factor_h < 819) {
             CURRENT_LINE_ID = 1;
             NEXT_LINE_ID = 4;
-        } else if (indicator < 80) {
+        } else if (current_factor_h < 2829) {
             CURRENT_LINE_ID = 2;
             NEXT_LINE_ID = 4;
         } else {
@@ -580,10 +587,8 @@ void GameScene::run_game_loop() {
                                          pool_container[CURRENT_LINE_ID]->line_size);
     }
     store_active_line(CURRENT_LINE_ID);
-    log("PPASSED");
     pool_container[CURRENT_LINE_ID]->set_active(
-            current_factor_h, current_min, current_max);
-    log("PPASSED");
+            current_factor_h);
     LINE_GENERATED++;
     this->scheduleUpdate();
 }
@@ -597,6 +602,8 @@ void GameScene::score_animation() {
     auto scale_down = ScaleTo::create(0.05, 1.0f);
     auto sequence = Sequence::create(scale_up, scale_down, nullptr);
     score->runAction(sequence);
+    if (best_img->isVisible())
+        best_img->runAction(sequence->clone());
 }
 
 void GameScene::update_game_score(int points) {
@@ -609,7 +616,10 @@ void GameScene::update_game_score(int points) {
         best_img->runAction(move);
     }
     char score_value[DEFAULT_CHAR_LENGHT];
-    sprintf(score_value, "%i", game_score);
+    if (game_score < 1000)
+        sprintf(score_value, "%i", game_score);
+    else
+        sprintf(score_value, "%.1fk", static_cast<float>(game_score) / 1000);
     score->setString(score_value);
 }
 
@@ -619,18 +629,15 @@ float GameScene::get_shoot_interval() {
 }
 
 int GameScene::get_h_value() {
-    return static_cast<int>((10 * UserLocalStore::get_achievement_variable_float(SPEED_VALUE)) *
-                            UserLocalStore::get_achievement_variable(POWER_VALUE));
+    return static_cast<int>(
+            (DEFAULT_BULLET_NBR * UserLocalStore::get_achievement_variable_float(SPEED_VALUE)) *
+            UserLocalStore::get_achievement_variable(POWER_VALUE));
 }
 
 void GameScene::start_game() {
     reset_arrays();
     game_score = 0;
     current_factor_h = get_h_value();
-    current_min = static_cast<int>(static_cast<float>(current_factor_h +
-                                                      current_factor_h * 0.3));
-    current_max = static_cast<int>(static_cast<float>(current_factor_h +
-                                                      current_factor_h * 0.4));
     char score_value[DEFAULT_CHAR_LENGHT];
     sprintf(score_value, "%i", game_score);
     game_state = GAME_RUNNING;
@@ -818,8 +825,11 @@ Menu *GameScene::get_main_menu() {
     sprintf(speed_level, "%.1f",
             UserLocalStore::get_achievement_variable_float(SPEED_VALUE));
     char best_score[DEFAULT_CHAR_LENGHT];
-    sprintf(best_score, "%i",
-            UserLocalStore::get_achievement_variable(SCORE));
+    if (UserLocalStore::get_achievement_variable(SCORE) > 1000)
+        sprintf(best_score, "%.1fk",
+                static_cast<float>(UserLocalStore::get_achievement_variable(SCORE)) / 1000);
+    else
+        sprintf(best_score, "%i", UserLocalStore::get_achievement_variable(SCORE));
     menu_power_level = MenuItemFont::create(power_level);
     menu_power_level->setTag(POWER_LEVEL_BTN_TAG);
     menu_speed_level = MenuItemFont::create(speed_level);
@@ -931,8 +941,12 @@ Menu *GameScene::get_main_menu() {
 
 Menu *GameScene::get_end_game_menu() {
     char points[DEFAULT_CHAR_LENGHT];
-    sprintf(points, "%i PTS",
-            UserLocalStore::get_achievement_variable(POINT));
+    if (UserLocalStore::get_achievement_variable(POINT) > 1000)
+        sprintf(points, "%.1fk",
+                static_cast<float>(UserLocalStore::get_achievement_variable(POINT)) / 1000);
+    else
+        sprintf(points, "%i PTS",
+                UserLocalStore::get_achievement_variable(POINT));
     char power_price[DEFAULT_CHAR_LENGHT];
     sprintf(power_price, "%i PTS",
             UserLocalStore::get_achievement_variable(POWER_LEVEL_PRICE));
@@ -948,7 +962,10 @@ Menu *GameScene::get_end_game_menu() {
     stats = Layer::create();
     Label *current_point = Label::createWithTTF(points, FIRE_UP_FONT, 60);
     char earned[DEFAULT_CHAR_LENGHT];
-    sprintf(earned, "+ %ipts", game_score);
+    if (game_score > 1000)
+        sprintf(earned, "+ %.1fk pts", static_cast<float>(game_score));
+    else
+        sprintf(earned, "+ %ipts", game_score);
     Label *earned_point = Label::createWithTTF(earned, FIRE_UP_FONT, 25);
     Label *speed_price_txt = Label::createWithTTF(speed_price, FIRE_UP_FONT, 20);
     Label *power_price_txt = Label::createWithTTF(power_price, FIRE_UP_FONT, 20);
@@ -1040,8 +1057,9 @@ Menu *GameScene::get_end_game_menu() {
                                       static_cast<float>(-(stats->getContentSize().height / 2) +
                                                          power_level_btn->getContentSize().height *
                                                          0.7)));
-    current_point->setPosition(Vec2(0, stats->getContentSize().height / 2 -
-                                       (1.1 * current_point->getContentSize().height)));
+    current_point->setPosition(Vec2(0, static_cast<float>(stats->getContentSize().height / 2 -
+                                                          (1.1 *
+                                                           current_point->getContentSize().height))));
     earned_point->setPosition(Vec2(0, static_cast<float>(current_point->getPositionY() - (1.2 *
                                                                                           current_point->getContentSize().height /
                                                                                           2))));
