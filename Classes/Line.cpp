@@ -22,10 +22,12 @@ Line::~Line() {
 void Line::set_active(int factor_h) {
     setVisible(true);
     line_active = true;
-    if (get_type() <= LINE_TYPE_STARTUP_5)
+    if (get_type() <= LINE_TYPE_STARTUP_5) // STARTUP LINES
         assign_startup_line_points(factor_h);
-    else
+    else if (get_type() < LINE_TYPE_COMPLEX_0) //STRUCT LINE OF 4 / 5
         assign_line_points(factor_h);
+    else // STRUCT COMPLEX
+        assign_line_points_complex(factor_h);
 }
 
 int Line::get_index_random(int *choosen, int max) {
@@ -48,20 +50,20 @@ void Line::change_square_color(int index, int color) {
     }
 }
 
-void Line::assign_color(int sq_id, int h_factor, int current_point) {
-    float factor_f = h_factor;
+void Line::assign_color(int sq_id, int m_factor, int current_point) {
 
-    if (current_point <= factor_f * (0.22))
+    float point = static_cast<float>(current_point);
+    if (point <= static_cast<float>(m_factor * 0.9))
         change_square_color(sq_id, 3);
-    else if (current_point <= factor_f * (0.25))
+    else if (point <= static_cast<float>(m_factor * 0.95))
         change_square_color(sq_id, 2);
-    else if (current_point <= factor_f * (0.30))
+    else if (point <= static_cast<float>(m_factor * 1.05))
         change_square_color(sq_id, 1);
     else
         change_square_color(sq_id, 0);
 }
 
-void Line::assign_line_points(int h_factor) {
+void Line::assign_line_points(int h_factor) { // TMP
     int type = get_type();
     int total = 0;
     if (type == LINE_TYPE_SIMPLE_OF_4) {
@@ -75,7 +77,7 @@ void Line::assign_line_points(int h_factor) {
     }
     int *distrib = new int[this->square_nbr];
     int *choosen = new int[this->square_nbr];
-    distrib = Utils::get_distribution_points(distrib, total, this->square_nbr);
+    distrib = Utils::get_simple_distribution_points(distrib, total, type, this->square_nbr);
     int i = 0;
     int index = 0;
 
@@ -87,14 +89,40 @@ void Line::assign_line_points(int h_factor) {
         } else {
             choosen[index] = get_index_random(choosen, this->square_nbr - 1);
             sq->assign_point(distrib[choosen[index]]);
-            assign_color(index, total, distrib[choosen[index]]);
+            assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
 
         }
         index++;
     }
 }
 
-void Line::assign_startup_line_points(int h_factor) {
+void Line::assign_line_points_complex(int h_factor) { // POINTS FOR COMPLEX STRUCT (MARTIN'S SYSTEM)
+    int type = get_type();
+
+    int min_h = static_cast<int>(h_factor +
+                                 ceil(static_cast<float>(h_factor * 0.3)));
+    int max_h = static_cast<int>(h_factor +
+                                 ceil(static_cast<float>(h_factor * 0.4)));
+    int total = Utils::get_random_number(min_h, max_h);
+    int *distrib = new int[this->square_nbr];
+    distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
+    int i = 0;
+    int index = 0;
+
+    while (i == 0) {
+        auto child = getChildByTag(index);
+        Square *sq = ((Square *) child);
+        if (!child || !sq) {
+            i = 1;
+        } else {
+            sq->assign_point(distrib[index]);
+            assign_color(index, total / this->square_nbr, distrib[index]);
+        }
+        index++;
+    }
+}
+
+void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
     int lines_nbr = square_nbr / 5;
     if (h_factor < 25)

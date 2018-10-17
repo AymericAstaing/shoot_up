@@ -78,7 +78,7 @@ void GameScene::init_main_variable() {
     addChild(best_img, 20);
     game_menu = get_main_menu();
     addChild(game_menu);
-    if (UserLocalStore::get_achievement_variable(FROM_SHOP) == 0)
+    if (UserLocalStore::get_achievement_variable(FROM_SHOP) == NOT_FROM_SHOP)
         main_menu_coming_animation();
     else
         UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
@@ -99,7 +99,7 @@ Menu *GameScene::get_continue_menu() {
 }
 
 void GameScene::init_options_menu() {
-    if (UserLocalStore::get_achievement_variable(SOUND) == 0)
+    if (UserLocalStore::get_achievement_variable(SOUND) == SOUND_OFF)
         sound = Sprite::create(OPTIONS_SOUND_ON);
     else
         sound = Sprite::create(OPTIONS_SOUND_OFF);
@@ -181,7 +181,7 @@ void GameScene::init_pool_objects() {
         pool_container[i] = Line::create(SIMPLE_LINE_4);
     for (int i = 7; i < 10; i++)
         pool_container[i] = Line::create(SIMPLE_LINE_5);
-    for (int i = 10; i < 26; i = i + 2, index_struct++) {
+    for (int i = 10; i < 26; i += 2, index_struct++) {
         pool_container[i] = Line::create(index_struct);
         pool_container[i + 1] = Line::create(index_struct);
     }
@@ -207,6 +207,7 @@ void GameScene::surclassement(cocos2d::Ref *pSender) {
 }
 
 void GameScene::options(cocos2d::Ref *pSender) {
+    auto action = FadeIn::create(0.1);
     if (options_state == OPTIONS_HIDE) {
         DelayTime *delayTime = DelayTime::create(0.08);
         tuto->setOpacity(0);
@@ -220,11 +221,9 @@ void GameScene::options(cocos2d::Ref *pSender) {
         options_state = OPTIONS_DISPLAYED;
         tuto->setVisible(true);
         sound->setVisible(true);
-        auto action = FadeIn::create(0.1);
-        auto action2 = FadeIn::create(0.1);
         auto sequence_action = Sequence::create(delayTime, action, NULL);
         tuto->runAction(sequence_action);
-        sound->runAction(action2);
+        sound->runAction(action->clone());
         tuto->runAction(actionMove);
         sound->runAction(actionMove2);
     } else {
@@ -233,10 +232,8 @@ void GameScene::options(cocos2d::Ref *pSender) {
                                          Vec2(tuto->getPosition().x - 11, tuto->getPosition().y));
         auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x - 11,
                                                     sound->getPosition().y));
-        auto action = FadeOut::create(0.1);
-        auto action2 = FadeOut::create(0.1);
         auto sequence_action = Sequence::create(delayTime, action, NULL);
-        tuto->runAction(action2);
+        tuto->runAction(action->clone());
         sound->runAction(sequence_action);
         tuto->runAction(actionMove);
         sound->runAction(actionMove2);
@@ -382,10 +379,7 @@ void GameScene::check_into_line() {
 
                 if (bullet_pos.y < 0)
                     bullet_pos.y = 0;
-                if (point_into_square(sq, bullet_pos))
-                    log("SQUARE VISIBLE  = %i", index);
                 if (point_into_square(sq, bullet_pos) && sq->isVisible()) {
-                    log("into square %i", index);
                     int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
                     if (sq->get_square_pv() - bullet_hit <= 1) {
                         auto batch = current_line->getChildByTag(LINE_BATCH_ID);
@@ -619,7 +613,7 @@ void GameScene::update_game_score(int points) {
     if (game_score < 1000)
         sprintf(score_value, "%i", game_score);
     else
-        sprintf(score_value, "%.1fk", static_cast<float>(game_score) / 1000);
+        sprintf(score_value, "%.1fK", static_cast<float>(game_score) / 1000);
     score->setString(score_value);
 }
 
@@ -963,7 +957,7 @@ Menu *GameScene::get_end_game_menu() {
     Label *current_point = Label::createWithTTF(points, FIRE_UP_FONT, 60);
     char earned[DEFAULT_CHAR_LENGHT];
     if (game_score > 1000)
-        sprintf(earned, "+ %.1fk pts", static_cast<float>(game_score));
+        sprintf(earned, "+ %.1fk pts", static_cast<float>(game_score) / 1000);
     else
         sprintf(earned, "+ %ipts", game_score);
     Label *earned_point = Label::createWithTTF(earned, FIRE_UP_FONT, 25);

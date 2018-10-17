@@ -56,11 +56,11 @@
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{100,101}</string>
+                <string>{101,100}</string>
                 <key>spriteSourceSize</key>
-                <string>{100,101}</string>
+                <string>{101,100}</string>
                 <key>textureRect</key>
-                <string>{{301,0},{100,101}}</string>
+                <string>{{301,0},{101,100}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -76,9 +76,9 @@
             <key>realTextureFileName</key>
             <string>default_colors.png</string>
             <key>size</key>
-            <string>{401,101}</string>
+            <string>{402,101}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:8a4335ef07bd9a0fcff57c1614ef2a9d:476eb100969c296cfe669d39be2b615d:53040a249c624793bbccf10bb3162aeb$</string>
+            <string>$TexturePacker:SmartUpdate:e590c28f5464243fee0a1e49de2e5346:a275e9cc38ca8166d9dda69be0e56932:53040a249c624793bbccf10bb3162aeb$</string>
             <key>textureFileName</key>
             <string>default_colors.png</string>
         </dict>

@@ -35,6 +35,23 @@ bool Utils::is_into_list(int *list, int list_size, int value) {
     return (false);
 }
 
+int *Utils::get_complex_distribution_points(int *distribution, int total_nbr, int line_type,
+                                            int sq_nbr) {
+    int type = line_type - 6;
+    for (int i = 0; i < sq_nbr; i++)
+        distribution[i] = static_cast<int>(DISTRIB_COMPLEX[type][i] * total_nbr);
+    return (distribution);
+}
+
+
+int *Utils::get_simple_distribution_points(int *distribution, int total_nbr, int line_type,
+                                            int sq_nbr) {
+    int type = line_type - 4;
+    for (int i = 0; i < sq_nbr; i++)
+        distribution[i] = static_cast<int>(DISTRIB_SIMPLE[type][i] * total_nbr);
+    return (distribution);
+}
+
 int *Utils::get_distribution_points(int *distribution, int total_number, int nbr_of_group) {
     int t = 0;
     int loose_pcc = total_number / nbr_of_group;
@@ -81,7 +98,8 @@ const char *Utils::get_color(int color_id) {
             return (BASIC_COLOR_YELLOW);
         case 3:
             return (BASIC_COLOR_GREEN);
-        default:break;
+        default:
+            break;
     }
     return (nullptr);
 }

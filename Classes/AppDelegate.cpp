@@ -66,6 +66,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     auto spritecache = SpriteFrameCache::getInstance();
     spritecache->addSpriteFramesWithFile("spritesheet/default_colors.plist");
+    spritecache->addSpriteFramesWithFile("spritesheet/startup_gradient.plist");
     spritecache->addSpriteFramesWithFile("spritesheet/bullets.plist");
     UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     auto scene = GameScene::createScene();

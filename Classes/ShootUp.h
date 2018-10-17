@@ -19,6 +19,7 @@ USING_NS_CC;
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "explode.png"
 #define SQUARE_SIZE_5                   4.95
+#define NOT_FROM_SHOP                   0
 #define SQUARE_SIZE_4                   3.95
 #define POWER_LEVEL_BTN_TAG             34
 #define SPEED_LEVEL_BTN_TAG             35
