@@ -69,7 +69,11 @@ void ShopScene::init_ui_components() {
                                   static_cast<float>(winSize.height - (1.2 *
                                                                        back_button->getContentSize().height))));
     this->addChild(back_button);
-    char text[10];
+    char text[DEFAULT_CHAR_LENGHT];
+    if ( UserLocalStore::get_achievement_variable(POINT) > 1000)
+        sprintf(text, "%.1fK  pts",
+                static_cast<float>(UserLocalStore::get_achievement_variable(POINT) / 1000));
+        else
     sprintf(text, "%i  pts", UserLocalStore::get_achievement_variable(POINT));
     points = Label::createWithTTF(text,
                                   FIRE_UP_FONT, (50));

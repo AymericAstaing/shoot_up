@@ -31,9 +31,7 @@ USING_NS_CC;
 Scene *GameScene::createScene() {
     auto scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, 0));
-    scene->getPhysicsWorld()->setUpdateRate(static_cast<int>(1.5));
     scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_NONE);
-    float filterFactor = 0.1;
     auto layer = GameScene::create();
     scene->addChild(layer);
     return scene;
@@ -107,10 +105,9 @@ void GameScene::init_options_menu() {
     sound->setScale(0.9);
     tuto->setScale(0.9);
     sound->setPosition(
-            Vec2(static_cast<float>(options_btn->getPosition().x +
-                                    1 * (options_btn->getContentSize().height)),
+            Vec2(static_cast<float>(options_btn->getPosition().x + options_btn->getContentSize().height),
                  options_btn->getPosition().y));
-    tuto->setPosition(Vec2(sound->getPosition().x + 1 * (sound->getContentSize().height),
+    tuto->setPosition(Vec2(sound->getPosition().x + sound->getContentSize().height,
                            options_btn->getPosition().y));
     sound->setVisible(false);
     tuto->setVisible(false);
@@ -150,7 +147,6 @@ void GameScene::reset_arrays() {
 void GameScene::reset_lines() {
     for (int i = 0; bullet_container[i] != NULL; i++)
         bullet_container[i]->reset();
-
     for (int i = 0; pool_container[i] != NULL; i++) {
         if (pool_container[i]->line_active) {
             pool_container[i]->stopAllActions();
@@ -162,7 +158,7 @@ void GameScene::reset_lines() {
 }
 
 void GameScene::init_pool_objects() {
-    int index_struct = 7;
+    int index_struct = COMPLEX_STRUCT_ELMTS;
     pool_container = new Line *[27];
     bullet_container = new Bullet *[41];
     active_lines = new int[5];
@@ -173,7 +169,7 @@ void GameScene::init_pool_objects() {
     pool_container[3] = Line::create(STARTUP_LINE_5);
 
     for (int i = 0; i < 4; i++)
-        active_lines[i] = -1;
+        active_lines[i] = EMPTY_VALUE;
     active_lines[4] = '\0';
     for (int j = 0; j < 40; j++) {
         bullet_container[j] = Bullet::create();
@@ -210,33 +206,36 @@ void GameScene::surclassement(cocos2d::Ref *pSender) {
 }
 
 void GameScene::options(cocos2d::Ref *pSender) {
-    auto action = FadeIn::create(0.1);
     if (options_state == OPTIONS_HIDE) {
         DelayTime *delayTime = DelayTime::create(0.08);
         tuto->setOpacity(0);
         sound->setOpacity(0);
         auto actionMove = MoveTo::create(0.1,
-                                         Vec2(tuto->getPosition().x + 11, tuto->getPosition().y));
-        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x + 11,
+                                         Vec2(tuto->getPosition().x + (tuto->getContentSize().width / 6), tuto->getPosition().y));
+        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x + (sound->getContentSize().width / 6),
                                                     sound->getPosition().y));
         auto actionRotate = RotateTo::create(0.1, 90);
         options_btn->runAction(Sequence::create(actionRotate, nullptr));
         options_state = OPTIONS_DISPLAYED;
         tuto->setVisible(true);
         sound->setVisible(true);
+        auto action = FadeIn::create(0.1);
+        auto action2 = FadeIn::create(0.1);
         auto sequence_action = Sequence::create(delayTime, action, NULL);
         tuto->runAction(sequence_action);
-        sound->runAction(action->clone());
+        sound->runAction(action2);
         tuto->runAction(actionMove);
         sound->runAction(actionMove2);
     } else {
         DelayTime *delayTime = DelayTime::create(0.1);
         auto actionMove = MoveTo::create(0.1,
-                                         Vec2(tuto->getPosition().x - 11, tuto->getPosition().y));
-        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x - 11,
+                                         Vec2(tuto->getPosition().x - (tuto->getContentSize().width / 6), tuto->getPosition().y));
+        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x - (sound->getContentSize().width / 6),
                                                     sound->getPosition().y));
+        auto action = FadeOut::create(0.1);
+        auto action2 = FadeOut::create(0.1);
         auto sequence_action = Sequence::create(delayTime, action, NULL);
-        tuto->runAction(action->clone());
+        tuto->runAction(action2);
         sound->runAction(sequence_action);
         tuto->runAction(actionMove);
         sound->runAction(actionMove2);

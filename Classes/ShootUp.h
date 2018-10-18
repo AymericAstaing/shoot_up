@@ -17,7 +17,9 @@ USING_NS_CC;
 #define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
 #define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
-#define HIT_CIRCLE                      "explode.png"
+#define HIT_CIRCLE                      "anim/explode.png"
+#define DEFAULT_SQUARE_TEXTURE          "green_b.png"
+#define COMPLEX_STRUCT_ELMTS            7
 #define SQUARE_SIZE_5                   4.95
 #define NOT_FROM_SHOP                   0
 #define SQUARE_SIZE_4                   3.95
@@ -39,7 +41,7 @@ USING_NS_CC;
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
 #define SIMPLE_LINE_NBR                 10
-#define DEFAULT_BULLET_NBR              10 //this is the default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
+#define DEFAULT_BULLET_NBR              10 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0
@@ -84,7 +86,7 @@ USING_NS_CC;
 #define BASIC_COLOR_ORANGE              "orange_b.png"
 
 
-/******************* LINE STRUCT CONTAINERS ***************/
+/******************* INITIALISATION LINE TYPE  ***************/
 #define SIMPLE_LINE_4                   0
 #define SIMPLE_LINE_5                   1
 #define STARTUP_LINE_2                  3

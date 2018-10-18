@@ -18,18 +18,6 @@ Line::Line(int type) {
 Line::~Line() {
 }
 
-
-void Line::set_active(int factor_h, int line_generated) {
-    setVisible(true);
-    line_active = true;
-    if (get_type() <= LINE_TYPE_STARTUP_5) // STARTUP LINES
-        assign_startup_line_points(factor_h);
-    else if (get_type() < LINE_TYPE_COMPLEX_0) //STRUCT LINE OF 4 / 5
-        assign_line_points(factor_h, line_generated);
-    else // STRUCT COMPLEX
-        assign_line_points_complex(factor_h, line_generated);
-}
-
 int Line::get_index_random(int *choosen, int max) {
     while (1) {
         int rand = Utils::get_random_number(0, max);
@@ -72,9 +60,9 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
         total = static_cast<int>(0.6 * h_factor);
     } else {
         int min_h = static_cast<int>(h_factor +
-                                     ceil(static_cast<float>(h_factor * 0.3)));
-        int max_h = static_cast<int>(h_factor +
                                      ceil(static_cast<float>(h_factor * 0.4)));
+        int max_h = static_cast<int>(h_factor +
+                                     ceil(static_cast<float>(h_factor * 0.6)));
         total = Utils::get_random_number(min_h, max_h);
     }
     int *distrib = new int[this->square_nbr];
@@ -360,9 +348,10 @@ int Line::struct_element_nbr(int id) {
     }
     return (0);
 }
+
 /********************************** LINE STRUCTURES *****************************/
 
-/********************************** SQUARES LOADING *****************************/
+/********************************** BATCHNODE LOADING *****************************/
 
 SpriteBatchNode *Line::get_batch() {
     SpriteBatchNode *spriteBatchNode;
@@ -374,7 +363,7 @@ SpriteBatchNode *Line::get_batch() {
 }
 
 Sprite *Line::get_texture(int i, float square_height, float square_width) {
-    auto sprite = Sprite::createWithSpriteFrameName("green_b.png");
+    auto sprite = Sprite::createWithSpriteFrameName(DEFAULT_SQUARE_TEXTURE);
     sprite->setAnchorPoint(Vec2(0.5, 0.5));
     sprite->setTag(i);
     float sprite_height = sprite->getContentSize().height;
@@ -383,6 +372,10 @@ Sprite *Line::get_texture(int i, float square_height, float square_width) {
     sprite->setScaleX(static_cast<float>(square_width * 1.05 / sprite_width));
     return (sprite);
 }
+
+/********************************** BATCHNODE LOADING *****************************/
+
+/********************************** LINES LOADING *****************************/
 
 void Line::load_startup_struct(Line *l) {
     SpriteBatchNode *spriteBatchNode = get_batch();
@@ -404,7 +397,6 @@ void Line::load_startup_struct(Line *l) {
         }
     }
 }
-
 
 void Line::load_complex_struct(Line *l, int struct_number) {
     SpriteBatchNode *spriteBatchNode = get_batch();
@@ -471,6 +463,7 @@ void Line::load_simple_line_4(Line *l) {
         }
     }
 }
+
 
 int Line::get_type() {
     return (line_type);
@@ -551,7 +544,20 @@ void Line::load_square(Line *l, int type) {
     }
 }
 
-/********************************** SQUARES LOADING *****************************/
+/********************************** LINES LOADING *****************************/
+
+/********************************** BASICS *****************************/
+
+void Line::set_active(int factor_h, int line_generated) {
+    setVisible(true);
+    line_active = true;
+    if (get_type() <= LINE_TYPE_STARTUP_5) // STARTUP LINES
+        assign_startup_line_points(factor_h);
+    else if (get_type() < LINE_TYPE_COMPLEX_0) //STRUCT LINE OF 4 / 5
+        assign_line_points(factor_h, line_generated);
+    else // STRUCT COMPLEX
+        assign_line_points_complex(factor_h, line_generated);
+}
 
 void Line::reset() {
     int i = 0;
