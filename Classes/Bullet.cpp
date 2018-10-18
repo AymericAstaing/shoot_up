@@ -11,7 +11,7 @@ Bullet::Bullet() {
 
 Bullet::~Bullet() {
 }
-void Bullet::Reset() {
+void Bullet::reset() {
     auto winSize = Director::getInstance()->getVisibleSize();
     stopAllActions();
     setVisible(false);
@@ -21,7 +21,7 @@ void Bullet::Reset() {
     setPosition(Vec2(winSize.width / 2, 0 - getContentSize().height));
 }
 
-void Bullet::Launch(int bullet_state, Vec2 player_pos, Size player_size) {
+void Bullet::launch(int bullet_state, Vec2 player_pos, Size player_size) {
     auto winSize = Director::getInstance()->getVisibleSize();
     if (bullet_state == 0)
         setPosition(player_pos.x + player_size.width / 20,
@@ -33,7 +33,7 @@ void Bullet::Launch(int bullet_state, Vec2 player_pos, Size player_size) {
                                              winSize.height + getContentSize().height));
     auto callback = CallFuncN::create(
             [&](Node *sender) {
-                  Reset();
+                  reset();
 
             });
     runAction(Sequence::create(actionMove, callback, nullptr));

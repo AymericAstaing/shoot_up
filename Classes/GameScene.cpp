@@ -148,6 +148,9 @@ void GameScene::reset_arrays() {
 }
 
 void GameScene::reset_lines() {
+    for (int i = 0; bullet_container[i] != NULL; i++)
+        bullet_container[i]->reset();
+
     for (int i = 0; pool_container[i] != NULL; i++) {
         if (pool_container[i]->line_active) {
             pool_container[i]->stopAllActions();
@@ -356,22 +359,26 @@ void GameScene::show_particle(Vec2 pos) {
     addChild(stars, 1, 1);
 }
 
+void GameScene::check_hit_color_change(Square *sq, int pv, int default_color) {
+    int default_color_code = sq->initial_color;
+    int default_pv_value = sq->initial_pv;
+
+
+
+}
+
 void GameScene::check_into_line() {
     for (int i = 0; bullet_container[i] != NULL; i++) {
         if (bullet_container[i] && bullet_container[i]->bullet_active &&
             bullet_container[i]->contact) {
-            int j = 0;
             int index = 0;
 
-            while (j == 0) {
+            while (i) {
                 Line *current_line = pool_container[bullet_container[i]->contact_index];
                 auto child = current_line->getChildByTag(index);
                 Square *sq = ((Square *) child);
-                if (!sq) {
-                    if (!child)
-                        j = 1;
+                if (!sq)
                     break;
-                }
                 Vec2 bullet_pos;
                 bullet_pos.x = bullet_container[i]->getPositionX();
                 bullet_pos.y = bullet_container[i]->getPositionY() -
@@ -379,7 +386,7 @@ void GameScene::check_into_line() {
 
                 if (bullet_pos.y < 0)
                     bullet_pos.y = 0;
-                if (point_into_square(sq, bullet_pos) && sq->isVisible()) {
+                if (sq->isVisible() && point_into_square(sq, bullet_pos)) {
                     int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
                     if (sq->get_square_pv() - bullet_hit <= 1) {
                         auto batch = current_line->getChildByTag(LINE_BATCH_ID);
@@ -395,18 +402,20 @@ void GameScene::check_into_line() {
                         show_destruction_circle(square_pos, current_line->getPositionY(),
                                                 static_cast<int>(current_line->getContentSize().height));
                         update_game_score(sq->square_pv);
-                        bullet_container[i]->Reset();
-                        break;
                     } else {
                         update_game_score(bullet_hit);
                         show_particle(bullet_container[i]->getPosition());
                         sq->square_pv = sq->square_pv - bullet_hit;
                         char pv[DEFAULT_CHAR_LENGHT];
-                        sprintf(pv, "%i", sq->square_pv);
+                        if (sq->square_pv > 1000)
+                            sprintf(pv, "%.1f", static_cast<float>(sq->square_pv / 1000));
+                        else
+                            sprintf(pv, "%i", sq->square_pv);
+                        check_hit_color_change(sq);
                         sq->points->setString(pv);
-                        bullet_container[i]->Reset();
-                        break;
                     }
+                    bullet_container[i]->reset();
+                    break;
                 }
                 index++;
             }
@@ -509,8 +518,8 @@ void GameScene::update(float ft) {
         check_player_collision();
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
-        pool_container[NEXT_LINE_ID]->set_active(current_factor_h);
-        current_factor_h += current_factor_h * 0.05;
+        pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
+        //current_factor_h += current_factor_h * 0.05;
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
         NEXT_LINE_ID = get_line_index(get_next_line_type());
@@ -582,7 +591,7 @@ void GameScene::run_game_loop() {
     }
     store_active_line(CURRENT_LINE_ID);
     pool_container[CURRENT_LINE_ID]->set_active(
-            current_factor_h);
+            current_factor_h, LINE_GENERATED);
     LINE_GENERATED++;
     this->scheduleUpdate();
 }
@@ -604,7 +613,7 @@ void GameScene::update_game_score(int points) {
     int best = UserLocalStore::get_achievement_variable(SCORE);
     score_animation();
     game_score += points;
-    if (game_score > best && !best_img->isVisible()) {
+    if (!best_img->isVisible() && game_score > best) {
         best_img->setVisible(true);
         auto move = MoveTo::create(0.2, Vec2(x_screen / 2, best_img->getPositionY()));
         best_img->runAction(move);
@@ -661,6 +670,7 @@ void GameScene::skip(cocos2d::Ref *pSender) {
 void GameScene::back_to_menu(cocos2d::Ref *pSender) {
     auto callback = CallFuncN::create(
             [&](Node *sender) {
+                LINE_GENERATED = 0;
                 if (!player->isVisible())
                     player->setVisible(true);
                 player->setPositionX(x_screen / 2);
@@ -715,7 +725,20 @@ void GameScene::manage_options() {
     }
 }
 
+
+bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
+    Vec2 player_pos = player->getPosition();
+    Size player_size = player->getContentSize();
+    float gap_x = static_cast<float>(player_size.width / 2 + (0.1 * player_size.width));
+    float gap_y = static_cast<float>(player_size.height / 2 + (0.1 * player_size.width));
+
+    return touch_position.x >= player_pos.x - gap_x && touch_position.x <= player_pos.x + gap_x &&
+    touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
+}
+
 bool GameScene::onTouchBegan(Touch *touch, Event *event) {
+    if (game_state == GAME_RUNNING && !is_touch_on_player_zone(touch->getLocation()))
+        return false;
     if (options_state == OPTIONS_DISPLAYED && is_sound_button_touched(touch->getLocation())) {
         manage_options();
         return true;
@@ -737,7 +760,7 @@ bool GameScene::is_sound_button_touched(Vec2 touch_location) {
 void GameScene::launch_bullet(float dt) {
     for (int i = 0; bullet_container[i] != NULL; i++) {
         if (!bullet_container[i]->bullet_active) {
-            bullet_container[i]->Launch(bullet_state, player->getPosition(),
+            bullet_container[i]->launch(bullet_state, player->getPosition(),
                                         player->getContentSize());
             if (bullet_state == BULLET_LEFT)
                 bullet_state = BULLET_RIGHT;

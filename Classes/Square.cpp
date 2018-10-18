@@ -34,12 +34,13 @@ int Square::get_square_pv() {
 }
 
 void Square::reset_square() {
-    this->square_pv = 10;
+    this->square_pv = 0;
     std::string st = StringUtils::format("%i", this->square_pv);
     this->points->setString(st);
 }
 
 void Square::assign_point(int pv) {
+    this->initial_pv = pv;
     this->square_pv = pv;
     char pts[DEFAULT_CHAR_LENGHT];
     if (square_pv > 1000)

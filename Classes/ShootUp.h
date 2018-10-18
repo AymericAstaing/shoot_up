@@ -21,6 +21,7 @@ USING_NS_CC;
 #define SQUARE_SIZE_5                   4.95
 #define NOT_FROM_SHOP                   0
 #define SQUARE_SIZE_4                   3.95
+#define POINTS_TO_ADD_FACTOR            100
 #define POWER_LEVEL_BTN_TAG             34
 #define SPEED_LEVEL_BTN_TAG             35
 #define MAIN_MENU_TAG                   36

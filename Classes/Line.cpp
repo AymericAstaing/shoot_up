@@ -19,15 +19,15 @@ Line::~Line() {
 }
 
 
-void Line::set_active(int factor_h) {
+void Line::set_active(int factor_h, int line_generated) {
     setVisible(true);
     line_active = true;
     if (get_type() <= LINE_TYPE_STARTUP_5) // STARTUP LINES
         assign_startup_line_points(factor_h);
     else if (get_type() < LINE_TYPE_COMPLEX_0) //STRUCT LINE OF 4 / 5
-        assign_line_points(factor_h);
+        assign_line_points(factor_h, line_generated);
     else // STRUCT COMPLEX
-        assign_line_points_complex(factor_h);
+        assign_line_points_complex(factor_h, line_generated);
 }
 
 int Line::get_index_random(int *choosen, int max) {
@@ -40,6 +40,8 @@ int Line::get_index_random(int *choosen, int max) {
 }
 
 void Line::change_square_color(int index, int color) {
+    Square *sq = ((Square *) getChildByTag(index));
+    sq->initial_color = color;
     auto batchnode = getChildByTag(LINE_BATCH_ID);
     if (batchnode) {
         auto sprite = batchnode->getChildByTag(index);
@@ -63,7 +65,7 @@ void Line::assign_color(int sq_id, int m_factor, int current_point) {
         change_square_color(sq_id, 0);
 }
 
-void Line::assign_line_points(int h_factor) { // TMP
+void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LIGNES DE 4 ou 5
     int type = get_type();
     int total = 0;
     if (type == LINE_TYPE_SIMPLE_OF_4) {
@@ -88,6 +90,8 @@ void Line::assign_line_points(int h_factor) { // TMP
             i = 1;
         } else {
             choosen[index] = get_index_random(choosen, this->square_nbr - 1);
+            distrib[choosen[index]] +=
+                    (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
             sq->assign_point(distrib[choosen[index]]);
             assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
 
@@ -96,7 +100,8 @@ void Line::assign_line_points(int h_factor) { // TMP
     }
 }
 
-void Line::assign_line_points_complex(int h_factor) { // POINTS FOR COMPLEX STRUCT (MARTIN'S SYSTEM)
+void Line::assign_line_points_complex(int h_factor,
+                                      int line_generated) { // POINTS FOR COMPLEX STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
 
     int min_h = static_cast<int>(h_factor +
@@ -106,23 +111,23 @@ void Line::assign_line_points_complex(int h_factor) { // POINTS FOR COMPLEX STRU
     int total = Utils::get_random_number(min_h, max_h);
     int *distrib = new int[this->square_nbr];
     distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
-    int i = 0;
     int index = 0;
-
-    while (i == 0) {
+    while (1) {
         auto child = getChildByTag(index);
         Square *sq = ((Square *) child);
-        if (!child || !sq) {
-            i = 1;
-        } else {
-            sq->assign_point(distrib[index]);
-            assign_color(index, total / this->square_nbr, distrib[index]);
-        }
+        if (!child || !sq)
+            break;
+        distrib[index] +=
+                (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
+        sq->assign_point(distrib[index]);
+        assign_color(index, total / this->square_nbr, distrib[index]);
+
         index++;
     }
 }
 
-void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
+void
+Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
     int lines_nbr = square_nbr / 5;
     if (h_factor < 25)
@@ -143,12 +148,21 @@ void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STR
 
         int index = i * 5;
         int k = 0;
+        auto batchnode = getChildByTag(LINE_BATCH_ID);
+
         for (int j = index; j < (i * 5 + 5); j++, k++) {
             auto child = getChildByTag(j);
             Square *sq = ((Square *) child);
             if (!child || !sq) {
                 break;
             } else {
+                if (batchnode) {
+                    auto sprite = batchnode->getChildByTag(sq->getTag());
+                    Sprite *e = ((Sprite *) sprite);
+                    char color[15];
+                    sprintf(color, "%s%i%s", "startup_", j, ".png");
+                    e->setSpriteFrame(color);
+                }
                 sq->assign_point(distrib[k]);
             }
         }
@@ -157,18 +171,15 @@ void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STR
 
 Size Line::get_line_size(int type) {
     auto winSize = Director::getInstance()->getVisibleSize();
-    if (type == SIMPLE_LINE_4)
+    if (type == SIMPLE_LINE_4) {
         return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_4)) * 4,
                      static_cast<float>(winSize.height / 9.6)));
-    else if (type == SIMPLE_LINE_5)
+    } else if (type == SIMPLE_LINE_5) {
         return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5)) * 5,
                      static_cast<float>(winSize.height / 10.5)));
-    else {
+    } else {
         int line_nbr = 0;
         switch (type) {
-            case LINE_TYPE_STARTUP_3:
-                line_nbr = 3;
-                break;
             case LINE_TYPE_STARTUP_4:
                 line_nbr = 4;
                 break;
@@ -355,9 +366,8 @@ int Line::struct_element_nbr(int id) {
 
 SpriteBatchNode *Line::get_batch() {
     SpriteBatchNode *spriteBatchNode;
-    SpriteFrameCache::getInstance()->addSpriteFramesWithFile(
-            "spritesheet/default_colors.plist");
-    spriteBatchNode = SpriteBatchNode::create("spritesheet/default_colors.png");
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("spritesheet/block_color.plist");
+    spriteBatchNode = SpriteBatchNode::create("spritesheet/block_color.png");
     spriteBatchNode->setAnchorPoint(Vec2(0, 0));
     spriteBatchNode->setTag(LINE_BATCH_ID);
     return (spriteBatchNode);

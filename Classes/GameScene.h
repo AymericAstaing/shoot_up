@@ -70,6 +70,8 @@ public:
     void                    main_menu_coming_animation();
     void                    update_game_score(int);
     float                   get_shoot_interval();
+    bool                    is_touch_on_player_zone(Vec2);
+    void                    check_hit_color_change(Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2);
     void                    start_game();

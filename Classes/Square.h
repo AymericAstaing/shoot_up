@@ -26,6 +26,8 @@ public:
     static Size             get_square_size(int);
     void                    assign_point(int);
     int                     square_pv;
+    int                     initial_pv;
+    int                     initial_color;
     Label*                  points;
 
 private:
