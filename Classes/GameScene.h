@@ -71,7 +71,7 @@ public:
     void                    update_game_score(int);
     float                   get_shoot_interval();
     bool                    is_touch_on_player_zone(Vec2);
-    void                    check_hit_color_change(Square*);
+    void                    check_hit_color_change(Line*, Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2);
     void                    start_game();
@@ -112,7 +112,6 @@ public:
     void                    show_destruction_circle(Vec2, float, int);
     void                    start_bullet_shoot();
     void                    stop_bullet_shoot();
-
 };
 
 #endif // __GameScene_SCENE_H__

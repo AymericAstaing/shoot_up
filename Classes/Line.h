@@ -23,10 +23,10 @@ static const float DISTRIB_COMPLEX[8][9] = {{0.2, 0.06, 0.2, 0.17, 0.17, 0.2},
 static const float DISTRIB_SIMPLE[2][5] = {{0.27, 0.3, 0.23, 0.2}, {0.23, 0.23, 0.2, 0.2, 0.13}};
 
 
-static const char COLOR_HIT[4][20] = {{"hit_red_0.png", "hit_red_1.png", "hit_red_2.png", "hit_red_3.png", "hit_red_4.png"},
-                                            {"hit_red_0.png", "hit_red_1.png", "hit_red_2.png", "hit_red_3.png", "hit_red_4.png"},
-                                            {"hit_red_0.png", "hit_red_1.png", "hit_red_2.png", "hit_red_3.png", "hit_red_4.png"},
-                                            { 0.13, 0.2, 0.13, 0.17, 0.2, 0.17}};
+static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_red_2.png", "hit_red_3.png", "hit_red_4.png"},
+                                            {"hit_orange_0.png", "hit_orange_1.png", "hit_orange_2.png", "hit_orange_3.png", "hit_orange_4.png"},
+                                            {"hit_yellow_0.png", "hit_yellow_1.png", "hit_yellow_2.png", "hit_yellow_3.png", "hit_yellow_4.png"},
+                                            { "hit_green_0.png", "hit_green_1.png", "hit_green_2.png", "hit_green_3.png", "hit_green_4.png"}};
 
 
 

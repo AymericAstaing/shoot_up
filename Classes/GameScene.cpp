@@ -359,12 +359,28 @@ void GameScene::show_particle(Vec2 pos) {
     addChild(stars, 1, 1);
 }
 
-void GameScene::check_hit_color_change(Square *sq, int pv, int default_color) {
+void GameScene::check_hit_color_change(Line *l, Square *sq) {
     int default_color_code = sq->initial_color;
     int default_pv_value = sq->initial_pv;
+    int pv = sq->square_pv;
+    int step = 0;
 
+    auto batch = l->getChildByTag(LINE_BATCH_ID);
+    Sprite *e = ((Sprite *) batch->getChildByTag(sq->getTag()));
 
-
+    if (pv < default_pv_value && pv >= default_pv_value * (0.8))
+        step = 0;
+    else if (pv >= default_pv_value * 0.6)
+        step = 1;
+    else if (pv >= default_pv_value * 0.4)
+        step = 2;
+    else if (pv >= default_pv_value * 0.2)
+        step = 3;
+    else
+        step = 4;
+    SpriteFrame *tmp = (SpriteFrame *) COLOR_HIT[default_color_code][step];
+    if (e->getSpriteFrame() != tmp)
+        e->setSpriteFrame(COLOR_HIT[default_color_code][step]);
 }
 
 void GameScene::check_into_line() {
@@ -411,7 +427,8 @@ void GameScene::check_into_line() {
                             sprintf(pv, "%.1f", static_cast<float>(sq->square_pv / 1000));
                         else
                             sprintf(pv, "%i", sq->square_pv);
-                        check_hit_color_change(sq);
+                        if (current_line->get_type() > LINE_TYPE_STARTUP_5)
+                            check_hit_color_change(current_line, sq);
                         sq->points->setString(pv);
                     }
                     bullet_container[i]->reset();
@@ -725,7 +742,6 @@ void GameScene::manage_options() {
     }
 }
 
-
 bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
     Vec2 player_pos = player->getPosition();
     Size player_size = player->getContentSize();
@@ -733,7 +749,7 @@ bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
     float gap_y = static_cast<float>(player_size.height / 2 + (0.1 * player_size.width));
 
     return touch_position.x >= player_pos.x - gap_x && touch_position.x <= player_pos.x + gap_x &&
-    touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
+           touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
 }
 
 bool GameScene::onTouchBegan(Touch *touch, Event *event) {
