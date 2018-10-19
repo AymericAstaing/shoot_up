@@ -49,6 +49,8 @@ private:
     int                 options_state = 0;
     int                 bullet_state;
     int                 game_state;
+    int                 game_block_destroyed = 0;
+    int                 game_power_up_collected = 0;
     int                 current_factor_h = 0;
     int                 shooter_never_updated = 0;
 

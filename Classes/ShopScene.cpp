@@ -70,11 +70,11 @@ void ShopScene::init_ui_components() {
                                                                        back_button->getContentSize().height))));
     this->addChild(back_button);
     char text[DEFAULT_CHAR_LENGHT];
-    if ( UserLocalStore::get_achievement_variable(POINT) > 1000)
+    if (UserLocalStore::get_achievement_variable(POINT) > 1000)
         sprintf(text, "%.1fK  pts",
                 static_cast<float>(UserLocalStore::get_achievement_variable(POINT) / 1000));
-        else
-    sprintf(text, "%i  pts", UserLocalStore::get_achievement_variable(POINT));
+    else
+        sprintf(text, "%i  pts", UserLocalStore::get_achievement_variable(POINT));
     points = Label::createWithTTF(text,
                                   FIRE_UP_FONT, (50));
     points->setPosition(Vec2(static_cast<float>(winSize.width / 1.8), back_button->getPosition().y -
@@ -176,9 +176,39 @@ Size ShopScene::tableCellSizeForIndex(cocos2d::extension::TableView *table, ssiz
 
 void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
                                  cocos2d::extension::TableViewCell *cell) {
-    if (asset_menu_added == 1 || cell->getIdx() == 0)
+    if (asset_menu_added == 1 ||
+        (mode == SHOOTER && cell->getIdx() == 0 &&
+         UserLocalStore::get_shooter(cell->getIdx()) != 1) ||
+        (mode == BALL && cell->getIdx() == 0 && UserLocalStore::get_ball(cell->getIdx()) != 1))
         return;
-    asset_menu = get_asset_menu(cell->getIdx() - 1, table->getTag());
+    if (mode == SHOOTER && UserLocalStore::get_shooter(cell->getIdx()) != 0) {
+        if (UserLocalStore::get_shooter(cell->getIdx()) != 2) {
+            UserLocalStore::store_shooter(UserLocalStore::get_current_shooter(), 1);
+            UserLocalStore::store_shooter(cell->getIdx(), 2);
+            shooter_grid->setVisible(false);
+            shooter_grid->release();
+            shooter_content = UserLocalStore::get_final_shooter_array();
+            shooter_grid = init_grid(SHOOTER_ARRAY);
+            addChild(shooter_grid);
+            shooter_grid->setVisible(true);
+
+        }
+        return;
+    } else if (mode == BALL && UserLocalStore::get_ball(cell->getIdx()) != 0) {
+        if (UserLocalStore::get_ball(cell->getIdx()) != 2) {
+            UserLocalStore::store_ball(UserLocalStore::get_current_ball(), 1);
+            UserLocalStore::store_ball(cell->getIdx(), 2);
+            ball_grid->setVisible(false);
+            ball_grid->release();
+            ball_content = UserLocalStore::get_final_shooter_array();
+            ball_grid = init_grid(SHOOTER_ARRAY);
+            addChild(ball_grid);
+            ball_grid->setVisible(true);
+        }
+        return;
+    }
+    asset_menu = get_asset_menu(cell->getIdx() - 1,
+                                table->getTag()); // -1 car on enleve le premier (pas de data)
     addChild(asset_menu);
     asset_menu_added = 1;
 }
@@ -264,11 +294,13 @@ bool ShopScene::onTouchBegan(Touch *touch, Event *event) {
     Vec2 touch_pos = touch->getLocation();
 
     if (is_ball(touch_pos)) {
+        mode = BALL;
         ball_button->setTexture(GRID_SELECTOR::BALL_SELECTED);
         shooter_button->setTexture(GRID_SELECTOR::SHOOTER_UNSELECTED);
         ball_grid->setVisible(true);
         shooter_grid->setVisible(false);
     } else if (is_shooter(touch_pos)) {
+        mode = SHOOTER;
         ball_button->setTexture(GRID_SELECTOR::BALL_UNSELECTED);
         shooter_button->setTexture(GRID_SELECTOR::SHOOTER_SELECTED);
         ball_grid->setVisible(false);

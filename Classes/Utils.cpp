@@ -45,7 +45,7 @@ int *Utils::get_complex_distribution_points(int *distribution, int total_nbr, in
 
 
 int *Utils::get_simple_distribution_points(int *distribution, int total_nbr, int line_type,
-                                            int sq_nbr) {
+                                           int sq_nbr) {
     int type = line_type - 4;
     for (int i = 0; i < sq_nbr; i++)
         distribution[i] = static_cast<int>(DISTRIB_SIMPLE[type][i] * total_nbr);
@@ -102,6 +102,28 @@ const char *Utils::get_color(int color_id) {
             break;
     }
     return (nullptr);
+}
+
+int Utils::get_shooter_type(int shooter_id) {
+
+    if (shooter_id <= 0 && shooter_id < 5) {
+        return (STARTER_TANK);
+    } else if (shooter_id >= 6 && shooter_id < 9) {
+        return (POWER_TANK);
+    } else if (shooter_id >= 11 && shooter_id < 13) {
+        return (MOVEMENT_TANK);
+    } else if (shooter_id >= 14 && shooter_id < 16) {
+        return (DOUBLE_TANK);
+    } else if (shooter_id >= 17 && shooter_id < 18) {
+        return (SHIELD_TANK);
+    } else if (shooter_id >= 20 && shooter_id < 23) {
+        return (SPEED_TANK);
+    } else if (shooter_id >= 24 && shooter_id < 25) {
+        return (SIDEWAY_TANK);
+    } else if (shooter_id >= 27 && shooter_id < 30) {
+        return (TRIPLE_TANK);
+    }
+    return (NULL);
 }
 
 int Utils::get_random_line_type() {

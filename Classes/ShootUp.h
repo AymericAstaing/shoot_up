@@ -33,6 +33,16 @@ USING_NS_CC;
 #define OPTIONS_HIDE                    0
 #define OPTIONS_DISPLAYED               1
 
+/******************* ACHIEVEMENT CATEGORIES ***************/
+#define STARTER_TANK                    0
+#define POWER_TANK                      1
+#define MOVEMENT_TANK                   2
+#define DOUBLE_TANK                     3
+#define SHIELD_TANK                     4
+#define SPEED_TANK                      5
+#define SIDEWAY_TANK                    6
+#define TRIPLE_TANK                     7
+
 /******************* GAME STATES ***************/
 #define MENU                            0
 #define GAME_RUNNING                    1
@@ -60,13 +70,16 @@ USING_NS_CC;
 #define LINE_TYPE_COMPLEX_7             13
 
 /*******************GAME VARIABLES ***************/
+#define ITEM_COLLECTED                  "ITEM_COLLECTED" //achievement
+#define POWER_UP_ITEMS                  "POWER_UP_ITEMS"
+#define GAME_NBR                        "GAME_NBR"
+#define BLOCK_DESTROYED                 "BLOCK_DESTROYED"
 #define POWER_LEVEL                     "POWER_LEVEL"
 #define SPEED_LEVEL                     "SPEED_LEVEL"
 #define POWER_VALUE                     "POWER_VALUE"
 #define SPEED_VALUE                     "SPEED_VALUE"
 #define POWER_LEVEL_PRICE               "POWER_LEVEL_PRICE"
 #define SPEED_LEVEL_PRICE               "SPEED_LEVEL_PRICE"
-#define POWER_UP_ITEMS                  "POWER_UP_ITEMS"
 #define SCORE                           "SCORE"
 #define SOUND                           "SOUND"
 #define POINT                           "POINT"
@@ -84,7 +97,6 @@ USING_NS_CC;
 #define BASIC_COLOR_RED                 "red_b.png"
 #define BASIC_COLOR_YELLOW              "yellow_b.png"
 #define BASIC_COLOR_ORANGE              "orange_b.png"
-
 
 /******************* INITIALISATION LINE TYPE  ***************/
 #define SIMPLE_LINE_4                   0

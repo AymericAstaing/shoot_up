@@ -112,7 +112,8 @@ namespace UICustom {
                 char user_points[DEFAULT_CHAR_LENGHT];
                 if (UserLocalStore::get_achievement_variable(POINT) > 1000)
                     sprintf(user_points, "%.1fK pts",
-                            static_cast<float>(UserLocalStore::get_achievement_variable(POINT) / 1000));
+                            static_cast<float>(UserLocalStore::get_achievement_variable(POINT) /
+                                               1000));
                 else
                     sprintf(user_points, "%i pts", UserLocalStore::get_achievement_variable(POINT));
                 MenuItemFont *point_nbr = MenuItemFont::create(user_points,
@@ -239,6 +240,12 @@ namespace UICustom {
                 UserLocalStore::get_achievement_variable(
                         SPEED_LEVEL) +
                 1);
+        if (UserLocalStore::get_achievement_variable(SPEED_LEVEL) == 10) { // DEBLOCAGE D'UN SHOOTER (19:)
+            int *shooter = UserLocalStore::get_asset_shooter();
+            shooter[19] = 1;
+            UserLocalStore::store_asset_ball(shooter);
+
+        }
         char s[DEFAULT_CHAR_LENGHT];
         sprintf(s, "SPEED %i",
                 UserLocalStore::get_achievement_variable(
@@ -257,9 +264,15 @@ namespace UICustom {
                 UserLocalStore::get_achievement_variable(
                         POWER_LEVEL) +
                 1);
+        if (UserLocalStore::get_achievement_variable(POWER_LEVEL) == 20) { // DEBLOCAGE D'UN SHOOTER (5:)
+            int *shooter = UserLocalStore::get_asset_shooter();
+            shooter[5] = 1;
+            UserLocalStore::store_asset_ball(shooter);
+
+        }
         char p[DEFAULT_CHAR_LENGHT];
         sprintf(p, "LEVEL %i",
-                UserLocalStore::get_achievement_variable(POWER_LEVEL));
+        UserLocalStore::get_achievement_variable(POWER_LEVEL));
         pFont->setString(p);
     }
 

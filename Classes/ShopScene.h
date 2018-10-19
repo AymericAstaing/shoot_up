@@ -12,6 +12,9 @@
 
 using namespace cocos2d;
 
+#define     SHOOTER         0
+#define     BALL            1
+
 class ShopScene
         : public cocos2d::Scene,
           public cocos2d::extension::TableViewDataSource,
@@ -28,6 +31,7 @@ private:
     Label*          points;
     Menu*           asset_menu;
     int             asset_menu_added;
+    int             mode = 0;
     const char *shooter_achievement[30] = {"DESTROY 300\nBLOCKS OR MORE\nWITH STARTER\nTANK",
                                            "COLLECT 50 POWER\nUP ITEMS WITH\nSTARTER TANK",
                                            "PLAY 30 GAMES\nWITH STARTER\nTANK",

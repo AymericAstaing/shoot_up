@@ -6,6 +6,17 @@
 
 USING_NS_CC;
 
+/******************* ACHIEVEMENT CATEGORIES ***************/
+#define TYPE_STARTER                         0
+#define TYPE_POWER                           1
+#define TYPE_MOVEMENT                        2
+#define TYPE_DOUBLE                          3
+#define TYPE_SHIELD                          4
+#define TYPE_SPEED                           5
+#define TYPE_SIDEWAY                         6
+#define TYPE_TRIPLE                          7
+
+
 static const char *FIRST_LAUNCH = "FIRST_LAUNCH";
 
 static const char *shooter_ids[31] = {"shooter_0", "shooter_1", "shooter_2", "shooter_3",
@@ -158,6 +169,12 @@ public:
     static int              get_first_launch();
     static void             set_first_launch();
     static void             init_asset_arrays();
+    static void             store_shooter(int, int);
+    static void             store_ball(int, int);
+    static int              get_shooter(int);
+    static int              get_ball(int);
+    static void             check_for_shooter_unlocked(int);
+    static void             update_achievements(int, int, int);
     static void             store_achievement_variable_float(const char*, float);
     static void             store_asset_shooter(int[31]);
     static void             store_asset_ball(int[8]);

@@ -58,6 +58,7 @@ public:
     static int*         get_simple_distribution_points(int*, int, int, int);
     static int          array_sum(int*,int);
     static const char*  get_color(int);
+    static int          get_shooter_type(int);
     static int*         get_container_range_research(int);
     static Sprite*      get_player();
     static float        get_spawn_y(int, int, float[2]);

@@ -82,8 +82,6 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     init_pool_objects();
     init_options_menu();
-    this->scheduleUpdate();
-
 }
 
 Menu *GameScene::get_continue_menu() {
@@ -105,7 +103,8 @@ void GameScene::init_options_menu() {
     sound->setScale(0.9);
     tuto->setScale(0.9);
     sound->setPosition(
-            Vec2(static_cast<float>(options_btn->getPosition().x + options_btn->getContentSize().height),
+            Vec2(static_cast<float>(options_btn->getPosition().x +
+                                    options_btn->getContentSize().height),
                  options_btn->getPosition().y));
     tuto->setPosition(Vec2(sound->getPosition().x + sound->getContentSize().height,
                            options_btn->getPosition().y));
@@ -211,8 +210,11 @@ void GameScene::options(cocos2d::Ref *pSender) {
         tuto->setOpacity(0);
         sound->setOpacity(0);
         auto actionMove = MoveTo::create(0.1,
-                                         Vec2(tuto->getPosition().x + (tuto->getContentSize().width / 6), tuto->getPosition().y));
-        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x + (sound->getContentSize().width / 6),
+                                         Vec2(tuto->getPosition().x +
+                                              (tuto->getContentSize().width / 6),
+                                              tuto->getPosition().y));
+        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x +
+                                                    (sound->getContentSize().width / 6),
                                                     sound->getPosition().y));
         auto actionRotate = RotateTo::create(0.1, 90);
         options_btn->runAction(Sequence::create(actionRotate, nullptr));
@@ -229,8 +231,11 @@ void GameScene::options(cocos2d::Ref *pSender) {
     } else {
         DelayTime *delayTime = DelayTime::create(0.1);
         auto actionMove = MoveTo::create(0.1,
-                                         Vec2(tuto->getPosition().x - (tuto->getContentSize().width / 6), tuto->getPosition().y));
-        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x - (sound->getContentSize().width / 6),
+                                         Vec2(tuto->getPosition().x -
+                                              (tuto->getContentSize().width / 6),
+                                              tuto->getPosition().y));
+        auto actionMove2 = MoveTo::create(0.1, Vec2(sound->getPosition().x -
+                                                    (sound->getContentSize().width / 6),
                                                     sound->getPosition().y));
         auto action = FadeOut::create(0.1);
         auto action2 = FadeOut::create(0.1);
@@ -416,6 +421,7 @@ void GameScene::check_into_line() {
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
                         show_destruction_circle(square_pos, current_line->getPositionY(),
                                                 static_cast<int>(current_line->getContentSize().height));
+                        game_block_destroyed++;
                         update_game_score(sq->square_pv);
                     } else {
                         update_game_score(bullet_hit);
@@ -686,6 +692,11 @@ void GameScene::skip(cocos2d::Ref *pSender) {
 void GameScene::back_to_menu(cocos2d::Ref *pSender) {
     auto callback = CallFuncN::create(
             [&](Node *sender) {
+                UserLocalStore::update_achievements(
+                        Utils::get_shooter_type(UserLocalStore::get_current_shooter()),
+                                                game_block_destroyed, game_power_up_collected);
+                game_block_destroyed = 0;
+                game_power_up_collected = 0;
                 LINE_GENERATED = 0;
                 if (!player->isVisible())
                     player->setVisible(true);
@@ -744,8 +755,8 @@ void GameScene::manage_options() {
 bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
     Vec2 player_pos = player->getPosition();
     Size player_size = player->getContentSize();
-    float gap_x = static_cast<float>(player_size.width / 2 + (0.1 * player_size.width));
-    float gap_y = static_cast<float>(player_size.height / 2 + (0.1 * player_size.width));
+    float gap_x = static_cast<float>(player_size.width / 2 + player_size.width);
+    float gap_y = static_cast<float>(player_size.height / 2 +player_size.width);
 
     return touch_position.x >= player_pos.x - gap_x && touch_position.x <= player_pos.x + gap_x &&
            touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
@@ -1020,16 +1031,18 @@ Menu *GameScene::get_end_game_menu() {
     power_current_level->setColor(Color3B(255, 124, 124));
     auto move_to_stats = MoveTo::create(0.2, Vec2(x_screen / 2,
                                                   static_cast<float>(y_screen / 1.75)));
-    MenuItemImage *speed_level_btn = MenuItemImage::create(POPUP_MENU_PATH::SPEED,
-                                                           POPUP_MENU_PATH::SPEED_SELECTED,
-                                                           CC_CALLBACK_1(
-                                                                   GameScene::surclassement,
-                                                                   this));
-    MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::POWER,
-                                                           POPUP_MENU_PATH::POWER_SELECTED,
-                                                           CC_CALLBACK_1(
-                                                                   GameScene::surclassement,
-                                                                   this));
+    MenuItemImage *speed_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
+    SPEED,
+            POPUP_MENU_PATH::SPEED_SELECTED,
+            CC_CALLBACK_1(
+                    GameScene::surclassement,
+                    this));
+    MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
+    POWER,
+            POPUP_MENU_PATH::POWER_SELECTED,
+            CC_CALLBACK_1(
+                    GameScene::surclassement,
+                    this));
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
                                                              1.3)));

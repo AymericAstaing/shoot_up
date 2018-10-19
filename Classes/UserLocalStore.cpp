@@ -1,5 +1,5 @@
 #include    "UserLocalStore.h"
-#include     "GameScene.h"
+#include    "GameScene.h"
 
 #define     SHOOTER_ARRAY   0
 #define     BALL_ARRAY      1
@@ -20,15 +20,15 @@ namespace GLOBAL {
     const char *KEY_SPEED_LEVEL = "SPEED_LEVEL";
     const char *KEY_SPEED_VALUE = "SPEED_VALUE";
     const char *KEY_POWER_VALUE = "POWER_VALUE";
-    const char *KEY_POWER_UP_ITEMS = "POWER_UP_ITEMS";
     const char *KEY_SCORE = "SCORE";
     const char *KEY_POINT = "POINT";
     const char *KEY_SOUND = "SOUND";
-    const char *KEY_ITEM_DESTROYED = "ITEM_DESTROYED";
+    const char *KEY_POWER_LEVEL_PRICE = "POWER_LEVEL_PRICE";    //  UPGRADE PRICES
+    const char *KEY_SPEED_LEVEL_PRICE = "SPEED_LEVEL_PRICE";
+
+    const char *KEY_POWER_UP_ITEMS = "POWER_UP_ITEMS";
     const char *KEY_GAME_NBR = "GAME_NBR";
     const char *KEY_BLOCK_DESTROYED = "BLOCK_DESTROYED";
-    const char *KEY_POWER_LEVEL_PRICE = "POWER_LEVEL_PRICE";
-    const char *KEY_SPEED_LEVEL_PRICE = "SPEED_LEVEL_PRICE";
 }
 
 namespace STARTER_TANK {
@@ -49,7 +49,7 @@ namespace MOVEMENT_TANK {
 
 namespace DOUBLE_TANK {
     const char *KEY_BLOCK_DOUBLE_TANK = "BLOCK_DOUBLE";
-    const char *KEY_GAME_MOVEMENT_TANK = "GAME_DOUBLE";
+    const char *KEY_GAME_DOUBLE_TANK = "GAME_DOUBLE";
 }
 
 namespace SHIELD_TANK {
@@ -77,7 +77,6 @@ namespace TRIPLE_TANK {
 
 void UserLocalStore::init_achievement_variables() {
     UserDefault *def = UserDefault::sharedUserDefault();
-    def->setIntegerForKey(GLOBAL::KEY_ITEM_DESTROYED, 0);
     def->setIntegerForKey(GLOBAL::KEY_POWER_LEVEL, 1);
     def->setIntegerForKey(GLOBAL::KEY_SPEED_LEVEL, 1);
     def->setIntegerForKey(GLOBAL::KEY_POWER_UP_ITEMS, 0);
@@ -98,7 +97,7 @@ void UserLocalStore::init_achievement_variables() {
     def->setIntegerForKey(MOVEMENT_TANK::KEY_ITEM_MOVEMENT_TANK, 0);
     def->setIntegerForKey(MOVEMENT_TANK::KEY_GAME_MOVEMENT_TANK, 0);
     def->setIntegerForKey(DOUBLE_TANK::KEY_BLOCK_DOUBLE_TANK, 0);
-    def->setIntegerForKey(DOUBLE_TANK::KEY_GAME_MOVEMENT_TANK, 0);
+    def->setIntegerForKey(DOUBLE_TANK::KEY_GAME_DOUBLE_TANK, 0);
     def->setIntegerForKey(SHIELD_TANK::KEY_ITEM_SHIELD_TANK, 0);
     def->setIntegerForKey(SHIELD_TANK::KEY_GAME_SHIELD_TANK, 0);
     def->setIntegerForKey(SPEED_TANK::KEY_GAME_SPEED_TANK, 0);
@@ -110,6 +109,191 @@ void UserLocalStore::init_achievement_variables() {
     def->setIntegerForKey(TRIPLE_TANK::KEY_ITEM_TRIPLE_TANK, 0);
     def->setIntegerForKey(TRIPLE_TANK::KEY_BLOCK_TRIPLE_TANK, 0);
     def->flush();
+}
+
+void
+UserLocalStore::update_achievements(int shooter_type, int block_destroyed, int item_collected) {
+    UserLocalStore::store_achievement_variable(GLOBAL::KEY_GAME_NBR,
+                                               UserLocalStore::get_achievement_variable(
+                                                       GLOBAL::KEY_GAME_NBR) +
+                                               1);
+    UserLocalStore::store_achievement_variable(GLOBAL::KEY_BLOCK_DESTROYED,
+                                               UserLocalStore::get_achievement_variable(
+                                                       GLOBAL::KEY_BLOCK_DESTROYED) +
+                                               block_destroyed);
+    UserLocalStore::store_achievement_variable(GLOBAL::KEY_POWER_UP_ITEMS,
+                                               UserLocalStore::get_achievement_variable(
+                                                       GLOBAL::KEY_POWER_UP_ITEMS) +
+                                               item_collected);
+    if (shooter_type == TYPE_STARTER) {
+        store_achievement_variable(STARTER_TANK::KEY_BLOCK_STARTER_TANK,
+                                   get_achievement_variable(STARTER_TANK::KEY_BLOCK_STARTER_TANK) +
+                                   block_destroyed);
+        store_achievement_variable(STARTER_TANK::KEY_ITEM_STARTER_TANK,
+                                   get_achievement_variable(STARTER_TANK::KEY_ITEM_STARTER_TANK) +
+                                   item_collected);
+        store_achievement_variable(STARTER_TANK::KEY_GAME_STARTER_TANK,
+                                   get_achievement_variable(STARTER_TANK::KEY_GAME_STARTER_TANK) +
+                                   1);
+    } else if (shooter_type == TYPE_POWER) {
+        store_achievement_variable(POWER_TANK::KEY_BLOCK_POWER_TANK,
+                                   get_achievement_variable(POWER_TANK::KEY_BLOCK_POWER_TANK) +
+                                   block_destroyed);
+        store_achievement_variable(POWER_TANK::KEY_GAME_POWER_TANK,
+                                   get_achievement_variable(POWER_TANK::KEY_GAME_POWER_TANK) +
+                                   1);
+    } else if (shooter_type == TYPE_MOVEMENT) {
+        store_achievement_variable(MOVEMENT_TANK::KEY_ITEM_MOVEMENT_TANK,
+                                   get_achievement_variable(MOVEMENT_TANK::KEY_ITEM_MOVEMENT_TANK) +
+                                   item_collected);
+        store_achievement_variable(POWER_TANK::KEY_GAME_POWER_TANK,
+                                   get_achievement_variable(POWER_TANK::KEY_GAME_POWER_TANK) +
+                                   1);
+    } else if (shooter_type == TYPE_DOUBLE) {
+        store_achievement_variable(DOUBLE_TANK::KEY_BLOCK_DOUBLE_TANK,
+                                   get_achievement_variable(DOUBLE_TANK::KEY_BLOCK_DOUBLE_TANK) +
+                                   block_destroyed);
+        store_achievement_variable(DOUBLE_TANK::KEY_GAME_DOUBLE_TANK,
+                                   get_achievement_variable(DOUBLE_TANK::KEY_GAME_DOUBLE_TANK) +
+                                   1);
+    } else if (shooter_type == TYPE_SHIELD) {
+        store_achievement_variable(SHIELD_TANK::KEY_ITEM_SHIELD_TANK,
+                                   get_achievement_variable(SHIELD_TANK::KEY_ITEM_SHIELD_TANK) +
+                                   item_collected);
+        store_achievement_variable(SHIELD_TANK::KEY_GAME_SHIELD_TANK,
+                                   get_achievement_variable(SHIELD_TANK::KEY_GAME_SHIELD_TANK) +
+                                   1);
+    } else if (shooter_type == TYPE_SPEED) {
+        store_achievement_variable(SPEED_TANK::KEY_BLOCK_SPEED_TANK,
+                                   get_achievement_variable(SPEED_TANK::KEY_BLOCK_SPEED_TANK) +
+                                   block_destroyed);
+        store_achievement_variable(SPEED_TANK::KEY_ITEM_SPEED_TANK,
+                                   get_achievement_variable(SPEED_TANK::KEY_ITEM_SPEED_TANK) +
+                                   item_collected);
+        store_achievement_variable(SPEED_TANK::KEY_GAME_SPEED_TANK,
+                                   get_achievement_variable(SPEED_TANK::KEY_GAME_SPEED_TANK) +
+                                   1);
+    } else if (shooter_type == TYPE_SIDEWAY) {
+        store_achievement_variable(SIDEWAY_TANK::KEY_BLOCK_SIDEWAY_TANK,
+                                   get_achievement_variable(SIDEWAY_TANK::KEY_BLOCK_SIDEWAY_TANK) +
+                                   block_destroyed);
+        store_achievement_variable(SIDEWAY_TANK::KEY_GAME_SIDEWAY_TANK,
+                                   get_achievement_variable(SIDEWAY_TANK::KEY_GAME_SIDEWAY_TANK) +
+                                   1);
+    } else {
+        store_achievement_variable(TRIPLE_TANK::KEY_BLOCK_TRIPLE_TANK,
+                                   get_achievement_variable(TRIPLE_TANK::KEY_BLOCK_TRIPLE_TANK) +
+                                   block_destroyed);
+        store_achievement_variable(TRIPLE_TANK::KEY_ITEM_TRIPLE_TANK,
+                                   get_achievement_variable(TRIPLE_TANK::KEY_ITEM_TRIPLE_TANK) +
+                                   item_collected);
+        store_achievement_variable(TRIPLE_TANK::KEY_GAME_TRIPLE_TANK,
+                                   get_achievement_variable(TRIPLE_TANK::KEY_GAME_TRIPLE_TANK) +
+                                   1);
+    }
+    check_for_shooter_unlocked(shooter_type);
+}
+
+void UserLocalStore::check_for_shooter_unlocked(int shooter_type) {
+    if (get_achievement_variable(GLOBAL::KEY_GAME_NBR) >= 75 && get_shooter(17 == 0))
+        store_shooter(17, 1);
+    if (get_achievement_variable(GLOBAL::KEY_SCORE) >= 50000 && get_shooter(14) == 0)
+        store_shooter(14, 1);
+    if (get_achievement_variable(GLOBAL::KEY_BLOCK_DESTROYED) >= 7500 && get_shooter(24) == 0)
+        store_shooter(24, 1);
+    if (get_achievement_variable(GLOBAL::KEY_GAME_NBR) >= 200 && get_shooter(27) == 0)
+        store_shooter(27, 1);
+    if (get_achievement_variable(GLOBAL::KEY_GAME_NBR) == 30 && get_ball(1) == 0)
+        store_ball(1, 1);
+    if (get_achievement_variable(GLOBAL::KEY_GAME_NBR) == 100 && get_ball(6) == 0)
+        store_ball(6, 1);
+    if (get_achievement_variable(GLOBAL::KEY_GAME_NBR) == 150 && get_ball(3) == 0)
+        store_ball(3, 1);
+    if (get_achievement_variable(GLOBAL::KEY_BLOCK_DESTROYED) >= 500 && get_ball(2) == 0)
+        store_ball(2, 1);
+    if (get_achievement_variable(GLOBAL::KEY_POWER_UP_ITEMS) >= 200 && get_ball(4) == 0)
+        store_ball(4, 1);
+    if (get_achievement_variable(GLOBAL::KEY_SCORE) >= 20000 && get_ball(7) == 0)
+        store_ball(7, 1);
+    if (get_achievement_variable(GLOBAL::KEY_SCORE) >= 10000 && get_ball(5) == 0)
+        store_ball(5, 1);
+    if (shooter_type == TYPE_STARTER) {
+        if (get_achievement_variable(STARTER_TANK::KEY_GAME_STARTER_TANK) == 30 &&
+            get_shooter(3) == 0)
+            store_shooter(3, 1);
+        if (get_achievement_variable(STARTER_TANK::KEY_GAME_STARTER_TANK) == 100 &&
+            get_shooter(4) == 0)
+            store_shooter(4, 1);
+        if (get_achievement_variable(STARTER_TANK::KEY_BLOCK_STARTER_TANK) >= 300 &&
+            get_shooter(1) == 0) {
+            store_shooter(1, 1);
+        }
+        if (get_achievement_variable(STARTER_TANK::KEY_ITEM_STARTER_TANK) >= 50 &&
+            get_shooter(2) == 0)
+            store_shooter(2, 1);
+        if (get_achievement_variable(STARTER_TANK::KEY_ITEM_STARTER_TANK) >= 100 &&
+            get_shooter(5) == 0)
+            store_shooter(5, 1);
+    } else if (shooter_type == TYPE_POWER) {
+        if (get_achievement_variable(POWER_TANK::KEY_GAME_POWER_TANK) == 150 && get_shooter(8) == 0)
+            store_shooter(8, 1);
+        if (get_achievement_variable(POWER_TANK::KEY_GAME_POWER_TANK) == 300 && get_shooter(9) == 0)
+            store_shooter(9, 1);
+        if (get_achievement_variable(POWER_TANK::KEY_BLOCK_POWER_TANK) >= 1000 &&
+            get_shooter(7) == 0)
+            store_shooter(7, 1);
+        if (get_achievement_variable(POWER_TANK::KEY_BLOCK_POWER_TANK) >= 5000 &&
+            get_shooter(10) == 0)
+            store_shooter(10, 1);
+    } else if (shooter_type == TYPE_MOVEMENT) {
+        if (get_achievement_variable(MOVEMENT_TANK::KEY_GAME_MOVEMENT_TANK) == 50 &&
+            get_shooter(12) == 0)
+            store_shooter(12, 1);
+        if (get_achievement_variable(MOVEMENT_TANK::KEY_ITEM_MOVEMENT_TANK) >= 100 &&
+            get_shooter(13) == 0)
+            store_shooter(13, 1);
+    } else if (shooter_type == TYPE_DOUBLE) {
+        if (get_achievement_variable(DOUBLE_TANK::KEY_GAME_DOUBLE_TANK) == 200 &&
+            get_shooter(15) == 0)
+            store_shooter(15, 1);
+        if (get_achievement_variable(DOUBLE_TANK::KEY_BLOCK_DOUBLE_TANK) >= 20000 &&
+            get_shooter(16) == 0)
+            store_shooter(16, 1);
+    } else if (shooter_type == TYPE_SHIELD) {
+        if (get_achievement_variable(SHIELD_TANK::KEY_ITEM_SHIELD_TANK) >= 200 &&
+            get_shooter(18) == 0)
+            store_shooter(18, 1);
+        if (get_achievement_variable(SHIELD_TANK::KEY_GAME_SHIELD_TANK) == 200 &&
+            get_shooter(19) == 0)
+            store_shooter(19, 1);
+    } else if (shooter_type == TYPE_SPEED) {
+        if (get_achievement_variable(SPEED_TANK::KEY_GAME_SPEED_TANK) == 100 &&
+            get_shooter(21) == 0)
+            store_shooter(21, 1);
+        if (get_achievement_variable(SPEED_TANK::KEY_BLOCK_SPEED_TANK) >= 15000 &&
+            get_shooter(23) == 0)
+            store_shooter(23, 1);
+        if (get_achievement_variable(SPEED_TANK::KEY_ITEM_SPEED_TANK) >= 200 &&
+            get_shooter(24) == 0)
+            store_shooter(24, 1);
+    } else if (shooter_type == TYPE_SIDEWAY) {
+        if (get_achievement_variable(SIDEWAY_TANK::KEY_GAME_SIDEWAY_TANK) == 200 &&
+            get_shooter(25) == 0)
+            store_shooter(25, 1);
+        if (get_achievement_variable(SIDEWAY_TANK::KEY_BLOCK_SIDEWAY_TANK) >= 20000 &&
+            get_shooter(26) == 0)
+            store_shooter(26, 1);
+    } else {
+        if (get_achievement_variable(TRIPLE_TANK::KEY_GAME_TRIPLE_TANK) == 300 &&
+            get_shooter(28) == 0)
+            store_shooter(28, 1);
+        if (get_achievement_variable(TRIPLE_TANK::KEY_ITEM_TRIPLE_TANK) >= 30000 &&
+            get_shooter(29) == 0)
+            store_shooter(29, 1);
+        if (get_achievement_variable(TRIPLE_TANK::KEY_BLOCK_TRIPLE_TANK) >= 300 &&
+            get_shooter(30) == 0)
+            store_shooter(30, 1);
+    }
 }
 
 void UserLocalStore::store_achievement_variable(const char *key, int value) {
@@ -137,17 +321,39 @@ int UserLocalStore::get_achievement_variable(const char *key) {
 int UserLocalStore::get_current_shooter() {
     int *shooter = UserLocalStore::get_asset_shooter();
 
-    for (int i = 0; i < 31; i++){
+    for (int i = 0; i < 31; i++) {
         if (shooter[i] == SELECTED)
             return (i);
     }
     return (-1);
 }
 
+void UserLocalStore::store_shooter(int index, int value) {
+    UserDefault *def = UserDefault::sharedUserDefault();
+    def->setIntegerForKey(shooter_ids[index], value);
+    def->flush();
+}
+
+void UserLocalStore::store_ball(int index, int value) {
+    UserDefault *def = UserDefault::sharedUserDefault();
+    def->setIntegerForKey(ball_ids[index], value);
+    def->flush();
+}
+
+int UserLocalStore::get_shooter(int index) {
+    UserDefault *def = UserDefault::sharedUserDefault();
+    return (def->getIntegerForKey(shooter_ids[index]));
+}
+
+int UserLocalStore::get_ball(int index) {
+    UserDefault *def = UserDefault::sharedUserDefault();
+    return (def->getIntegerForKey(ball_ids[index]));
+}
+
 int UserLocalStore::get_current_ball() {
     int *ball = UserLocalStore::get_asset_ball();
 
-    for (int i = 0; i < 8; i++){
+    for (int i = 0; i < 8; i++) {
         if (ball[i] == SELECTED)
             return (i);
     }
@@ -255,7 +461,7 @@ const char *UserLocalStore::get_shooter_key_with_index(int index) {
         case 13:
             return (GLOBAL::KEY_SCORE);
         case 14:
-            return (DOUBLE_TANK::KEY_GAME_MOVEMENT_TANK);
+            return (DOUBLE_TANK::KEY_GAME_DOUBLE_TANK);
         case 15:
             return (DOUBLE_TANK::KEY_BLOCK_DOUBLE_TANK);
         case 16:
@@ -291,7 +497,6 @@ const char *UserLocalStore::get_shooter_key_with_index(int index) {
     }
     return (nullptr);
 }
-
 
 const char *UserLocalStore::get_ball_key_with_index(int index) {
 
@@ -419,6 +624,7 @@ void UserLocalStore::store_asset_ball(int balls[8]) {
         def->flush();
     }
 }
+
 
 void UserLocalStore::init_asset_arrays() {
     int shooters[31] = {2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
