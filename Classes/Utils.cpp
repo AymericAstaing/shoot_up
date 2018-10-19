@@ -127,30 +127,11 @@ int Utils::get_shooter_type(int shooter_id) {
 }
 
 int Utils::get_random_line_type() {
-    int result = cocos2d::RandomHelper::random_int(0, 20);
+    int result = get_random_number(0, 20);
     if (result > 7)
         return (LINE_TYPE_SIMPLE_OF_5);
-    switch (result) {
-        case 0:
-            return (LINE_TYPE_COMPLEX_0);
-        case 1:
-            return (LINE_TYPE_COMPLEX_1);
-        case 2:
-            return (LINE_TYPE_COMPLEX_2);
-        case 3:
-            return (LINE_TYPE_COMPLEX_3);
-        case 4:
-            return (LINE_TYPE_COMPLEX_4);
-        case 5:
-            return (LINE_TYPE_COMPLEX_5);
-        case 6:
-            return (LINE_TYPE_COMPLEX_6);
-        case 7:
-            return (LINE_TYPE_COMPLEX_7);
-        default:
-            break;
-    }
-    return -1;
+    else
+        return (random_type[result]);
 }
 
 int Utils::get_random_number(int min, int max) {

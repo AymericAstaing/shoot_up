@@ -79,7 +79,7 @@ void GameScene::init_main_variable() {
     if (UserLocalStore::get_achievement_variable(FROM_SHOP) == NOT_FROM_SHOP)
         main_menu_coming_animation();
     else
-        UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
+        UserLocalStore::store_achievement_variable(FROM_SHOP, NOT_FROM_SHOP);
     init_pool_objects();
     init_options_menu();
 }
@@ -541,7 +541,6 @@ void GameScene::update(float ft) {
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
-        //current_factor_h += current_factor_h * 0.05;
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
         NEXT_LINE_ID = get_line_index(get_next_line_type());
@@ -587,7 +586,7 @@ int GameScene::get_next_line_type() {
 void GameScene::run_game_loop() {
     int indicator = UserLocalStore::get_achievement_variable(POWER_LEVEL) +
                     UserLocalStore::get_achievement_variable(SPEED_LEVEL);
-    if (indicator == 2)
+    if (indicator == NO_SHOOTER_UPGRADE)
         shooter_never_updated = 1;
     if (shooter_never_updated == 1) {
         CURRENT_LINE_ID = 4;
@@ -694,7 +693,7 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
             [&](Node *sender) {
                 UserLocalStore::update_achievements(
                         Utils::get_shooter_type(UserLocalStore::get_current_shooter()),
-                                                game_block_destroyed, game_power_up_collected);
+                        game_block_destroyed, game_power_up_collected);
                 game_block_destroyed = 0;
                 game_power_up_collected = 0;
                 LINE_GENERATED = 0;
@@ -738,8 +737,9 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
 
 void GameScene::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *event) {
     if (touch->getLocation().x > 0 + player->getContentSize().width / 2 &&
-        touch->getLocation().x < x_screen - player->getContentSize().height / 2)
+        touch->getLocation().x < x_screen - player->getContentSize().height / 2) {
         player->setPosition(Vec2(touch->getLocation().x, player->getPosition().y));
+    }
 }
 
 void GameScene::manage_options() {
@@ -755,8 +755,8 @@ void GameScene::manage_options() {
 bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
     Vec2 player_pos = player->getPosition();
     Size player_size = player->getContentSize();
-    float gap_x = static_cast<float>(player_size.width / 2 + player_size.width);
-    float gap_y = static_cast<float>(player_size.height / 2 +player_size.width);
+    float gap_x = player_size.width / 2 + (2 * player_size.width);
+    float gap_y = player_size.height / 2 + (2 * player_size.width);
 
     return touch_position.x >= player_pos.x - gap_x && touch_position.x <= player_pos.x + gap_x &&
            touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
@@ -1032,17 +1032,17 @@ Menu *GameScene::get_end_game_menu() {
     auto move_to_stats = MoveTo::create(0.2, Vec2(x_screen / 2,
                                                   static_cast<float>(y_screen / 1.75)));
     MenuItemImage *speed_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
-    SPEED,
-            POPUP_MENU_PATH::SPEED_SELECTED,
-            CC_CALLBACK_1(
-                    GameScene::surclassement,
-                    this));
+                                                           SPEED,
+                                                           POPUP_MENU_PATH::SPEED_SELECTED,
+                                                           CC_CALLBACK_1(
+                                                                   GameScene::surclassement,
+                                                                   this));
     MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
-    POWER,
-            POPUP_MENU_PATH::POWER_SELECTED,
-            CC_CALLBACK_1(
-                    GameScene::surclassement,
-                    this));
+                                                           POWER,
+                                                           POPUP_MENU_PATH::POWER_SELECTED,
+                                                           CC_CALLBACK_1(
+                                                                   GameScene::surclassement,
+                                                                   this));
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
                                                              1.3)));

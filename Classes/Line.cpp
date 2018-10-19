@@ -57,12 +57,12 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
     int type = get_type();
     int total = 0;
     if (type == LINE_TYPE_SIMPLE_OF_4) {
-        total = static_cast<int>(0.6 * h_factor);
+        total = static_cast<int>(0.8 * h_factor);
     } else {
         int min_h = static_cast<int>(h_factor +
-                                     ceil(static_cast<float>(h_factor * 0.4)));
+                                     ceil(static_cast<float>(h_factor * 0.5)));
         int max_h = static_cast<int>(h_factor +
-                                     ceil(static_cast<float>(h_factor * 0.6)));
+                                     ceil(static_cast<float>(h_factor * 0.7)));
         total = Utils::get_random_number(min_h, max_h);
     }
     int *distrib = new int[this->square_nbr];
@@ -592,7 +592,7 @@ void Line::reset() {
     line_active = false;
     setVisible(false);
     auto winSize = Director::getInstance()->getVisibleSize();
-    setPosition(Vec2(0, static_cast<float>(winSize.height + getContentSize().height)));
+    setPosition(Vec2(0, winSize.height + getContentSize().height));
 }
 
 Line *Line::create(int type) {
@@ -604,7 +604,7 @@ Line *Line::create(int type) {
     l->line_size[HEIGHT] = size.height;
     l->line_active = false;
     l->setContentSize(Size(l->line_size[WIDTH], l->line_size[HEIGHT]));
-    l->setPosition(Vec2(0, static_cast<float>(winSize.height + l->line_size[HEIGHT])));
+    l->setPosition(Vec2(0, (winSize.height + l->line_size[HEIGHT])));
     load_square(l, type);
     l->setVisible(false);
     return (l);

@@ -2,6 +2,7 @@
 #define __UTILS_H__
 
 #include "cocos2d.h"
+#include "ShootUp.h"
 
 USING_NS_CC;
 
@@ -45,6 +46,15 @@ static const char *balls[8] = {"bullets_asset/game_bullet/bullet_0.png",
                                "bullets_asset/game_bullet/bullet_5.png",
                                "bullets_asset/game_bullet/bullet_6.png",
                                "bullets_asset/game_bullet/bullet_7.png"};
+
+static const int random_type[8] = {LINE_TYPE_COMPLEX_0,
+                                   LINE_TYPE_COMPLEX_1,
+                                   LINE_TYPE_COMPLEX_2,
+                                   LINE_TYPE_COMPLEX_3,
+                                   LINE_TYPE_COMPLEX_4,
+                                   LINE_TYPE_COMPLEX_5,
+                                   LINE_TYPE_COMPLEX_6,
+                                   LINE_TYPE_COMPLEX_7};
 
 
 class Utils {

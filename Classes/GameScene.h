@@ -45,6 +45,7 @@ private:
     float               x_screen;
     float               y_screen;
     int                 game_score;
+    float               prev_location = 0;
     int                 *active_lines;
     int                 options_state = 0;
     int                 bullet_state;

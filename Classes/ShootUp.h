@@ -20,6 +20,7 @@ USING_NS_CC;
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
 #define COMPLEX_STRUCT_ELMTS            7
+#define NO_SHOOTER_UPGRADE              2
 #define SQUARE_SIZE_5                   4.95
 #define NOT_FROM_SHOP                   0
 #define SQUARE_SIZE_4                   3.95

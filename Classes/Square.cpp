@@ -40,6 +40,8 @@ void Square::reset_square() {
 }
 
 void Square::assign_point(int pv) {
+    if (pv == 0)
+        pv = 1;
     this->initial_pv = pv;
     this->square_pv = pv;
     char pts[DEFAULT_CHAR_LENGHT];
