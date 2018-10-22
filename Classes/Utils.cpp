@@ -192,6 +192,15 @@ Vec2 Utils::get_coordinate_from_id(int id, int column) {
     return (Vec2(id % column, id / column));
 }
 
+float Utils::get_finger_move_factor(float x) {
+    auto winSize = Director::getInstance()->getVisibleSize();
+    float old_min = 0;
+    float old_max = winSize.width;
+    float new_min = -winSize.width / 2;
+    float new_max = winSize.width / 2;
+    return ((((x - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
+}
+
 float Utils::line_speed_converter(float y_value) {
     auto winSize = Director::getInstance()->getVisibleSize();
     float old_min = winSize.height;

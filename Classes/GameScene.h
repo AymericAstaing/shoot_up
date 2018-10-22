@@ -1,14 +1,20 @@
 #ifndef __GameScene_SCENE_H__
 #define __GameScene_SCENE_H__
 
-#include "cocos2d.h"
 #include <vector>
+#include <cocos2d.h>
 #include <cocos-ext.h>
 #include <GUI/CCScrollView/CCTableViewCell.h>
 #include "GridView.h"
 #include "Square.h"
+#include "Circle.h"
 #include "Bullet.h"
 #include "Line.h"
+
+static const char *explode_plist[4] = {"spritesheet/explode_square_red.plist",
+                                       "spritesheet/explode_square_orange.plist",
+                                       "spritesheet/explode_square_yellow.plist",
+                                       "spritesheet/explode_square_red.plist"};
 
 using namespace cocos2d;
 
@@ -18,6 +24,7 @@ private:
     Line**              pool_container;
     Bullet**            bullet_container;
     Sprite*             player;
+    Circle**            pool_circle;
     MenuItemImage*      skip_btn;
     MenuItemImage*      back_to_main;
     MenuItemImage*      rate;
@@ -45,7 +52,6 @@ private:
     float               x_screen;
     float               y_screen;
     int                 game_score;
-    float               prev_location = 0;
     int                 *active_lines;
     int                 options_state = 0;
     int                 bullet_state;
@@ -77,6 +83,8 @@ public:
     void                    check_hit_color_change(Line*, Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2);
+    void                    forward_circle();
+    void                    show_particle_explode(Vec2, int);
     void                    start_game();
     void                    score_animation();
     bool                    is_sound_button_touched(Vec2);
@@ -90,6 +98,8 @@ public:
     void                    move_active_lines();
     void                    check_into_line();
     Menu*                   get_continue_menu();
+    void                    increase_speed(Label *);
+    void                    increase_power(Label*);
     void                    check_lines_out();
     bool                    point_into_square(Square*, Vec2);
     void                    check_bullet_contact();
@@ -112,7 +122,7 @@ public:
     Menu*                   get_end_game_menu();
     void                    onTouchMoved(Touch*, Event*);
     bool                    onTouchBegan(Touch*, Event*);
-    void                    show_destruction_circle(Vec2, float, int);
+    void                    show_destruction_circle(Vec2);
     void                    start_bullet_shoot();
     void                    stop_bullet_shoot();
 };

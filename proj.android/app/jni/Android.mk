@@ -21,6 +21,7 @@ LOCAL_SRC_FILES := $(LOCAL_PATH)/hellocpp/main.cpp                              
                    $(LOCAL_PATH)/../../../Classes/GridView.cpp                      \
                    $(LOCAL_PATH)/../../../Classes/ShopScene.cpp                     \
                    $(LOCAL_PATH)/../../../Classes/Bullet.cpp                        \
+                   $(LOCAL_PATH)/../../../Classes/Circle.cpp                        \
                    $(LOCAL_PATH)/../../../Classes/UserLocalStore.cpp                \
                    $(LOCAL_PATH)/../../../Classes/Line.cpp                          \
                    $(LOCAL_PATH)/../../../Classes/CustomTableViewCell.cpp           \

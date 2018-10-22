@@ -64,6 +64,7 @@ public:
     static int*         get_distribution_points(int*, int, int);
     static int          get_random_number(int, int);
     static bool         is_into_list(int*, int, int);
+    static float        get_finger_move_factor(float);
     static int*         get_complex_distribution_points(int*, int, int, int);
     static int*         get_simple_distribution_points(int*, int, int, int);
     static int          array_sum(int*,int);

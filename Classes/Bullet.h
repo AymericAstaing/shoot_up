@@ -8,11 +8,11 @@ USING_NS_CC;
 class Bullet : public cocos2d::Sprite {
 
 public:
-    Bullet();
-    ~Bullet();
-    static Bullet *create();
-    void launch(int, Vec2, Size);
-    void reset();
+                        Bullet();
+                        ~Bullet();
+    static Bullet*      create();
+    void                launch(int, Vec2, Size);
+    void                reset();
     bool bullet_active = false;
     bool contact = false;
     int contact_index = -1;

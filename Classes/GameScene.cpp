@@ -12,6 +12,7 @@
 #include    "CustomTableViewCell.h"
 #include    "UserLocalStore.h"
 #include    "ShootUp.h"
+#include    "Circle.h"
 
 using namespace std;
 
@@ -159,6 +160,7 @@ void GameScene::reset_lines() {
 void GameScene::init_pool_objects() {
     int index_struct = COMPLEX_STRUCT_ELMTS;
     pool_container = new Line *[27];
+    pool_circle = new Circle *[15];
     bullet_container = new Bullet *[41];
     active_lines = new int[5];
 
@@ -167,6 +169,10 @@ void GameScene::init_pool_objects() {
     pool_container[2] = Line::create(STARTUP_LINE_4);
     pool_container[3] = Line::create(STARTUP_LINE_5);
 
+    for (int i = 0; i < 14; i++) {
+        pool_circle[i] = Circle::create();
+        addChild(pool_circle[i]);
+    }
     for (int i = 0; i < 4; i++)
         active_lines[i] = EMPTY_VALUE;
     active_lines[4] = '\0';
@@ -292,28 +298,33 @@ int GameScene::get_line_index(int type) {
 
 void GameScene::check_bullet_contact() {
     for (int j = 0; active_lines[j] != '\0'; j++) {
-        for (int i = 0; bullet_container[i] != NULL; i++) {
-            if (bullet_container[i]->bullet_active) {
-                int id = active_lines[j];
-                if (id != -1) {
-                    float line_position_y = pool_container[id]->getPositionY();
-                    float bullet_position_y = bullet_container[i]->getPositionY();
-                    if (bullet_position_y >= line_position_y &&
-                        bullet_position_y <=
-                        line_position_y +
-                        pool_container[id]->getContentSize().height) {
-                        //IN CONTACT
-                        if (!bullet_container[i]->contact) {
-                            // ENTER CONTACT ZONE
-                            bullet_container[i]->contact = true;
-                            bullet_container[i]->contact_index = id;
-                        }
-                    } else {
-                        if (bullet_container[i]->contact &&
-                            id == bullet_container[i]->contact_index) {
-                            // EXIT CONTACT ZONE
-                            bullet_container[i]->contact = false;
-                            bullet_container[i]->contact_index = false;
+        if (active_lines[j] != -1 && pool_container[active_lines[j]]->getPositionY() +
+                                     pool_container[active_lines[j]]->getContentSize().height >
+                                     player->getPositionY() +
+                                     player->getContentSize().height / 2) {
+            int id = active_lines[j];
+            if (id != -1) {
+                for (int i = 0; bullet_container[i] != NULL; i++) {
+                    if (bullet_container[i]->bullet_active) {
+                        float line_position_y = pool_container[id]->getPositionY();
+                        float bullet_position_y = bullet_container[i]->getPositionY();
+                        if (bullet_position_y >= line_position_y &&
+                            bullet_position_y <=
+                            line_position_y +
+                            pool_container[id]->getContentSize().height) {
+                            //IN CONTACT
+                            if (!bullet_container[i]->contact) {
+                                // ENTER CONTACT ZONE
+                                bullet_container[i]->contact = true;
+                                bullet_container[i]->contact_index = id;
+                            }
+                        } else {
+                            if (bullet_container[i]->contact &&
+                                id == bullet_container[i]->contact_index) {
+                                // EXIT CONTACT ZONE
+                                bullet_container[i]->contact = false;
+                                bullet_container[i]->contact_index = false;
+                            }
                         }
                     }
                 }
@@ -335,20 +346,11 @@ bool GameScene::point_into_square(Square *sq, Vec2 bullet_pos) {
            bullet_pos.y >= sq_top_left.y - sq_height;
 }
 
-void GameScene::show_destruction_circle(Vec2 pos, float line_y, int parent_height) {
-    auto circle = Sprite::create(HIT_CIRCLE);
-    circle->setScale(0.0f);
-    auto scale_anim = ScaleTo::create(0.55f, 2.5f);
-    auto move_ease_in = EaseOut::create(scale_anim->clone(), 1);
-    auto fadeOut = FadeOut::create(0.55f);
-    auto actionRemove = RemoveSelf::create();
-    circle->setPosition(pos);
-    auto actionMove = MoveTo::create(Utils::line_speed_converter(line_y),
-                                     Vec2(pos.x, 0 - parent_height));
-    CCDirector::sharedDirector()->getRunningScene()->addChild(circle, 1, 1);
-    circle->runAction(actionMove);
-    circle->runAction(fadeOut);
-    circle->runAction(Sequence::create(move_ease_in, actionRemove, nullptr));
+void GameScene::show_destruction_circle(Vec2 pos) {
+    int i = 0;
+    for (; pool_circle[i]->active_circle; i++);
+    if (!pool_circle[i]->active_circle)
+        pool_circle[i]->anim_circle(pos);
 }
 
 void GameScene::show_particle(Vec2 pos) {
@@ -361,6 +363,18 @@ void GameScene::show_particle(Vec2 pos) {
     stars->setTotalParticles(2);
     stars->setAutoRemoveOnFinish(true);
     addChild(stars, 1, 1);
+}
+
+void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
+    auto fileUtil = FileUtils::getInstance();
+    auto plistData = fileUtil->getValueMapFromFile(explode_plist[default_color_code]);
+    auto stars = ParticleSystemQuad::create(plistData);
+    stars->setScale(1);
+    stars->setDuration(0.3);
+    stars->setPosition(square_pos);
+    stars->setTotalParticles(30);
+    stars->setAutoRemoveOnFinish(true);
+    addChild(stars, 2, 1);
 }
 
 void GameScene::check_hit_color_change(Line *l, Square *sq) {
@@ -419,8 +433,10 @@ void GameScene::check_into_line() {
                         Vec2 square_pos;
                         square_pos.x = sq->getPositionX();
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
-                        show_destruction_circle(square_pos, current_line->getPositionY(),
-                                                static_cast<int>(current_line->getContentSize().height));
+                        show_destruction_circle(square_pos);
+                        show_particle_explode(
+                                Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
+                                sq->initial_color);
                         game_block_destroyed++;
                         update_game_score(sq->square_pv);
                     } else {
@@ -531,7 +547,15 @@ void GameScene::check_player_collision() {
     }
 }
 
+void GameScene::forward_circle() {
+    for (int i = 0; pool_circle[i]; i++) {
+        if (pool_circle[i]->active_circle)
+            pool_circle[i]->setPositionY(pool_circle[i]->getPositionY() - LINE_SPEED);
+    }
+}
+
 void GameScene::update(float ft) {
+    forward_circle();
     check_lines_out();
     move_active_lines();
     if (game_state == GAME_RUNNING) {
@@ -738,7 +762,13 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
 void GameScene::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *event) {
     if (touch->getLocation().x > 0 + player->getContentSize().width / 2 &&
         touch->getLocation().x < x_screen - player->getContentSize().height / 2) {
-        player->setPosition(Vec2(touch->getLocation().x, player->getPosition().y));
+        float current_location = touch->getLocation().x;
+        float future_x = current_location + Utils::get_finger_move_factor(current_location);
+        player->setPositionX(future_x);
+        if (player->getPositionX() - player->getContentSize().width / 2 < 0)
+            player->setPositionX(player->getContentSize().width / 2);
+        if (player->getPositionX() + player->getContentSize().width / 2 > x_screen)
+            player->setPositionX(x_screen - player->getContentSize().width / 2);
     }
 }
 
@@ -1002,7 +1032,7 @@ Menu *GameScene::get_end_game_menu() {
     char current_speed[DEFAULT_CHAR_LENGHT];
     sprintf(current_speed, "LEVEL %i",
             UserLocalStore::get_achievement_variable(SPEED_LEVEL));
-    stats = Layer::create();
+    stats = Menu::create();
     Label *current_point = Label::createWithTTF(points, FIRE_UP_FONT, 60);
     char earned[DEFAULT_CHAR_LENGHT];
     if (game_score > 1000)
@@ -1034,15 +1064,17 @@ Menu *GameScene::get_end_game_menu() {
     MenuItemImage *speed_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
                                                            SPEED,
                                                            POPUP_MENU_PATH::SPEED_SELECTED,
-                                                           CC_CALLBACK_1(
-                                                                   GameScene::surclassement,
-                                                                   this));
+                                                           [=](Ref *sender) {
+                                                               GameScene::increase_speed(
+                                                                       speed_current_level);
+                                                           });
     MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
                                                            POWER,
                                                            POPUP_MENU_PATH::POWER_SELECTED,
-                                                           CC_CALLBACK_1(
-                                                                   GameScene::surclassement,
-                                                                   this));
+                                                           [=](Ref *sender) {
+                                                               GameScene::increase_power(
+                                                                       power_current_level);
+                                                           });
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
                                                              1.3)));
@@ -1154,6 +1186,54 @@ Menu *GameScene::get_end_game_menu() {
     end_menu->setPosition(Vec2(0, 0));
     end_menu->setContentSize(Size(x_screen, y_screen));
     return (end_menu);
+}
+
+void GameScene::increase_speed(Label *speed) {
+    UserLocalStore::store_achievement_variable_float(SPEED_VALUE,
+                                                     static_cast<float>(
+                                                             UserLocalStore::get_achievement_variable_float(
+                                                                     SPEED_VALUE) + 0.5));
+    UserLocalStore::store_achievement_variable(
+            SPEED_LEVEL,
+            UserLocalStore::get_achievement_variable(
+                    SPEED_LEVEL) +
+            1);
+    if (UserLocalStore::get_achievement_variable(SPEED_LEVEL) ==
+        10) { // DEBLOCAGE D'UN SHOOTER (19:)
+        int *shooter = UserLocalStore::get_asset_shooter();
+        shooter[19] = 1;
+        UserLocalStore::store_asset_ball(shooter);
+
+    }
+    char s[DEFAULT_CHAR_LENGHT];
+    sprintf(s, "SPEED %i",
+            UserLocalStore::get_achievement_variable(
+                    SPEED_LEVEL));
+    speed->setString(s);
+}
+
+void GameScene::increase_power(Label *power) {
+    UserLocalStore::store_achievement_variable(
+            POWER_VALUE,
+            UserLocalStore::get_achievement_variable(
+                    POWER_VALUE) +
+            2);
+    UserLocalStore::store_achievement_variable(
+            POWER_LEVEL,
+            UserLocalStore::get_achievement_variable(
+                    POWER_LEVEL) +
+            1);
+    if (UserLocalStore::get_achievement_variable(POWER_LEVEL) ==
+        20) { // DEBLOCAGE D'UN SHOOTER (5:)
+        int *shooter = UserLocalStore::get_asset_shooter();
+        shooter[5] = 1;
+        UserLocalStore::store_asset_ball(shooter);
+
+    }
+    char p[DEFAULT_CHAR_LENGHT];
+    sprintf(p, "LEVEL %i",
+            UserLocalStore::get_achievement_variable(POWER_LEVEL));
+    power->setString(p);
 }
 
 void GameScene::check_first_launch() {

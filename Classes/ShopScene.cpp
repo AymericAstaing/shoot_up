@@ -200,8 +200,8 @@ void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
             UserLocalStore::store_ball(cell->getIdx(), 2);
             ball_grid->setVisible(false);
             ball_grid->release();
-            ball_content = UserLocalStore::get_final_shooter_array();
-            ball_grid = init_grid(SHOOTER_ARRAY);
+            ball_content = UserLocalStore::get_final_ball_array();
+            ball_grid = init_grid(BALL_ARRAY);
             addChild(ball_grid);
             ball_grid->setVisible(true);
         }

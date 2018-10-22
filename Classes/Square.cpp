@@ -16,10 +16,10 @@ Size Square::get_square_size(int line_size) {
     if (line_size > 5 || line_size < 4)
         return (Size(0, 0));
     if (line_size == SQUARE_SIZE_LINE_OF_4) {
-        return (Size(static_cast<float>(winSize.width / 3.95),
+        return (Size(static_cast<float>(winSize.width / 4),
                      static_cast<float>(winSize.height / 9.6)));
     } else if (line_size == SQUARE_SIZE_LINE_OF_5) {
-        return (Size(static_cast<float>(winSize.width / 4.95),
+        return (Size(static_cast<float>(winSize.width / 5),
                      static_cast<float>(winSize.height / 10.5)));
     }
     return (Size(0, 0));

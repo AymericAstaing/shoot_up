@@ -99,6 +99,13 @@ USING_NS_CC;
 #define BASIC_COLOR_YELLOW              "yellow_b.png"
 #define BASIC_COLOR_ORANGE              "orange_b.png"
 
+/******************* DEFAULT COLOR CODE ***************/
+#define GREEN                           3
+#define YELLOW                          2
+#define ORANGE                          1
+#define RED                             0
+
+
 /******************* INITIALISATION LINE TYPE  ***************/
 #define SIMPLE_LINE_4                   0
 #define SIMPLE_LINE_5                   1

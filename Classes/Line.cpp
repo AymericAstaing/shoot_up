@@ -44,13 +44,13 @@ void Line::assign_color(int sq_id, int m_factor, int current_point) {
 
     float point = static_cast<float>(current_point);
     if (point <= static_cast<float>(m_factor * 0.9))
-        change_square_color(sq_id, 3);
+        change_square_color(sq_id, GREEN);
     else if (point <= static_cast<float>(m_factor * 0.95))
-        change_square_color(sq_id, 2);
+        change_square_color(sq_id, YELLOW);
     else if (point <= static_cast<float>(m_factor * 1.05))
-        change_square_color(sq_id, 1);
+        change_square_color(sq_id, ORANGE);
     else
-        change_square_color(sq_id, 0);
+        change_square_color(sq_id, GREEN);
 }
 
 void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LIGNES DE 4 ou 5
