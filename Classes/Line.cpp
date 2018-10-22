@@ -43,14 +43,14 @@ void Line::change_square_color(int index, int color) {
 void Line::assign_color(int sq_id, int m_factor, int current_point) {
 
     float point = static_cast<float>(current_point);
-    if (point <= static_cast<float>(m_factor * 0.9))
+    if (point <= static_cast<float>(m_factor * 0.85))
         change_square_color(sq_id, GREEN);
     else if (point <= static_cast<float>(m_factor * 0.95))
         change_square_color(sq_id, YELLOW);
     else if (point <= static_cast<float>(m_factor * 1.05))
         change_square_color(sq_id, ORANGE);
     else
-        change_square_color(sq_id, GREEN);
+        change_square_color(sq_id, RED);
 }
 
 void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LIGNES DE 4 ou 5
@@ -60,9 +60,9 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
         total = static_cast<int>(0.8 * h_factor);
     } else {
         int min_h = static_cast<int>(h_factor +
-                                     ceil(static_cast<float>(h_factor * 0.5)));
+                                     ceil(static_cast<float>(h_factor * 0.6)));
         int max_h = static_cast<int>(h_factor +
-                                     ceil(static_cast<float>(h_factor * 0.7)));
+                                     ceil(static_cast<float>(h_factor * 0.8)));
         total = Utils::get_random_number(min_h, max_h);
     }
     int *distrib = new int[this->square_nbr];
