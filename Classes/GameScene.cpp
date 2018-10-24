@@ -169,7 +169,7 @@ void GameScene::init_pool_objects() {
     int index_struct = COMPLEX_STRUCT_ELMTS;
     pool_container = new Line *[27];
     pool_circle = new Circle *[15];
-    bullet_container = new Bullet *[41];
+    bullet_container = new Bullet *[101];
     active_lines = new int[5];
 
     pool_container[0] = Line::create(STARTUP_LINE_2);
@@ -185,11 +185,11 @@ void GameScene::init_pool_objects() {
     for (int i = 0; i < 4; i++)
         active_lines[i] = EMPTY_VALUE;
     active_lines[4] = '\0';
-    for (int j = 0; j < 40; j++) {
+    for (int j = 0; j < 100; j++) {
         bullet_container[j] = Bullet::create();
         addChild(bullet_container[j], 4);
     }
-    bullet_container[40] = NULL;
+    bullet_container[100] = NULL;
     for (int i = 4; i < 7; i++)
         pool_container[i] = Line::create(SIMPLE_LINE_4);
     for (int i = 7; i < 10; i++)
@@ -589,7 +589,7 @@ void GameScene::load_bonus() {
         bonus_power->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
         bonus_visible_id = BONUS_POWER;
     }
-    next_bonus_spawn = LINE_GENERATED + 10 + Utils::get_random_number(5, 10);
+    next_bonus_spawn = LINE_GENERATED + 5 + Utils::get_random_number(0, 5);
 }
 
 void GameScene::active_bonus() {
@@ -608,6 +608,7 @@ void GameScene::active_bonus() {
 void GameScene::remove_bonus() {
     bonus_time = 0;
     bonus_selected = false;
+    bonus_displayed = false;
     bonus_visible_id = -1;
     bonus_power->setTag(BONUS_HIDE);
     bonus_bullet->setTag(BONUS_HIDE);
@@ -652,33 +653,37 @@ void GameScene::bonus_managment() {
         float bonus_width = bonus_bullet->getContentSize().width;
         float bonus_height = bonus_bullet->getContentSize().height;
         Rect bonus_bounding_box;
-        if (bonus_visible_id == BONUS_POWER) {
+        if (bonus_visible_id == BONUS_POWER)
             bonus_bounding_box = Rect(bonus_power->getPositionX() - bonus_width / 2,
                                       bonus_power->getPositionY() + bonus_height / 2, bonus_width,
                                       bonus_height);
 
-        } else {
+        else
             bonus_bounding_box = Rect(bonus_bullet->getPositionX() - bonus_width / 2,
                                       bonus_bullet->getPositionY() + bonus_height / 2, bonus_width,
 
                                       bonus_height);
-        }
         if (player_bounding_box.intersectsRect(bonus_bounding_box)) {
             if (bonus_visible_id == BONUS_POWER) {
                 bonus_active = BONUS_POWER;
                 bonus_power->setVisible(false);
                 bonus_power->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
+            } else {
+                bonus_active = BONUS_BULLET;
+                bonus_bullet->setVisible(false);
+                bonus_bullet->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
             }
         }
-        if (bonus_active == BONUS_POWER && bonus_time >= 4.0f)
+        if (bonus_active != -1 && bonus_time >= 4.0f)
             remove_bonus();
     }
 }
 
 void GameScene::update(float ft) {
-    if (bonus_active == BONUS_POWER)
+    if (bonus_active != -1)
         bonus_time += ft;
     forward_circle();
+    bonus_managment();
     check_lines_out();
     move_active_lines();
     if (game_state == GAME_RUNNING) {
@@ -686,7 +691,6 @@ void GameScene::update(float ft) {
         check_into_line();
         check_player_collision();
     }
-    bonus_managment();
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
         store_active_line(NEXT_LINE_ID);
@@ -760,7 +764,7 @@ void GameScene::run_game_loop() {
                                          pool_container[CURRENT_LINE_ID]->line_size);
     }
     bonus_selected = false;
-    next_bonus_spawn = 10 + (Utils::get_random_number(0, 5));
+    next_bonus_spawn = 5 + Utils::get_random_number(0, 5);
     store_active_line(CURRENT_LINE_ID);
     pool_container[CURRENT_LINE_ID]->set_active(
             current_factor_h, LINE_GENERATED);
@@ -812,6 +816,7 @@ int GameScene::get_h_value() {
 void GameScene::start_game() {
     reset_arrays();
     game_score = 0;
+    bonus_active = -1;
     current_factor_h = get_h_value();
     char score_value[DEFAULT_CHAR_LENGHT];
     sprintf(score_value, "%i", game_score);
@@ -941,17 +946,30 @@ bool GameScene::is_sound_button_touched(Vec2 touch_location) {
 }
 
 void GameScene::launch_bullet(float dt) {
-    for (int i = 0; bullet_container[i] != NULL; i++) {
-        if (!bullet_container[i]->bullet_active) {
-            bullet_container[i]->launch(bullet_state, player->getPosition(),
-                                        player->getContentSize());
-            if (bonus_active == BONUS_POWER)
-                bullet_container[i]->setScale(1.3f);
-            if (bullet_state == BULLET_LEFT)
-                bullet_state = BULLET_RIGHT;
-            else
-                bullet_state = BULLET_LEFT;
-            return;
+    if (bonus_active == BONUS_BULLET) {
+        int bullet_founded = 0;
+        for (int i = 0; bullet_container[i] != NULL; i++) {
+            if (!bullet_container[i]->bullet_active) {
+                    bullet_container[i]->launch(bullet_state, player->getPosition(),
+                                                player->getContentSize(), bullet_founded);
+                bullet_founded++;
+                if (bullet_founded == 3)
+                    return;
+            }
+        }
+    } else {
+        for (int i = 0; bullet_container[i] != NULL; i++) {
+            if (!bullet_container[i]->bullet_active) {
+                bullet_container[i]->launch(bullet_state, player->getPosition(),
+                                            player->getContentSize(), NORMAL_LAUNCH);
+                if (bonus_active == BONUS_POWER)
+                    bullet_container[i]->setScale(1.3f);
+                if (bullet_state == BULLET_LEFT)
+                    bullet_state = BULLET_RIGHT;
+                else
+                    bullet_state = BULLET_LEFT;
+                return;
+            }
         }
     }
 }
@@ -1328,12 +1346,8 @@ void GameScene::increase_speed(Label *speed) {
                     SPEED_LEVEL) +
             1);
     if (UserLocalStore::get_achievement_variable(SPEED_LEVEL) ==
-        10) { // DEBLOCAGE D'UN SHOOTER (19:)
-        int *shooter = UserLocalStore::get_asset_shooter();
-        shooter[19] = 1;
-        UserLocalStore::store_asset_ball(shooter);
-
-    }
+        10)
+        UserLocalStore::store_shooter(20, 1);
     char s[DEFAULT_CHAR_LENGHT];
     sprintf(s, "SPEED %i",
             UserLocalStore::get_achievement_variable(
@@ -1353,12 +1367,8 @@ void GameScene::increase_power(Label *power) {
                     POWER_LEVEL) +
             1);
     if (UserLocalStore::get_achievement_variable(POWER_LEVEL) ==
-        20) { // DEBLOCAGE D'UN SHOOTER (5:)
-        int *shooter = UserLocalStore::get_asset_shooter();
-        shooter[5] = 1;
-        UserLocalStore::store_asset_ball(shooter);
-
-    }
+        20)// DEBLOCAGE D'UN SHOOTER (5:)
+        UserLocalStore::store_shooter(6, 1);
     char p[DEFAULT_CHAR_LENGHT];
     sprintf(p, "LEVEL %i",
             UserLocalStore::get_achievement_variable(POWER_LEVEL));

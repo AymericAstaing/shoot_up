@@ -242,7 +242,7 @@ namespace UICustom {
                 1);
         if (UserLocalStore::get_achievement_variable(SPEED_LEVEL) ==
             10) // DEBLOCAGE D'UN SHOOTER (19:)
-            UserLocalStore::store_shooter(19, 1);
+            UserLocalStore::store_shooter(20, 1);
         char s[DEFAULT_CHAR_LENGHT];
         sprintf(s, "SPEED %i",
                 UserLocalStore::get_achievement_variable(
@@ -262,8 +262,8 @@ namespace UICustom {
                         POWER_LEVEL) +
                 1);
         if (UserLocalStore::get_achievement_variable(POWER_LEVEL) ==
-            20) // DEBLOCAGE D'UN SHOOTER (5:)
-            UserLocalStore::store_shooter(5, 1);
+            20) // DEBLOCAGE D'UN SHOOTER (6:)
+            UserLocalStore::store_shooter(6, 1);
         char p[DEFAULT_CHAR_LENGHT];
         sprintf(p, "LEVEL %i",
                 UserLocalStore::get_achievement_variable(POWER_LEVEL));

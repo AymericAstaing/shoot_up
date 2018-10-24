@@ -18,6 +18,9 @@ USING_NS_CC;
 #define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
+#define NORMAL_LAUNCH                   0
+#define BONUS_LAUNCH_LEFT               1
+#define BONUS_LAUNCH_RIGHT              2
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
 #define BONUS_BULLET                    0
 #define BONUS_POWER                     1

@@ -20,7 +20,6 @@ void Circle::reset() {
 }
 
 void Circle::anim_circle(Vec2 pos) {
-    log("ANIM");
     this->active_circle = true;
     this->setVisible(true);
     this->setPosition(pos);

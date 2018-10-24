@@ -30,7 +30,7 @@ Action *Utils::get_bonus_power_anim() {
         ss << "bonus_power_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.1f);
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.06f);
     CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
@@ -44,7 +44,7 @@ Action* Utils::get_bonus_bullet_anim() {
         ss << "bonus_bullet_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.1f);
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.06f);
     CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
@@ -100,7 +100,6 @@ int *Utils::get_distribution_points(int *distribution, int total_number, int nbr
 float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2]) {
     auto screen_height = Director::getInstance()->getVisibleSize().height;
     auto line_height = next_line_size[HEIGHT] / 2;
-    log("LINE HEIGHT  ==   %f", line_height);
     if (current_type >= LINE_TYPE_STARTUP_2 && current_type <= LINE_TYPE_STARTUP_5)
         return (-line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_4)

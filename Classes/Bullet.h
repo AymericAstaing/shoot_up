@@ -11,7 +11,7 @@ public:
                         Bullet();
                         ~Bullet();
     static Bullet*      create();
-    void                launch(int, Vec2, Size);
+    void                launch(int, Vec2, Size, int);
     void                reset();
     bool bullet_active = false;
     bool contact = false;
