@@ -107,13 +107,10 @@ ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
         cell = new(std::nothrow) CustomTableViewCell();
         cell->autorelease();
         Sprite *sprite = nullptr;
-        if (table->getTag() == SHOOTER_ARRAY) {
+        if (table->getTag() == SHOOTER_ARRAY)
             sprite = Sprite::create(shooter_content[idx]);
-            log("ID == %i, DATA == %s", idx, shooter_content[idx]);
-        } else {
+        else
             sprite = Sprite::create(ball_content[idx]);
-            log("ID == %i, DATA == %s", idx, ball_content[idx]);
-        }
         sprite->setScale(1.05f);
         sprite->setTag(2);
         sprite->setAnchorPoint(Vec2::ZERO);
