@@ -67,6 +67,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto spritecache = SpriteFrameCache::getInstance();
     spritecache->addSpriteFramesWithFile("spritesheet/block_color.plist");
     spritecache->addSpriteFramesWithFile("spritesheet/bullets.plist");
+    spritecache->addSpriteFramesWithFile("spritesheet/bonus_power.plist");
+    spritecache->addSpriteFramesWithFile("spritesheet/bonus_bullet.plist");
     UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     auto scene = GameScene::createScene();
     director->runWithScene(scene);

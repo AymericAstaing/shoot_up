@@ -1,9 +1,12 @@
-#include        <iostream>
+#include        <string>
 #include        <random>
+#include        "cocos2d.h"
 #include        "Utils.h"
 #include        "GameScene.h"
 #include        "UserLocalStore.h"
 #include        "ShootUp.h"
+
+using namespace std;
 
 USING_NS_CC;
 
@@ -18,6 +21,33 @@ Sprite *Utils::get_player() {
     return (player);
 }
 
+Action *Utils::get_bonus_power_anim() {
+    auto spritecache = SpriteFrameCache::getInstance();
+    spritecache->addSpriteFramesWithFile("spritesheet/bonus_power.plist");
+    Vector<SpriteFrame*> frames;
+    for (int i = 0; i < 4; i++) {
+        stringstream ss;
+        ss << "bonus_power_" << i << ".png";
+        frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
+    }
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.1f);
+    CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
+    return (action);
+}
+
+Action* Utils::get_bonus_bullet_anim() {
+    auto spritecache = SpriteFrameCache::getInstance();
+    spritecache->addSpriteFramesWithFile("spritesheet/bonus_bullet.plist");
+    Vector<SpriteFrame*> frames;
+    for (int i = 0; i < 4; i++) {
+        stringstream ss;
+        ss << "bonus_bullet_" << i << ".png";
+        frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
+    }
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.1f);
+    CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
+    return (action);
+}
 
 int Utils::array_sum(int *array, int size) {
     int sum = 0;
@@ -69,8 +99,8 @@ int *Utils::get_distribution_points(int *distribution, int total_number, int nbr
 
 float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2]) {
     auto screen_height = Director::getInstance()->getVisibleSize().height;
-
     auto line_height = next_line_size[HEIGHT] / 2;
+    log("LINE HEIGHT  ==   %f", line_height);
     if (current_type >= LINE_TYPE_STARTUP_2 && current_type <= LINE_TYPE_STARTUP_5)
         return (-line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_4)
@@ -82,9 +112,9 @@ float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2
     if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.52 + line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
-        return static_cast<float>(screen_height * 0.23 + line_height);
-    if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.25 + line_height);
+    if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
+        return static_cast<float>(screen_height * 0.23 + line_height);
     return (-1);
 }
 

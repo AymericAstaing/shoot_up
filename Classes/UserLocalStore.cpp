@@ -548,15 +548,21 @@ const char **UserLocalStore::get_final_shooter_array() {
 
     const char **shooter_array;
 
-    shooter_array = new const char *[31];
+    shooter_array = new const char *[34];
+    int asset_shooter_index = 0;
     int *shooter = UserLocalStore::get_asset_shooter();
-    for (int i = 0; i < 31; i++) {
-        if (shooter[i] == LOCKED)
-            shooter_array[i] = shop_shooter_locked[i];
-        else if (shooter[i] == UNLOCKED)
-            shooter_array[i] = shop_shooter_unlocked[i];
-        else if (shooter[i] == SELECTED)
-            shooter_array[i] = shop_shooter_selected[i];
+    for (int i = 0; i < 34; i++) {
+        if (i == 11 || i == 25 || i == 26) {
+            shooter_array[i] = "shop/empty_cell.png";
+        } else {
+            if (shooter[asset_shooter_index] == LOCKED)
+                shooter_array[i] = shop_shooter_locked[asset_shooter_index];
+            else if (shooter[asset_shooter_index] == UNLOCKED)
+                shooter_array[i] = shop_shooter_unlocked[asset_shooter_index];
+            else if (shooter[asset_shooter_index] == SELECTED)
+                shooter_array[i] = shop_shooter_selected[asset_shooter_index];
+            asset_shooter_index++;
+        }
     }
     return (shooter_array);
 }

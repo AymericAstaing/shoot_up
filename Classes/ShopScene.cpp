@@ -107,10 +107,13 @@ ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
         cell = new(std::nothrow) CustomTableViewCell();
         cell->autorelease();
         Sprite *sprite = nullptr;
-        if (table->getTag() == SHOOTER_ARRAY)
+        if (table->getTag() == SHOOTER_ARRAY) {
             sprite = Sprite::create(shooter_content[idx]);
-        else
+            log("ID == %i, DATA == %s", idx, shooter_content[idx]);
+        } else {
             sprite = Sprite::create(ball_content[idx]);
+            log("ID == %i, DATA == %s", idx, ball_content[idx]);
+        }
         sprite->setScale(1.05f);
         sprite->setTag(2);
         sprite->setAnchorPoint(Vec2::ZERO);
@@ -176,22 +179,31 @@ Size ShopScene::tableCellSizeForIndex(cocos2d::extension::TableView *table, ssiz
 
 void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
                                  cocos2d::extension::TableViewCell *cell) {
+    if (table->getTag() == SHOOTER_ARRAY && cell->getIdx() == 11 || cell->getIdx() == 25 ||
+        cell->getIdx() == 26)
+        return;
+    int cell_id = cell->getIdx();
+    if (table->getTag() == SHOOTER_ARRAY) {
+        if (cell_id > 11 && cell_id < 26)
+            cell_id = cell_id - 1;
+        if (cell_id > 25)
+            cell_id = cell_id - 3;
+    }
     if (asset_menu_added == 1 ||
         (mode == SHOOTER && cell->getIdx() == 0 &&
-         UserLocalStore::get_shooter(cell->getIdx()) != 1) ||
-        (mode == BALL && cell->getIdx() == 0 && UserLocalStore::get_ball(cell->getIdx()) != 1))
+         UserLocalStore::get_shooter(cell_id) != 1) ||
+        (mode == BALL && cell_id == 0 && UserLocalStore::get_ball(cell_id) != 1))
         return;
-    if (mode == SHOOTER && UserLocalStore::get_shooter(cell->getIdx()) != 0) {
-        if (UserLocalStore::get_shooter(cell->getIdx()) != 2) {
+    if (mode == SHOOTER && UserLocalStore::get_shooter(cell_id) != 0) {
+        if (UserLocalStore::get_shooter(cell_id) != 2) {
             UserLocalStore::store_shooter(UserLocalStore::get_current_shooter(), 1);
-            UserLocalStore::store_shooter(cell->getIdx(), 2);
+            UserLocalStore::store_shooter(cell_id, 2);
             shooter_grid->setVisible(false);
             shooter_grid->release();
             shooter_content = UserLocalStore::get_final_shooter_array();
             shooter_grid = init_grid(SHOOTER_ARRAY);
             addChild(shooter_grid);
             shooter_grid->setVisible(true);
-
         }
         return;
     } else if (mode == BALL && UserLocalStore::get_ball(cell->getIdx()) != 0) {
@@ -207,7 +219,7 @@ void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
         }
         return;
     }
-    asset_menu = get_asset_menu(cell->getIdx() - 1,
+    asset_menu = get_asset_menu(cell_id - 1,
                                 table->getTag()); // -1 car on enleve le premier (pas de data)
     addChild(asset_menu);
     asset_menu_added = 1;
@@ -216,7 +228,7 @@ void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
 ssize_t ShopScene::numberOfCellsInTableView(cocos2d::extension::TableView *table) {
 
     if (table->getTag() == SHOOTER_ARRAY)
-        return (31);
+        return (34);
     else if (table->getTag() == BALL_ARRAY)
         return (8);
     return 0;

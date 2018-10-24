@@ -14,6 +14,7 @@ Bullet::~Bullet() {
 void Bullet::reset() {
     auto winSize = Director::getInstance()->getVisibleSize();
     stopAllActions();
+    setScale(1);
     setVisible(false);
     bullet_active = false;
     contact = false;

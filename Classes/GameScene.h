@@ -33,6 +33,8 @@ private:
     Sprite*             sound;
     Sprite*             best_img;
     Sprite*             tuto;
+    Sprite*             bonus_power;
+    Sprite*             bonus_bullet;
     Menu*               game_menu;
     Menu*               continue_menu;
     MenuItemImage*      options_btn;
@@ -49,11 +51,17 @@ private:
     MenuItemImage*      menu_stats_img;
     Menu*               end_menu;
     Layer*              stats;
+    float               bonus_time = 0;
+    bool                bonus_selected = false;
+    bool                bonus_displayed = false;
+    int                 bonus_active = 0;
+    int                 bonus_visible_id = -1;
     float               x_screen;
     float               y_screen;
     int                 game_score;
     int                 *active_lines;
     int                 options_state = 0;
+    int                 next_bonus_spawn = 0;
     int                 bullet_state;
     int                 game_state;
     int                 game_block_destroyed = 0;
@@ -83,6 +91,11 @@ public:
     void                    check_hit_color_change(Line*, Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2);
+    void                    load_bonus();
+    void                    remove_bonus();
+    void                    move_bonus();
+    void                    bonus_managment();
+    void                    active_bonus();
     void                    forward_circle();
     void                    show_particle_explode(Vec2, int);
     void                    start_game();

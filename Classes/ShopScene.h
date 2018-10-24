@@ -56,7 +56,7 @@ private:
                                            "COLLECT 200\nPOWER UP ITEMS\nWITH SHOOTING\nSPEED TANK",
                                            "DESTORY 15K\nBLOCKS OR MORE\nWITH SHOOTING\nSPEED TANK",
                                            "DESTROY 7.5K\nBLOCKS OR MORE",
-                                           "PLAY 200G AMES\nWITH SIDEWAY\nSHOOTER TANK",
+                                           "PLAY 200 GAMES\nWITH SIDEWAY\nSHOOTER TANK",
                                            "DESTORY 20K\n BLOCKS OR MORE\nWITH SIDEWAY\nSHOOTER TANK",
                                            "PLAY 200 GAMES",
                                            "PLAY 300 GAMES\nWITH TRIPLE\nSHOOTER TANK",
@@ -84,6 +84,7 @@ public:
     bool                    onTouchBegan(Touch *touch, Event *event);
     GridView*               init_grid(int);
     Menu*                   get_asset_menu(int, int);
+    int                     shooter_init_id = 0;
 
 
     /* *****************************************GRID MANAGMENT *************************************** */

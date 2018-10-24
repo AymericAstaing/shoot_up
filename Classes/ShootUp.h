@@ -19,6 +19,10 @@ USING_NS_CC;
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
+#define BONUS_BULLET                    0
+#define BONUS_POWER                     1
+#define BONUS_HIDE                      0
+#define BONUS_IN_GAME                   1
 #define COMPLEX_STRUCT_ELMTS            7
 #define NO_SHOOTER_UPGRADE              2
 #define SQUARE_SIZE_5                   4.95
@@ -52,7 +56,7 @@ USING_NS_CC;
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
 #define SIMPLE_LINE_NBR                 10
-#define DEFAULT_BULLET_NBR              10 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
+#define DEFAULT_BULLET_NBR              12 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0
