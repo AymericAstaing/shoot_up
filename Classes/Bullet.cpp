@@ -30,9 +30,9 @@ void Bullet::launch(int bullet_state, Vec2 player_pos, Size player_size, int lau
     float x_pos_start = player_pos.x;;
 
     if (launch_mode == BONUS_LAUNCH_LEFT)
-        x_pos = static_cast<float>(x_pos - (2.5 * player_size.width));
+        x_pos = static_cast<float>(x_pos - (2.2 * player_size.width));
     else if (launch_mode == BONUS_LAUNCH_RIGHT)
-        x_pos = static_cast<float>(x_pos + (2.5 * player_size.width));
+        x_pos = static_cast<float>(x_pos + (2.2 * player_size.width));
 
     if (launch_mode == NORMAL_LAUNCH) {
         if (bullet_state == 0)

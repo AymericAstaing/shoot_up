@@ -83,14 +83,31 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, NOT_FROM_SHOP);
     init_pool_objects();
     init_options_menu();
+    init_bonus_components();
+}
 
-
-    bonus_power = Sprite::createWithSpriteFrameName("bonus_power_0.png");
-    bonus_bullet = Sprite::createWithSpriteFrameName("bonus_bullet_0.png");
+void GameScene::init_bonus_components() {
+    bonus_power = Sprite::createWithSpriteFrameName(DEFAULT_POWER_TEXTURE);
+    bonus_bullet = Sprite::createWithSpriteFrameName(DEFAULT_BULLET_TEXTURE);
+    bonus_speed = Sprite::createWithSpriteFrameName(DEFAULT_SPEED_TEXTURE);
+    speed_rect = Sprite::create(SPEED_RECT);
+    power_rect = Sprite::create(POWER_RECT);
+    bullet_rect = Sprite::create(BULLET_RECT);
+    bullet_rect->setVisible(false);
+    speed_rect->setVisible(false);
+    power_rect->setVisible(false);
     bonus_power->setVisible(false);
     bonus_bullet->setVisible(false);
+    bonus_speed->setVisible(false);
+    speed_rect->setScale(1.1);
+    bullet_rect->setScale(1.1);
+    power_rect->setScale(1.1);
+    addChild(speed_rect, 15);
+    addChild(power_rect, 15);
+    addChild(bullet_rect, 15);
     addChild(bonus_bullet);
     addChild(bonus_power);
+    addChild(bonus_speed);
 }
 
 Menu *GameScene::get_continue_menu() {
@@ -134,6 +151,7 @@ void GameScene::value_to_update() {
 void GameScene::end_of_game() {
     if (game_state != GAME_RUNNING)
         return;
+    remove_bonus();
     value_to_update();
     game_state = GAME_END;
     score->setVisible(false);
@@ -204,7 +222,10 @@ void GameScene::init_pool_objects() {
 }
 
 void GameScene::start_bullet_shoot() {
-    this->schedule(schedule_selector(GameScene::launch_bullet), get_shoot_interval());
+    float interval = get_shoot_interval();
+    if (bonus_active == BONUS_SPEED)
+        interval /= 2;
+    this->schedule(schedule_selector(GameScene::launch_bullet), interval);
 }
 
 void GameScene::stop_bullet_shoot() {
@@ -377,13 +398,26 @@ void GameScene::show_particle(Vec2 pos) {
 void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
     auto fileUtil = FileUtils::getInstance();
     auto plistData = fileUtil->getValueMapFromFile(explode_plist[default_color_code]);
-    auto stars = ParticleSystemQuad::create(plistData);
+    ParticleSystemQuad *stars = ParticleSystemQuad::create(plistData);
     stars->setScale(1);
     stars->setDuration(0.3);
     stars->setPosition(square_pos);
     stars->setTotalParticles(30);
     stars->setAutoRemoveOnFinish(true);
-    addChild(stars, 2, 1);
+    if (stars)
+        addChild(stars, 2, 1);
+}
+
+void GameScene::show_bonus_particle_explode(Vec2 bonus_pos) {
+    auto fileUtil = FileUtils::getInstance();
+    auto plistData = fileUtil->getValueMapFromFile(explode_bonus_plist[bonus_active]);
+    ParticleSystemQuad *stars = ParticleSystemQuad::create(plistData);
+    stars->setScale(1);
+    stars->setDuration(0.4);
+    stars->setPosition(bonus_pos);
+    stars->setTotalParticles(10);
+    stars->setAutoRemoveOnFinish(true);
+    addChild(stars, 3, 1);
 }
 
 void GameScene::check_hit_color_change(Line *l, Square *sq) {
@@ -431,10 +465,8 @@ void GameScene::check_into_line() {
                     bullet_pos.y = 0;
                 if (sq->isVisible() && point_into_square(sq, bullet_pos)) {
                     int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
-                    if (bonus_active == BONUS_POWER) {
-                        log("FOII  2");
+                    if (bonus_active == BONUS_POWER)
                         bullet_hit *= 2;
-                    }
                     if (sq->get_square_pv() - bullet_hit <= 1) {
                         auto batch = current_line->getChildByTag(LINE_BATCH_ID);
                         if (batch) {
@@ -568,28 +600,28 @@ void GameScene::forward_circle() {
 }
 
 void GameScene::load_bonus() {
-    bonus_selected = true;
-    int type = Utils::get_random_number(0, 1);
+    int type = Utils::get_random_number(0, 2);
+    Vec2 initial_pos = Vec2(
+            Utils::get_random_number(static_cast<int>(bonus_bullet->getContentSize().width / 2),
+                                     static_cast<int>(x_screen -
+                                                      bonus_bullet->getContentSize().width /
+                                                      2)),
+            y_screen + bonus_power->getContentSize().height / 2);
     if (type == BONUS_BULLET) {
         bonus_bullet->setTag(BONUS_HIDE);
-        bonus_bullet->setPositionX(
-                Utils::get_random_number(static_cast<int>(bonus_bullet->getContentSize().width / 2),
-                                         static_cast<int>(x_screen -
-                                                          bonus_bullet->getContentSize().width /
-                                                          2)));
-        bonus_bullet->setPositionY(y_screen + bonus_bullet->getContentSize().height / 2);
+        bonus_bullet->setPosition(initial_pos);
         bonus_visible_id = BONUS_BULLET;
-    } else {
+    } else if (type == BONUS_POWER) {
         bonus_power->setTag(BONUS_HIDE);
-        bonus_power->setPositionX(
-                Utils::get_random_number(static_cast<int>(bonus_power->getContentSize().width / 2),
-                                         static_cast<int>(x_screen -
-                                                          bonus_power->getContentSize().width /
-                                                          2)));
-        bonus_power->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
+        bonus_power->setPosition(initial_pos);
         bonus_visible_id = BONUS_POWER;
+    } else {
+        bonus_speed->setTag(BONUS_HIDE);
+        bonus_speed->setPosition(initial_pos);
+        bonus_visible_id = BONUS_SPEED;
+
     }
-    next_bonus_spawn = LINE_GENERATED + 5 + Utils::get_random_number(0, 5);
+    bonus_selected = true;
 }
 
 void GameScene::active_bonus() {
@@ -598,39 +630,138 @@ void GameScene::active_bonus() {
         bonus_power->setTag(BONUS_IN_GAME);
         bonus_power->setVisible(true);
         bonus_power->runAction(Utils::get_bonus_power_anim());
-    } else {
+    } else if (bonus_visible_id == BONUS_BULLET) {
         bonus_bullet->setTag(BONUS_IN_GAME);
         bonus_bullet->setVisible(true);
         bonus_bullet->runAction(Utils::get_bonus_bullet_anim());
+    } else {
+        bonus_speed->setTag(BONUS_IN_GAME);
+        bonus_speed->setVisible(true);
+        bonus_speed->runAction(Utils::get_bonus_speed_anim());
     }
+    next_bonus_spawn = LINE_GENERATED + 5 + Utils::get_random_number(0, 5);
 }
 
 void GameScene::remove_bonus() {
+    float initial_y_pos = y_screen + bonus_power->getContentSize().height / 2;
+    bonus_active = -1;
     bonus_time = 0;
     bonus_selected = false;
     bonus_displayed = false;
+    rect_animated = false;
     bonus_visible_id = -1;
+
     bonus_power->setTag(BONUS_HIDE);
     bonus_bullet->setTag(BONUS_HIDE);
-    bonus_active = -1;
+    bonus_speed->setTag(BONUS_HIDE);
+
     bonus_power->stopAllActions();
+    bonus_speed->stopAllActions();
     bonus_bullet->stopAllActions();
+
+    power_rect->stopAllActions();
+    speed_rect->stopAllActions();
+    bullet_rect->stopAllActions();
+
     bonus_power->setVisible(false);
     bonus_bullet->setVisible(false);
-    bonus_power->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
-    bonus_bullet->setPositionY(y_screen + bonus_bullet->getContentSize().height / 2);
+    bonus_speed->setVisible(false);
+
+    power_rect->setVisible(false);
+    speed_rect->setVisible(false);
+    bullet_rect->setVisible(false);
+
+    bonus_power->setPositionY(initial_y_pos);
+    bonus_speed->setPositionY(initial_y_pos);
+    bonus_bullet->setPositionY(initial_y_pos);
 
 }
 
 void GameScene::move_bonus() {
-    if (bonus_visible_id == BONUS_BULLET) {
-        bonus_bullet->setPositionY(bonus_bullet->getPositionY() - LINE_SPEED);
-        if (bonus_bullet->getPositionY() + bonus_bullet->getContentSize().height / 2 <= 0)
-            remove_bonus();
-    } else {
-        bonus_power->setPositionY(bonus_power->getPositionY() - LINE_SPEED);
-        if (bonus_power->getPositionY() + bonus_power->getContentSize().height / 2 <= 0)
-            remove_bonus();
+    Vec2 player_pos = player->getPosition();
+    if (bonus_active != -1) {
+        if (bonus_visible_id == BONUS_BULLET)
+            bullet_rect->setPosition(player->getPosition());
+        else if (bonus_visible_id == BONUS_POWER)
+            power_rect->setPosition(player->getPosition());
+        else
+            speed_rect->setPosition(player->getPosition());
+    } else if (bonus_active == -1) {
+        if (bonus_visible_id == BONUS_BULLET) {
+            bonus_bullet->setPositionY(bonus_bullet->getPositionY() - LINE_SPEED);
+            if (bonus_bullet->getPositionY() + bonus_bullet->getContentSize().height / 2 <= 0)
+                remove_bonus();
+        } else if (bonus_visible_id == BONUS_POWER) {
+            bonus_power->setPositionY(bonus_power->getPositionY() - LINE_SPEED);
+            if (bonus_power->getPositionY() + bonus_power->getContentSize().height / 2 <= 0)
+                remove_bonus();
+        } else {
+            bonus_speed->setPositionY(bonus_speed->getPositionY() - LINE_SPEED);
+            if (bonus_speed->getPositionY() + bonus_speed->getContentSize().height / 2 <= 0)
+                remove_bonus();
+        }
+    }
+}
+
+void GameScene::bonus_collision() {
+    float player_width = player->getContentSize().width;
+    float player_height = player->getContentSize().height;
+    Rect player_bounding_box = Rect(player->getPositionX() - player_width / 2,
+                                    player->getPositionY() + player_height / 2, player_width,
+                                    player_height);
+    float bonus_width = bonus_bullet->getContentSize().width;
+    float bonus_height = bonus_bullet->getContentSize().height;
+
+    Sprite *sprite_tmp;
+    if (bonus_visible_id == BONUS_POWER)
+        sprite_tmp = bonus_power;
+    else if (bonus_visible_id == BONUS_SPEED)
+        sprite_tmp = bonus_speed;
+    else
+        sprite_tmp = bonus_bullet;
+
+    Rect bonus_bounding_box = Rect(sprite_tmp->getPositionX() - bonus_width / 2,
+                                   sprite_tmp->getPositionY() + bonus_height / 2, bonus_width,
+                                   bonus_height);
+    if (player_bounding_box.intersectsRect(bonus_bounding_box)) {
+        float initial_y_pos = y_screen + bonus_power->getContentSize().height / 2;
+        if (bonus_visible_id == BONUS_POWER) {
+            bonus_active = BONUS_POWER;
+            bonus_power->setTexture(DEFAULT_POWER_TEXTURE);
+            bonus_power->setVisible(false);
+            show_destruction_circle(bonus_power->getPosition());
+            show_bonus_particle_explode(Vec2(bonus_power->getPosition().x,
+                                             bonus_power->getPosition().y -
+                                             bonus_power->getContentSize().width));
+            bonus_power->setPositionY(initial_y_pos);
+            power_rect->setVisible(true);
+            game_power_up_collected++;
+            power_rect->setPosition(player->getPosition());
+        } else if (bonus_visible_id == BONUS_BULLET) {
+            bonus_active = BONUS_BULLET;
+            bonus_bullet->setTexture(DEFAULT_BULLET_TEXTURE);
+            bonus_bullet->setVisible(false);
+            show_destruction_circle(bonus_bullet->getPosition());
+            show_bonus_particle_explode(Vec2(bonus_bullet->getPosition().x,
+                                             bonus_bullet->getPosition().y -
+                                             bonus_bullet->getContentSize().width));
+            bonus_bullet->setPositionY(initial_y_pos);
+            bullet_rect->setVisible(true);
+            bullet_rect->setPosition(player->getPosition());
+        } else {
+            stop_bullet_shoot();
+            bonus_active = BONUS_SPEED;
+            start_bullet_shoot();
+            bonus_speed->setTexture(DEFAULT_SPEED_TEXTURE);
+            bonus_speed->setVisible(false);
+            show_destruction_circle(bonus_speed->getPosition());
+            show_bonus_particle_explode(Vec2(bonus_speed->getPosition().x,
+                                             bonus_speed->getPosition().y -
+                                             bonus_speed->getContentSize().width));
+            bonus_speed->setPositionY(initial_y_pos);
+            speed_rect->setVisible(true);
+            speed_rect->setPosition(player->getPosition());
+        }
     }
 }
 
@@ -642,51 +773,43 @@ void GameScene::bonus_managment() {
          pool_container[CURRENT_LINE_ID]->getContentSize().height) <=
         (NEW_SPAWN_Y + ((y_screen - NEW_SPAWN_Y) / 2)))
         active_bonus();
-
     if (bonus_displayed) {
         move_bonus();
-        float player_width = player->getContentSize().width;
-        float player_height = player->getContentSize().height;
-        Rect player_bounding_box = Rect(player->getPositionX() - player_width / 2,
-                                        player->getPositionY() + player_height / 2, player_width,
-                                        player_height);
-        float bonus_width = bonus_bullet->getContentSize().width;
-        float bonus_height = bonus_bullet->getContentSize().height;
-        Rect bonus_bounding_box;
-        if (bonus_visible_id == BONUS_POWER)
-            bonus_bounding_box = Rect(bonus_power->getPositionX() - bonus_width / 2,
-                                      bonus_power->getPositionY() + bonus_height / 2, bonus_width,
-                                      bonus_height);
+        bonus_collision();
+        if (bonus_active != -1) {
+            if (bonus_time >= BONUS_TIME_MIDLE && !rect_animated) {
+                rect_animated = true;
+                if (bonus_active == BONUS_SPEED)
+                    speed_rect->runAction(Utils::get_blink_animation());
+                else if (bonus_active == BONUS_POWER)
+                    power_rect->runAction(Utils::get_blink_animation());
+                else
+                    bullet_rect->runAction(Utils::get_blink_animation());
 
-        else
-            bonus_bounding_box = Rect(bonus_bullet->getPositionX() - bonus_width / 2,
-                                      bonus_bullet->getPositionY() + bonus_height / 2, bonus_width,
-
-                                      bonus_height);
-        if (player_bounding_box.intersectsRect(bonus_bounding_box)) {
-            if (bonus_visible_id == BONUS_POWER) {
-                bonus_active = BONUS_POWER;
-                bonus_power->setVisible(false);
-                bonus_power->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
-            } else {
-                bonus_active = BONUS_BULLET;
-                bonus_bullet->setVisible(false);
-                bonus_bullet->setPositionY(y_screen + bonus_power->getContentSize().height / 2);
+            } else if (bonus_time >= BONUS_TIME_LIMIT) {
+                power_rect->setOpacity(100);
+                speed_rect->setOpacity(100);
+                bullet_rect->setOpacity(100);
+                if (bonus_active == BONUS_SPEED) {
+                    stop_bullet_shoot();
+                    remove_bonus();
+                    start_bullet_shoot();
+                    return;
+                }
+                remove_bonus();
             }
         }
-        if (bonus_active != -1 && bonus_time >= 4.0f)
-            remove_bonus();
     }
 }
 
 void GameScene::update(float ft) {
     if (bonus_active != -1)
         bonus_time += ft;
-    forward_circle();
-    bonus_managment();
     check_lines_out();
     move_active_lines();
     if (game_state == GAME_RUNNING) {
+        forward_circle();
+        bonus_managment();
         check_bullet_contact();
         check_into_line();
         check_player_collision();
@@ -764,7 +887,7 @@ void GameScene::run_game_loop() {
                                          pool_container[CURRENT_LINE_ID]->line_size);
     }
     bonus_selected = false;
-    next_bonus_spawn = 5 + Utils::get_random_number(0, 5);
+    next_bonus_spawn = LINE_GENERATED + 5 + Utils::get_random_number(0, 5);
     store_active_line(CURRENT_LINE_ID);
     pool_container[CURRENT_LINE_ID]->set_active(
             current_factor_h, LINE_GENERATED);
@@ -920,7 +1043,8 @@ bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
     float gap_x = player_size.width / 2 + (2 * player_size.width);
     float gap_y = player_size.height / 2 + (2 * player_size.width);
 
-    return touch_position.x >= player_pos.x - gap_x && touch_position.x <= player_pos.x + gap_x &&
+    return touch_position.x >= player_pos.x - gap_x &&
+           touch_position.x <= player_pos.x + gap_x &&
            touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
 }
 
@@ -950,8 +1074,8 @@ void GameScene::launch_bullet(float dt) {
         int bullet_founded = 0;
         for (int i = 0; bullet_container[i] != NULL; i++) {
             if (!bullet_container[i]->bullet_active) {
-                    bullet_container[i]->launch(bullet_state, player->getPosition(),
-                                                player->getContentSize(), bullet_founded);
+                bullet_container[i]->launch(bullet_state, player->getPosition(),
+                                            player->getContentSize(), bullet_founded);
                 bullet_founded++;
                 if (bullet_founded == 3)
                     return;

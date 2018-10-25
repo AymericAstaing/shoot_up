@@ -10,6 +10,12 @@ using namespace std;
 
 USING_NS_CC;
 
+Action *Utils::get_blink_animation() {
+    auto fadeout = FadeOut::create(0.5);
+    auto fadein = FadeIn::create(0.5);
+    auto sequence = Sequence::create(fadeout, fadein, nullptr);
+    return (RepeatForever::create(sequence));
+}
 
 Sprite *Utils::get_player() {
     auto winSize = Director::getInstance()->getVisibleSize();
@@ -30,7 +36,7 @@ Action *Utils::get_bonus_power_anim() {
         ss << "bonus_power_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.06f);
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.08f);
     CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
@@ -44,7 +50,21 @@ Action* Utils::get_bonus_bullet_anim() {
         ss << "bonus_bullet_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.06f);
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.08f);
+    CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
+    return (action);
+}
+
+Action* Utils::get_bonus_speed_anim() {
+    auto spritecache = SpriteFrameCache::getInstance();
+    spritecache->addSpriteFramesWithFile("spritesheet/bonus_speed.plist");
+    Vector<SpriteFrame*> frames;
+    for (int i = 0; i < 4; i++) {
+        stringstream ss;
+        ss << "bonus_speed_" << i << ".png";
+        frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
+    }
+    Animation* anim = Animation::createWithSpriteFrames(frames, 0.08f);
     CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
@@ -72,7 +92,6 @@ int *Utils::get_complex_distribution_points(int *distribution, int total_nbr, in
         distribution[i] = static_cast<int>(DISTRIB_COMPLEX[type][i] * total_nbr);
     return (distribution);
 }
-
 
 int *Utils::get_simple_distribution_points(int *distribution, int total_nbr, int line_type,
                                            int sq_nbr) {
@@ -156,7 +175,7 @@ int Utils::get_shooter_type(int shooter_id) {
 }
 
 int Utils::get_random_line_type() {
-    int result = get_random_number(0, 20);
+    int result = get_random_number(0, 30);
     if (result > 7)
         return (LINE_TYPE_SIMPLE_OF_5);
     else
@@ -229,13 +248,3 @@ float Utils::get_finger_move_factor(float x) {
     float new_max = winSize.width / 2;
     return ((((x - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
 }
-
-float Utils::line_speed_converter(float y_value) {
-    auto winSize = Director::getInstance()->getVisibleSize();
-    float old_min = winSize.height;
-    float old_max = -300;
-    float new_max = 0;
-    float new_min = 3.3;
-    return ((((y_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
-}
-

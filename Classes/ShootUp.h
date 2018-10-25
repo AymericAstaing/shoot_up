@@ -18,14 +18,7 @@ USING_NS_CC;
 #define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
-#define NORMAL_LAUNCH                   0
-#define BONUS_LAUNCH_LEFT               1
-#define BONUS_LAUNCH_RIGHT              2
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
-#define BONUS_BULLET                    0
-#define BONUS_POWER                     1
-#define BONUS_HIDE                      0
-#define BONUS_IN_GAME                   1
 #define COMPLEX_STRUCT_ELMTS            7
 #define NO_SHOOTER_UPGRADE              2
 #define SQUARE_SIZE_5                   4.95
@@ -50,6 +43,25 @@ USING_NS_CC;
 #define SPEED_TANK                      5
 #define SIDEWAY_TANK                    6
 #define TRIPLE_TANK                     7
+
+/******************* BONUS ***************/
+#define DEFAULT_SPEED_TEXTURE           "bonus_speed_0.png"
+#define DEFAULT_POWER_TEXTURE           "bonus_power_0.png"
+#define DEFAULT_BULLET_TEXTURE          "bonus_bullet_0.png"
+#define SPEED_RECT                      "player_effect/speed_effect.png"
+#define POWER_RECT                      "player_effect/power_effect.png"
+#define BULLET_RECT                     "player_effect/bullet_effect.png"
+#define NORMAL_LAUNCH                   0
+#define BONUS_LAUNCH_LEFT               1
+#define BONUS_LAUNCH_RIGHT              2
+#define BONUS_TIME_LIMIT                5.0f
+#define BONUS_TIME_MIDLE                2.5f
+#define BONUS_BULLET                    0
+#define BONUS_POWER                     1
+#define BONUS_SPEED                     2
+#define BONUS_HIDE                      0
+#define BONUS_IN_GAME                   1
+
 
 /******************* GAME STATES ***************/
 #define MENU                            0

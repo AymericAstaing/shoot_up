@@ -16,6 +16,10 @@ static const char *explode_plist[4] = {"spritesheet/explode_square_red.plist",
                                        "spritesheet/explode_square_yellow.plist",
                                        "spritesheet/explode_square_red.plist"};
 
+static const char *explode_bonus_plist[3] = {"spritesheet/explode_bonus_bullet.plist",
+                                       "spritesheet/explode_bonus_power.plist",
+                                       "spritesheet/explode_bonus_speed.plist"};
+
 using namespace cocos2d;
 
 class GameScene : public cocos2d::Scene {
@@ -35,6 +39,10 @@ private:
     Sprite*             tuto;
     Sprite*             bonus_power;
     Sprite*             bonus_bullet;
+    Sprite*             bonus_speed;
+    Sprite*             speed_rect;
+    Sprite*             power_rect;
+    Sprite*             bullet_rect;
     Menu*               game_menu;
     Menu*               continue_menu;
     MenuItemImage*      options_btn;
@@ -54,6 +62,7 @@ private:
     float               bonus_time = 0;
     bool                bonus_selected = false;
     bool                bonus_displayed = false;
+    bool                rect_animated = false;
     int                 bonus_active = 0;
     int                 bonus_visible_id = -1;
     float               x_screen;
@@ -83,14 +92,17 @@ public:
     void                    skip(cocos2d::Ref*);
     void                    store_active_line(int);
     void                    remove_active_line(int);
+    void                    init_bonus_components();
     void                    reset_arrays();
     void                    main_menu_coming_animation();
     void                    update_game_score(int);
     float                   get_shoot_interval();
     bool                    is_touch_on_player_zone(Vec2);
+    void                    show_bonus_particle_explode(Vec2);
     void                    check_hit_color_change(Line*, Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2);
+    void                    bonus_collision();
     void                    load_bonus();
     void                    remove_bonus();
     void                    move_bonus();

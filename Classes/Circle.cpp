@@ -27,7 +27,7 @@ void Circle::anim_circle(Vec2 pos) {
             [&](Node *sender) {
                 reset();
             });
-    auto move_ease_in = EaseOut::create(ScaleTo::create(1.0f, 2), 2);
+    auto move_ease_in = EaseOut::create(ScaleTo::create(1.4f, 2), 2);
     auto fadeOut = FadeOut::create(0.55f);
     runAction(fadeOut);
     runAction(Sequence::create(move_ease_in, callback, nullptr));
