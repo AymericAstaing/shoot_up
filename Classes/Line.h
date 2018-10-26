@@ -61,7 +61,7 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
             void                        reset();
             void                        assign_line_points(int, int);
             static SpriteBatchNode*     get_batch();
-            static Sprite*              get_texture(int, float, float);
+            static Sprite*              get_texture(int, float*);
             static int                  get_complex_line_type(int, Line *);
             static void                 apply_animation(Line *, Sprite *, Square *, int, int);
             static void                 apply_full_translation(Square *, Sprite *, float[2], float[2]);

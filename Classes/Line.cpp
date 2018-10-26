@@ -362,14 +362,14 @@ SpriteBatchNode *Line::get_batch() {
     return (spriteBatchNode);
 }
 
-Sprite *Line::get_texture(int i, float square_height, float square_width) {
+Sprite *Line::get_texture(int i, float *sq_size) {
     auto sprite = Sprite::createWithSpriteFrameName(DEFAULT_SQUARE_TEXTURE);
     sprite->setAnchorPoint(Vec2(0.5, 0.5));
     sprite->setTag(i);
     float sprite_height = sprite->getContentSize().height;
     float sprite_width = sprite->getContentSize().width;
-    sprite->setScaleY(square_height / sprite_height);
-    sprite->setScaleX(static_cast<float>(square_width * 1.05 / sprite_width));
+    sprite->setScaleY(sq_size[HEIGHT] / sprite_height);
+    sprite->setScaleX(static_cast<float>(sq_size[WIDTH] * 1.04 / sprite_width));
     return (sprite);
 }
 
@@ -390,8 +390,7 @@ void Line::load_startup_struct(Line *l) {
             sq->setTag(i);
             sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height,
-                                      sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->get_rect_size());
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
         }
@@ -415,8 +414,7 @@ void Line::load_complex_struct(Line *l, int struct_number) {
                     get_square_grid_pos(pos_struct[i], sq->get_rect_size(),
                                         SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height,
-                                      sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->get_rect_size());
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
             if (struct_number == 3 || struct_number == 4)
@@ -436,8 +434,7 @@ void Line::load_simple_line_5(Line *l) {
             sq->setTag(i);
             sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height,
-                                      sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->get_rect_size());
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
         }
@@ -455,8 +452,7 @@ void Line::load_simple_line_4(Line *l) {
             sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_4));
             sq->setTag(i);
             l->addChild(sq);
-            auto sprite = get_texture(i, sq->getContentSize().height,
-                                      sq->getContentSize().width);
+            auto sprite = get_texture(i, sq->get_rect_size());
             sprite->setPosition(sq->getPosition());
             spriteBatchNode->addChild(sprite);
 
