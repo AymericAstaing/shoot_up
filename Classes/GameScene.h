@@ -7,6 +7,7 @@
 #include <GUI/CCScrollView/CCTableViewCell.h>
 #include "GridView.h"
 #include "Square.h"
+#include "ShootUp.h"
 #include "Circle.h"
 #include "Bullet.h"
 #include "Line.h"
@@ -20,6 +21,14 @@ static const char *explode_bonus_plist[3] = {"spritesheet/explode_bonus_bullet.p
                                        "spritesheet/explode_bonus_power.plist",
                                        "spritesheet/explode_bonus_speed.plist"};
 
+static const char *default_bonus_texture[3] = {"bonus_bullet_0.png",
+                                               "bonus_power_0.png",
+                                               "bonus_speed_0.png"};
+
+static const int BULLET_SHOOT[3][3] = {{DOUBLE_LAUNCH_LEFT, DOUBLE_LAUNCH_RIGHT},
+                                            {SIDEWAY_LAUNCH_LEFT, SIDEWAY_LAUNCH_CENTER, SIDEWAY_LAUNCH_RIGHT},
+                                            {TRIPLE_LAUNCH_LEFT, TRIPLE_LAUNCH_LEFT, TRIPLE_LAUNCH_RIGHT}};
+
 using namespace cocos2d;
 
 class GameScene : public cocos2d::Scene {
@@ -28,6 +37,8 @@ private:
     Line**              pool_container;
     Bullet**            bullet_container;
     Sprite*             player;
+    Sprite**            bonus_container;
+    Sprite**            rect_container;
     Circle**            pool_circle;
     MenuItemImage*      skip_btn;
     MenuItemImage*      back_to_main;
@@ -37,12 +48,6 @@ private:
     Sprite*             sound;
     Sprite*             best_img;
     Sprite*             tuto;
-    Sprite*             bonus_power;
-    Sprite*             bonus_bullet;
-    Sprite*             bonus_speed;
-    Sprite*             speed_rect;
-    Sprite*             power_rect;
-    Sprite*             bullet_rect;
     Menu*               game_menu;
     Menu*               continue_menu;
     MenuItemImage*      options_btn;
@@ -64,10 +69,11 @@ private:
     bool                bonus_displayed = false;
     bool                rect_animated = false;
     int                 bonus_active = 0;
-    int                 bonus_visible_id = -1;
+    int                 bonus_id = -1;
     float               x_screen;
     float               y_screen;
     int                 game_score;
+    int                 game_shooter_type = 0;
     int                 *active_lines;
     int                 options_state = 0;
     int                 next_bonus_spawn = 0;
@@ -108,14 +114,17 @@ public:
     void                    move_bonus();
     void                    bonus_managment();
     void                    active_bonus();
-    void                    forward_circle();
+    void                    move_circles();
+    void                    scale_animation();
     void                    show_particle_explode(Vec2, int);
     void                    start_game();
     void                    score_animation();
     bool                    is_sound_button_touched(Vec2);
     void                    init_options_menu();
+    void                    init_ui_components();
     int                     get_next_line_type();
     void                    end_of_game();
+    void                    init_listeners();
     void                    play(cocos2d::Ref *);
     int                     get_h_value();
     void                    run_game_loop();
@@ -133,7 +142,6 @@ public:
     void                    back_to_menu(cocos2d::Ref *);
     void                    update(float) override;
     void                    surclassement(cocos2d::Ref *);
-    void                    reset_lines();
     int                     get_line_index(int);
     void                    init_pool_objects();
     void                    manage_options();

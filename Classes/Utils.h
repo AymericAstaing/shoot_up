@@ -63,11 +63,14 @@ public:
     static int*         get_distribution_points(int*, int, int);
     static int          get_random_number(int, int);
     static bool         is_into_list(int*, int, int);
-    static float        get_finger_move_factor(float);
+    static int          get_bullet_nbr(int);
+    static float        get_finger_move_factor(float, int);
     static Action*      get_blink_animation();
     static Action*      get_bonus_bullet_anim();
     static Action*      get_bonus_power_anim();
     static Action*      get_bonus_speed_anim();
+    static int          get_bullet_shoot_index(int);
+    static Action*      get_bonus_animation(int);
     static int*         get_complex_distribution_points(int*, int, int, int);
     static int*         get_simple_distribution_points(int*, int, int, int);
     static int          array_sum(int*,int);

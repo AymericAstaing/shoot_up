@@ -19,6 +19,12 @@ USING_NS_CC;
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
+#define NORMAL_BULLET_SIZE              1
+#define BIG_BULLET_SIZE                 1.3f
+#define TRANSITION_FROM_4_TO_5          8
+#define STARTUP_OF_3                    819
+#define STARTUP_OF_4                    2829
+#define MIN_LINE_BEFORE_BONUS_SPAWN     5
 #define COMPLEX_STRUCT_ELMTS            7
 #define NO_SHOOTER_UPGRADE              2
 #define SQUARE_SIZE_5                   4.95
@@ -54,6 +60,14 @@ USING_NS_CC;
 #define NORMAL_LAUNCH                   0
 #define BONUS_LAUNCH_LEFT               1
 #define BONUS_LAUNCH_RIGHT              2
+#define TRIPLE_LAUNCH_LEFT              3
+#define TRIPLE_LAUNCH_CENTER            4
+#define TRIPLE_LAUNCH_RIGHT             5
+#define DOUBLE_LAUNCH_LEFT              6
+#define DOUBLE_LAUNCH_RIGHT             7
+#define SIDEWAY_LAUNCH_LEFT             8
+#define SIDEWAY_LAUNCH_CENTER           9
+#define SIDEWAY_LAUNCH_RIGHT            10
 #define BONUS_TIME_LIMIT                5.0f
 #define BONUS_TIME_MIDLE                2.5f
 #define BONUS_BULLET                    0
@@ -61,6 +75,9 @@ USING_NS_CC;
 #define BONUS_SPEED                     2
 #define BONUS_HIDE                      0
 #define BONUS_IN_GAME                   1
+#define RECT_BULLET                     0
+#define RECT_POWER                      1
+#define RECT_SPEED                      2
 
 
 /******************* GAME STATES ***************/
@@ -70,8 +87,8 @@ USING_NS_CC;
 
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
-#define SIMPLE_LINE_NBR                 10
-#define DEFAULT_BULLET_NBR              12 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
+#define SIMPLE_LINE_NBR                 8
+#define DEFAULT_BULLET_NBR              14 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0

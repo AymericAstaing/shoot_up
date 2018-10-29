@@ -27,45 +27,72 @@ Sprite *Utils::get_player() {
     return (player);
 }
 
+Action *Utils::get_bonus_animation(int type) {
+    switch (type) {
+        case BONUS_SPEED:
+            return (get_bonus_speed_anim());
+        case BONUS_BULLET:
+            return (get_bonus_bullet_anim());
+        case BONUS_POWER:
+            return (get_bonus_power_anim());
+        default:
+            break;
+    }
+    return (nullptr);
+}
+
 Action *Utils::get_bonus_power_anim() {
     auto spritecache = SpriteFrameCache::getInstance();
     spritecache->addSpriteFramesWithFile("spritesheet/bonus_power.plist");
-    Vector<SpriteFrame*> frames;
+    Vector<SpriteFrame *> frames;
     for (int i = 0; i < 4; i++) {
         stringstream ss;
         ss << "bonus_power_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.08f);
-    CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
+    Animation *anim = Animation::createWithSpriteFrames(frames, 0.08f);
+    CCAction *action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
 
-Action* Utils::get_bonus_bullet_anim() {
+int Utils::get_bullet_nbr(int type) {
+    switch (type) {
+        case DOUBLE_TANK:
+            return (2);
+        case SIDEWAY_TANK:
+            return (3);
+        case TRIPLE_TANK:
+            return (3);
+        default:break;
+    }
+    return (0);
+}
+
+Action *Utils::get_bonus_bullet_anim() {
     auto spritecache = SpriteFrameCache::getInstance();
     spritecache->addSpriteFramesWithFile("spritesheet/bonus_bullet.plist");
-    Vector<SpriteFrame*> frames;
+    Vector<SpriteFrame *> frames;
     for (int i = 0; i < 4; i++) {
         stringstream ss;
         ss << "bonus_bullet_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.08f);
-    CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
+    Animation *anim = Animation::createWithSpriteFrames(frames, 0.08f);
+    CCAction *action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
 
-Action* Utils::get_bonus_speed_anim() {
+Action *Utils::get_bonus_speed_anim() {
     auto spritecache = SpriteFrameCache::getInstance();
     spritecache->addSpriteFramesWithFile("spritesheet/bonus_speed.plist");
-    Vector<SpriteFrame*> frames;
+    Vector<SpriteFrame *> frames;
     for (int i = 0; i < 4; i++) {
         stringstream ss;
         ss << "bonus_speed_" << i << ".png";
         frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
     }
-    Animation* anim = Animation::createWithSpriteFrames(frames, 0.08f);
-    CCAction* action = CCRepeatForever::create(CCAnimate::create(anim));
+    Animation *anim = Animation::createWithSpriteFrames(frames, 0.08f);
+    CCAction *action = CCRepeatForever::create(CCAnimate::create(anim));
     return (action);
 }
 
@@ -122,7 +149,7 @@ float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2
     if (current_type >= LINE_TYPE_STARTUP_2 && current_type <= LINE_TYPE_STARTUP_5)
         return (-line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_4)
-        return static_cast<float>(screen_height * 0.62 + line_height);
+        return static_cast<float>(screen_height * 0.55 + line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.30 + line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)
@@ -152,23 +179,36 @@ const char *Utils::get_color(int color_id) {
     return (nullptr);
 }
 
+int Utils::get_bullet_shoot_index(int tank_type) {
+    switch (tank_type) {
+        case DOUBLE_TANK:
+            return (0);
+        case SIDEWAY_TANK:
+            return (1);
+        case TRIPLE_TANK:
+            return (2);
+        default:
+            return (0);
+    }
+}
+
 int Utils::get_shooter_type(int shooter_id) {
 
-    if (shooter_id <= 0 && shooter_id < 5) {
+    if (shooter_id >= 0 && shooter_id < 6) {
         return (STARTER_TANK);
-    } else if (shooter_id >= 6 && shooter_id < 9) {
+    } else if (shooter_id >= 6 && shooter_id < 11) {
         return (POWER_TANK);
-    } else if (shooter_id >= 11 && shooter_id < 13) {
+    } else if (shooter_id >= 11 && shooter_id < 14) {
         return (MOVEMENT_TANK);
-    } else if (shooter_id >= 14 && shooter_id < 16) {
+    } else if (shooter_id >= 14 && shooter_id < 17) {
         return (DOUBLE_TANK);
-    } else if (shooter_id >= 17 && shooter_id < 18) {
+    } else if (shooter_id >= 17 && shooter_id < 20) {
         return (SHIELD_TANK);
-    } else if (shooter_id >= 20 && shooter_id < 23) {
+    } else if (shooter_id >= 20 && shooter_id < 24) {
         return (SPEED_TANK);
-    } else if (shooter_id >= 24 && shooter_id < 25) {
+    } else if (shooter_id >= 24 && shooter_id < 27) {
         return (SIDEWAY_TANK);
-    } else if (shooter_id >= 27 && shooter_id < 30) {
+    } else if (shooter_id >= 27 && shooter_id < 31) {
         return (TRIPLE_TANK);
     }
     return (NULL);
@@ -240,11 +280,15 @@ Vec2 Utils::get_coordinate_from_id(int id, int column) {
     return (Vec2(id % column, id / column));
 }
 
-float Utils::get_finger_move_factor(float x) {
+float Utils::get_finger_move_factor(float x, int shooter_type) {
     auto winSize = Director::getInstance()->getVisibleSize();
     float old_min = 0;
     float old_max = winSize.width;
     float new_min = -winSize.width / 2;
     float new_max = winSize.width / 2;
+    if (shooter_type == MOVEMENT_TANK) {
+        new_min = static_cast<float>(-winSize.width / 1.5);
+        new_max = static_cast<float>(winSize.width / 1.5);
+    }
     return ((((x - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
 }

@@ -164,7 +164,7 @@ Size Line::get_line_size(int type) {
                      static_cast<float>(winSize.height / 9.6)));
     } else if (type == SIMPLE_LINE_5) {
         return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5)) * 5,
-                     static_cast<float>(winSize.height / 10.5)));
+                     static_cast<float>(winSize.height / 11)));
     } else {
         int line_nbr = 0;
         switch (type) {
