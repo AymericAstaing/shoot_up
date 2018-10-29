@@ -10,7 +10,7 @@
 #include    "Square.h"
 #include    "Utils.h"
 #include    "ShootUp.h"
-#include "GameScene.h"
+#include    "GameScene.h"
 
 Line::Line(int type) {
 }
