@@ -22,6 +22,7 @@ USING_NS_CC;
 #define NORMAL_BULLET_SIZE              1
 #define BIG_BULLET_SIZE                 1.3f
 #define TRANSITION_FROM_4_TO_5          8
+#define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"
 #define STARTUP_OF_3                    819
 #define STARTUP_OF_4                    2829
 #define MIN_LINE_BEFORE_BONUS_SPAWN     5

@@ -17,6 +17,19 @@ Action *Utils::get_blink_animation() {
     return (RepeatForever::create(sequence));
 }
 
+Action *Utils::get_shield_blink_animation() {
+    auto fadeout = FadeOut::create(0.5);
+    auto fadein = FadeIn::create(0.5);
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                sender->setVisible(false);
+
+            });
+    auto sequence = Sequence::create(fadeout, fadein, fadeout->clone(), fadein->clone(), callback, nullptr);
+    return (sequence);
+}
+
+
 Sprite *Utils::get_player() {
     auto winSize = Director::getInstance()->getVisibleSize();
     int current_shooter = UserLocalStore::get_current_shooter();
@@ -155,7 +168,7 @@ float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2
     if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.50 + line_height);
     if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)
-        return static_cast<float>(screen_height * 0.52 + line_height);
+        return static_cast<float>(screen_height * 0.30 + line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.25 + line_height);
     if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
@@ -188,7 +201,7 @@ int Utils::get_bullet_shoot_index(int tank_type) {
         case TRIPLE_TANK:
             return (2);
         default:
-            return (0);
+            return (-1);
     }
 }
 

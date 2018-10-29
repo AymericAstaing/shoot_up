@@ -93,12 +93,16 @@ void GameScene::init_listeners() {
 void GameScene::init_bonus_components() {
     bonus_container = new Sprite *[3];
     rect_container = new Sprite *[3];
+    shield_rect = Sprite::create(SHIELD_RECT_TEXTURE);
+    shield_rect->setScale(static_cast<float>(player->getContentSize().height * 0.95 / shield_rect->getContentSize().height));
     bonus_container[BONUS_BULLET] = Sprite::createWithSpriteFrameName(DEFAULT_BULLET_TEXTURE);
     bonus_container[BONUS_POWER] = Sprite::createWithSpriteFrameName(DEFAULT_POWER_TEXTURE);
     bonus_container[BONUS_SPEED] = Sprite::createWithSpriteFrameName(DEFAULT_SPEED_TEXTURE);
     rect_container[RECT_BULLET] = Sprite::create(BULLET_RECT);
     rect_container[RECT_POWER] = Sprite::create(POWER_RECT);
     rect_container[RECT_SPEED] = Sprite::create(SPEED_RECT);
+    addChild(shield_rect);
+    shield_rect->setVisible(false);
     for (int i = 0; i < 3; i++) {
         bonus_container[i]->setVisible(false);
         rect_container[i]->setVisible(false);
@@ -149,6 +153,16 @@ void GameScene::value_to_update() {
 void GameScene::end_of_game() {
     if (game_state != GAME_RUNNING)
         return;
+    if (game_shooter_type == SHIELD_TANK && !shield_live_used) {
+        shield_live_used = true;
+        shield_rect->runAction(Utils::get_shield_blink_animation());
+        return;
+    }
+    if (game_shooter_type == SHIELD_TANK) {
+        shield_live_used = false;
+        shield_rect->setOpacity(100);
+        shield_rect->setVisible(false);
+    }
     player->setScale(1);
     remove_bonus();
     value_to_update();
@@ -704,8 +718,8 @@ void GameScene::bonus_managment() {
         (NEW_SPAWN_Y + ((y_screen - NEW_SPAWN_Y) / 2)))
         active_bonus();
     if (bonus_displayed) {
-        move_bonus();
         bonus_collision();
+        move_bonus();
         if (bonus_active != -1) {
             if (bonus_time >= BONUS_TIME_MIDLE && !rect_animated) {
                 rect_animated = true;
@@ -735,6 +749,8 @@ void GameScene::scale_animation() {
 void GameScene::update(float ft) {
     if (bonus_active != -1)
         bonus_time += ft;
+    if (game_shooter_type == SHIELD_TANK && shield_rect->isVisible())
+        shield_rect->setPosition(player->getPosition());
     check_lines_out();
     move_active_lines();
     if (LINE_GENERATED == TRANSITION_FROM_4_TO_5 && shooter_never_updated == 0 &&
@@ -871,6 +887,10 @@ int GameScene::get_h_value() {
 
 void GameScene::start_game() {
     game_shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
+    if (game_shooter_type == SHIELD_TANK) {
+        shield_rect->setVisible(true);
+        shield_rect->setPosition(player->getPosition());
+    }
     game_score = 0;
     bonus_active = -1;
     current_factor_h = get_h_value();
@@ -1043,8 +1063,9 @@ void GameScene::launch_bullet(float dt) {
         bullet_ids[bullet_founded] = '\0';
         int type = Utils::get_bullet_shoot_index(game_shooter_type);
         for (int i = 0; i < bullet_nbr; i++) {
-            bullet_container[i]->launch(bullet_state, player->getPosition(),
-                                        player->getContentSize(), BULLET_SHOOT[type][i]);
+            bullet_container[bullet_ids[i]]->launch(bullet_state, player->getPosition(),
+                                                    player->getContentSize(),
+                                                    BULLET_SHOOT[type][i]);
             if (bonus_active == BONUS_POWER)
                 bullet_container[i]->setScale(BIG_BULLET_SIZE);
         }

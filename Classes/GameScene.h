@@ -27,7 +27,7 @@ static const char *default_bonus_texture[3] = {"bonus_bullet_0.png",
 
 static const int BULLET_SHOOT[3][3] = {{DOUBLE_LAUNCH_LEFT, DOUBLE_LAUNCH_RIGHT},
                                             {SIDEWAY_LAUNCH_LEFT, SIDEWAY_LAUNCH_CENTER, SIDEWAY_LAUNCH_RIGHT},
-                                            {TRIPLE_LAUNCH_LEFT, TRIPLE_LAUNCH_LEFT, TRIPLE_LAUNCH_RIGHT}};
+                                            {TRIPLE_LAUNCH_LEFT, TRIPLE_LAUNCH_CENTER, TRIPLE_LAUNCH_RIGHT}};
 
 using namespace cocos2d;
 
@@ -47,6 +47,7 @@ private:
     Label*              score;
     Sprite*             sound;
     Sprite*             best_img;
+    Sprite*             shield_rect;
     Sprite*             tuto;
     Menu*               game_menu;
     Menu*               continue_menu;
@@ -68,6 +69,7 @@ private:
     bool                bonus_selected = false;
     bool                bonus_displayed = false;
     bool                rect_animated = false;
+    bool                shield_live_used = false;
     int                 bonus_active = 0;
     int                 bonus_id = -1;
     float               x_screen;
