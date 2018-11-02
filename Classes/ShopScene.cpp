@@ -103,6 +103,7 @@ void ShopScene::init_ui_components() {
 cocos2d::extension::TableViewCell *
 ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
     cocos2d::extension::TableViewCell *cell = table->dequeueCell();
+    auto winSize = Director::getInstance()->getVisibleSize();
     if (!cell) {
         cell = new(std::nothrow) CustomTableViewCell();
         cell->autorelease();
@@ -111,7 +112,7 @@ ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
             sprite = Sprite::create(shooter_content[idx]);
         else
             sprite = Sprite::create(ball_content[idx]);
-        sprite->setScale(1.05f);
+        sprite->setScale(static_cast<float>((winSize.width / 3.2) / sprite->getContentSize().width));
         sprite->setTag(2);
         sprite->setAnchorPoint(Vec2::ZERO);
         sprite->setPosition(Vec2::ZERO);

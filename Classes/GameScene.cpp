@@ -90,11 +90,50 @@ void GameScene::init_listeners() {
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, player);
 }
 
+void GameScene::init_pool_objects() {
+    int index_struct = COMPLEX_STRUCT_ELMTS;
+    pool_container = new Line *[27];
+    pool_circle = new Circle *[15];
+    bullet_container = new Bullet *[101];
+    active_lines = new int[5];
+
+    pool_container[0] = Line::create(STARTUP_LINE_2);
+    pool_container[1] = Line::create(STARTUP_LINE_3);
+    pool_container[2] = Line::create(STARTUP_LINE_4);
+    pool_container[3] = Line::create(STARTUP_LINE_5);
+
+    for (int i = 0; i < 15; i++) {
+        pool_circle[i] = Circle::create();
+        addChild(pool_circle[i]);
+    }
+    pool_circle[15] = NULL;
+    for (int i = 0; i < 4; i++)
+        active_lines[i] = EMPTY_VALUE;
+    active_lines[4] = '\0';
+    for (int j = 0; j < 100; j++) {
+        bullet_container[j] = Bullet::create();
+        addChild(bullet_container[j], 4);
+    }
+    bullet_container[100] = NULL;
+    for (int i = 4; i < 7; i++)
+        pool_container[i] = Line::create(SIMPLE_LINE_4);
+    for (int i = 7; i < 10; i++)
+        pool_container[i] = Line::create(SIMPLE_LINE_5);
+    for (int i = 10; i < 26; i += 2, index_struct++) {
+        pool_container[i] = Line::create(index_struct);
+        pool_container[i + 1] = Line::create(index_struct);
+    }
+    pool_container[26] = NULL;
+    for (int i = 0; pool_container[i] != NULL; i++)
+        addChild(pool_container[i]);
+}
+
 void GameScene::init_bonus_components() {
     bonus_container = new Sprite *[3];
     rect_container = new Sprite *[3];
     shield_rect = Sprite::create(SHIELD_RECT_TEXTURE);
-    shield_rect->setScale(static_cast<float>(player->getContentSize().height * 0.95 / shield_rect->getContentSize().height));
+    shield_rect->setScale(static_cast<float>(player->getContentSize().height * 0.95 /
+                                             shield_rect->getContentSize().height));
     bonus_container[BONUS_BULLET] = Sprite::createWithSpriteFrameName(DEFAULT_BULLET_TEXTURE);
     bonus_container[BONUS_POWER] = Sprite::createWithSpriteFrameName(DEFAULT_POWER_TEXTURE);
     bonus_container[BONUS_SPEED] = Sprite::createWithSpriteFrameName(DEFAULT_SPEED_TEXTURE);
@@ -188,55 +227,14 @@ void GameScene::reset_arrays() {
         if (pool_container[i]->line_active) {
             pool_container[i]->stopAllActions();
             pool_container[i]->reset();
-            pool_container[i]->line_active = false;
-            pool_container[i]->setVisible(false);
         }
     }
-}
-
-void GameScene::init_pool_objects() {
-    int index_struct = COMPLEX_STRUCT_ELMTS;
-    pool_container = new Line *[27];
-    pool_circle = new Circle *[15];
-    bullet_container = new Bullet *[101];
-    active_lines = new int[5];
-
-    pool_container[0] = Line::create(STARTUP_LINE_2);
-    pool_container[1] = Line::create(STARTUP_LINE_3);
-    pool_container[2] = Line::create(STARTUP_LINE_4);
-    pool_container[3] = Line::create(STARTUP_LINE_5);
-
-    for (int i = 0; i < 15; i++) {
-        pool_circle[i] = Circle::create();
-        addChild(pool_circle[i]);
-    }
-    pool_circle[15] = NULL;
-    for (int i = 0; i < 4; i++)
-        active_lines[i] = EMPTY_VALUE;
-    active_lines[4] = '\0';
-    for (int j = 0; j < 100; j++) {
-        bullet_container[j] = Bullet::create();
-        addChild(bullet_container[j], 4);
-    }
-    bullet_container[100] = NULL;
-    for (int i = 4; i < 7; i++)
-        pool_container[i] = Line::create(SIMPLE_LINE_4);
-    for (int i = 7; i < 10; i++)
-        pool_container[i] = Line::create(SIMPLE_LINE_5);
-    for (int i = 10; i < 26; i += 2, index_struct++) {
-        pool_container[i] = Line::create(index_struct);
-        pool_container[i + 1] = Line::create(index_struct);
-    }
-    pool_container[26] = NULL;
-    for (int i = 0; pool_container[i] != NULL; i++)
-        addChild(pool_container[i]);
 }
 
 void GameScene::start_bullet_shoot() {
     float interval = get_shoot_interval();
     if (game_shooter_type == SPEED_TANK) {
         interval -= (interval / 1.5);
-        log("increased");
     }
     if (bonus_active == BONUS_SPEED)
         interval /= 2;
@@ -343,33 +341,28 @@ int GameScene::get_line_index(int type) {
 
 void GameScene::check_bullet_contact() {
     for (int j = 0; active_lines[j] != '\0'; j++) {
-        if (active_lines[j] != -1 && pool_container[active_lines[j]]->getPositionY() +
-                                     pool_container[active_lines[j]]->getContentSize().height >
-                                     player->getPositionY() +
-                                     player->getContentSize().height / 2) {
-            int id = active_lines[j];
-            if (id != -1) {
-                for (int i = 0; bullet_container[i] != NULL; i++) {
-                    if (bullet_container[i]->bullet_active) {
-                        float line_position_y = pool_container[id]->getPositionY();
-                        float bullet_position_y = bullet_container[i]->getPositionY();
-                        if (bullet_position_y >= line_position_y &&
-                            bullet_position_y <=
-                            line_position_y +
-                            pool_container[id]->getContentSize().height) {
-                            //IN CONTACT
-                            if (!bullet_container[i]->contact) {
-                                // ENTER CONTACT ZONE
-                                bullet_container[i]->contact = true;
-                                bullet_container[i]->contact_index = id;
-                            }
-                        } else {
-                            if (bullet_container[i]->contact &&
-                                id == bullet_container[i]->contact_index) {
-                                // EXIT CONTACT ZONE
-                                bullet_container[i]->contact = false;
-                                bullet_container[i]->contact_index = false;
-                            }
+        for (int i = 0; bullet_container[i] != NULL; i++) {
+            if (bullet_container[i]->bullet_active) {
+                int id = active_lines[j];
+                if (id != -1) {
+                    float line_position_y = pool_container[id]->getPositionY();
+                    float bullet_position_y = bullet_container[i]->getPositionY();
+                    if (bullet_position_y >= line_position_y &&
+                        bullet_position_y <=
+                        line_position_y +
+                        pool_container[id]->getContentSize().height) {
+                        //IN CONTACT
+                        if (!bullet_container[i]->contact) {
+                            // ENTER CONTACT ZONE
+                            bullet_container[i]->contact = true;
+                            bullet_container[i]->contact_index = id;
+                        }
+                    } else {
+                        if (bullet_container[i]->contact &&
+                            id == bullet_container[i]->contact_index) {
+                            // EXIT CONTACT ZONE
+                            bullet_container[i]->contact = false;
+                            bullet_container[i]->contact_index = false;
                         }
                     }
                 }
@@ -467,9 +460,11 @@ void GameScene::check_into_line() {
         if (bullet_container[i] && bullet_container[i]->bullet_active &&
             bullet_container[i]->contact) {
             int index = 0;
-
-            while (i) {
-                Line *current_line = pool_container[bullet_container[i]->contact_index];
+            Line *current_line = pool_container[bullet_container[i]->contact_index];
+            //if (!current_line->line_active)
+            //    break;
+            auto batch = current_line->getChildByTag(LINE_BATCH_ID);
+            while (1) {
                 Square *sq = ((Square *) current_line->getChildByTag(index));
                 if (!sq)
                     break;
@@ -486,10 +481,9 @@ void GameScene::check_into_line() {
                     if (bonus_active == BONUS_POWER)
                         bullet_hit *= 2;
                     if (sq->get_square_pv() - bullet_hit <= 1) {
-                        auto batch = current_line->getChildByTag(LINE_BATCH_ID);
                         auto sprite = batch->getChildByTag(sq->getTag());
-                        if (batch && sprite)
-                            sprite->setVisible(false);
+                        sprite->setVisible(false);
+                        sq->setVisible(false);
                         Vec2 square_pos;
                         square_pos.x = sq->getPositionX();
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
@@ -497,7 +491,6 @@ void GameScene::check_into_line() {
                         /*show_particle_explode(
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
                                 sq->initial_color);*/
-                        sq->setVisible(false);
                         game_block_destroyed++;
                         update_game_score(sq->square_pv);
                     } else {
@@ -524,9 +517,9 @@ void GameScene::check_into_line() {
 
 void GameScene::check_lines_out() {
     for (int i = 0; active_lines[i] != '\0'; i++) {
-        if (active_lines[i] != -1 && pool_container[active_lines[i]]->getPositionY() +
-                                     pool_container[active_lines[i]]->getContentSize().height <=
-                                     0) {
+        if (active_lines[i] != EMPTY_VALUE && pool_container[active_lines[i]]->getPositionY() +
+                                              pool_container[active_lines[i]]->getContentSize().height <=
+                                              0) {
             if (pool_container[active_lines[i]]->getScale() == 0.85f) {
                 pool_container[active_lines[i]]->setScale(1);
                 pool_container[active_lines[i]]->setAnchorPoint(Vec2(0, 0));
@@ -539,7 +532,7 @@ void GameScene::check_lines_out() {
 
 void GameScene::move_active_lines() {
     for (int i = 0; active_lines[i] != '\0'; i++) {
-        if (active_lines[i] != -1)
+        if (active_lines[i] != EMPTY_VALUE)
             pool_container[active_lines[i]]->setPositionY(
                     pool_container[active_lines[i]]->getPositionY() - LINE_SPEED);
     }
@@ -891,6 +884,8 @@ void GameScene::start_game() {
         shield_rect->setVisible(true);
         shield_rect->setPosition(player->getPosition());
     }
+    if (options_state == OPTIONS_DISPLAYED)
+        options(nullptr);
     game_score = 0;
     bonus_active = -1;
     current_factor_h = get_h_value();
@@ -969,6 +964,8 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
 void GameScene::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *event) {
     if (touch->getLocation().x > 0 + player->getContentSize().width / 2 &&
         touch->getLocation().x < x_screen - player->getContentSize().height / 2) {
+        if (game_state == MENU)
+            return;
         float current_location = touch->getLocation().x;
         float future_x = current_location +
                          Utils::get_finger_move_factor(current_location, game_shooter_type);

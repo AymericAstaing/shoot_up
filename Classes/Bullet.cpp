@@ -14,14 +14,14 @@ Bullet::~Bullet() {
 
 void Bullet::reset() {
     auto winSize = Director::getInstance()->getVisibleSize();
-    stopAllActions();
+    this->stopAllActions();
     if (getScale() != NORMAL_BULLET_SIZE)
         setScale(NORMAL_BULLET_SIZE);
-    setVisible(false);
-    bullet_active = false;
-    contact = false;
-    contact_index = -1;
-    setPosition(Vec2(winSize.width / 2, 0 - getContentSize().height));
+    this->setVisible(false);
+    this->bullet_active = false;
+    this->contact = false;
+    this->contact_index = -1;
+    this->setPosition(Vec2(winSize.width / 2, 0 - getContentSize().height));
 }
 
 
@@ -29,7 +29,7 @@ void Bullet::launch(int bullet_state, Vec2 player_pos, Size player_size, int lau
     auto winSize = Director::getInstance()->getVisibleSize();
 
     float x_pos = player_pos.x;
-    float y_pos = winSize.height + getContentSize().height;
+    float y_pos = winSize.height -  getContentSize().height / 2;
     float x_pos_start = player_pos.x;;
     float y_pos_start = static_cast<float>(player_pos.y + player_size.height / 2.5);
     float time_factor = 1;
@@ -111,6 +111,7 @@ Bullet *Bullet::create() {
         return (bullet);
     }
     CC_SAFE_DELETE(bullet);
+    return nullptr;
 }
 
 

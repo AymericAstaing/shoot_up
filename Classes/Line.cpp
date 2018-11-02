@@ -27,6 +27,7 @@ int Line::get_index_random(int *choosen, int max) {
     return (0);
 }
 
+
 void Line::change_square_color(int index, int color) {
     Square *sq = ((Square *) getChildByTag(index));
     sq->initial_color = color;
@@ -102,9 +103,9 @@ void Line::assign_line_points_complex(int h_factor,
     int index = 0;
     while (1) {
         auto child = getChildByTag(index);
-        Square *sq = ((Square *) child);
-        if (!child || !sq)
+        if (!child)
             break;
+        Square *sq = ((Square *) child);
         distrib[index] +=
                 (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
         sq->assign_point(distrib[index]);
@@ -545,6 +546,7 @@ void Line::load_square(Line *l, int type) {
 /********************************** BASICS *****************************/
 
 void Line::set_active(int factor_h, int line_generated) {
+    log("ACTIVE LINE OF %i", square_nbr);
     setVisible(true);
     line_active = true;
     if (get_type() <= LINE_TYPE_STARTUP_5) // STARTUP LINES
@@ -556,39 +558,26 @@ void Line::set_active(int factor_h, int line_generated) {
 }
 
 void Line::reset() {
-    int i = 0;
-    int j = 0;
     int index = 0;
-    int batch_index = 0;
     auto batchnode = getChildByTag(LINE_BATCH_ID);
 
-    while (j == 0) {
-        if (batchnode) {
-            auto sprite = batchnode->getChildByTag(batch_index);
-            if (sprite && !sprite->isVisible())
-                sprite->setVisible(true);
-            else if (!sprite)
-                j = 1;
-
-        } else {
-            j = 1;
-        }
-        batch_index++;
-    }
-    while (i == 0) {
-        auto child = getChildByTag(index);
-        if (!child) {
-            i = 1;
-        } else {
-            ((Square *) child)->reset_square();
-            child->setVisible(true);
-        }
+    while (1) {
+        auto child = this->getChildByTag(index);
+        if (!child)
+            break;
+        Square *sq = ((Square *) child);
+        sq->reset_square();
+        auto sprite = batchnode->getChildByTag(sq->getTag());
+        if (!sprite->isVisible())
+            sprite->setVisible(true);
+        if (!sq->isVisible())
+            sq->setVisible(true);
         index++;
     }
     line_active = false;
     setVisible(false);
     auto winSize = Director::getInstance()->getVisibleSize();
-    setPosition(Vec2(0, winSize.height + getContentSize().height));
+    setPosition(Vec2(0, winSize.height + line_size[HEIGHT]));
 }
 
 Line *Line::create(int type) {

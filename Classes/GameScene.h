@@ -70,6 +70,7 @@ private:
     bool                bonus_displayed = false;
     bool                rect_animated = false;
     bool                shield_live_used = false;
+    bool                star_bonus_active = false;
     int                 bonus_active = 0;
     int                 bonus_id = -1;
     float               x_screen;
