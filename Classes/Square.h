@@ -24,7 +24,9 @@ public:
     static Square*          create(int);
     float*                  get_rect_size();
     static Size             get_square_size(int);
+    void                    detach_square();
     void                    assign_point(int);
+    int                     star_bonus;
     int                     square_pv;
     int                     initial_pv;
     int                     initial_color;

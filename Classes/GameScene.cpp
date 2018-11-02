@@ -151,16 +151,6 @@ void GameScene::init_bonus_components() {
     }
 }
 
-Menu *GameScene::get_continue_menu() {
-    skip_btn = MenuItemImage::create(END_MENU_PATH::SKIP, END_MENU_PATH::SKIP,
-                                     CC_CALLBACK_1(GameScene::skip, this));
-    skip_btn->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen / 2 - (0.18 * y_screen))));
-    Menu *continue_menu = Menu::create(skip_btn, NULL);
-    continue_menu->setContentSize(Size(x_screen, y_screen));
-    continue_menu->setPosition(Vec2::ZERO);
-    return (continue_menu);
-}
-
 void GameScene::init_options_menu() {
     if (UserLocalStore::get_achievement_variable(SOUND) == SOUND_OFF)
         sound = Sprite::create(OPTIONS_SOUND_ON);
@@ -213,8 +203,8 @@ void GameScene::end_of_game() {
         best_img->setPositionX(x_screen + best_img->getContentSize().height);
     }
     stop_bullet_shoot();
-    continue_menu = get_continue_menu();
-    addChild(continue_menu);
+    end_menu = get_end_game_menu();
+    addChild(end_menu);
 }
 
 void GameScene::reset_arrays() {
@@ -455,14 +445,30 @@ void GameScene::check_hit_color_change(Line *l, Square *sq) {
         e->setSpriteFrame(COLOR_HIT[default_color_code][step]);
 }
 
+void GameScene::destroy_complete_line(int line_id, float line_y) {
+    int i = 0;
+    auto batch = pool_container[line_id]->getChildByTag(LINE_BATCH_ID);
+    while (1) {
+        auto child = pool_container[line_id]->getChildByTag(i);
+        if (!child)
+            break;
+        Square *sq = ((Square *) child);
+        auto sprite = batch->getChildByTag(sq->getTag());
+        show_destruction_circle(Vec2(sq->getPositionX(), line_y));
+        sq->setVisible(false);
+        sprite->setVisible(false);
+        i++;
+    }
+    star_bonus_active = false;
+    star_line_id = -1;
+}
+
 void GameScene::check_into_line() {
     for (int i = 0; bullet_container[i] != NULL; i++) {
         if (bullet_container[i] && bullet_container[i]->bullet_active &&
             bullet_container[i]->contact) {
             int index = 0;
             Line *current_line = pool_container[bullet_container[i]->contact_index];
-            //if (!current_line->line_active)
-            //    break;
             auto batch = current_line->getChildByTag(LINE_BATCH_ID);
             while (1) {
                 Square *sq = ((Square *) current_line->getChildByTag(index));
@@ -487,6 +493,15 @@ void GameScene::check_into_line() {
                         Vec2 square_pos;
                         square_pos.x = sq->getPositionX();
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
+                        if (sq->star_bonus == 1) {
+                            destroy_complete_line(bullet_container[i]->contact_index,
+                                                  static_cast<int>(current_line->getPositionY() +
+                                                                   current_line->getContentSize().height /
+                                                                   2));
+                            game_block_destroyed++;
+                            bullet_container[i]->reset();
+                            return;
+                        }
                         show_destruction_circle(square_pos);
                         /*show_particle_explode(
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
@@ -523,6 +538,10 @@ void GameScene::check_lines_out() {
             if (pool_container[active_lines[i]]->getScale() == 0.85f) {
                 pool_container[active_lines[i]]->setScale(1);
                 pool_container[active_lines[i]]->setAnchorPoint(Vec2(0, 0));
+            }
+            if (active_lines[i] == star_line_id) {
+                star_line_id = -1;
+                star_bonus_active = false;
             }
             pool_container[active_lines[i]]->reset();
             remove_active_line(i);
@@ -757,6 +776,12 @@ void GameScene::update(float ft) {
         check_player_collision();
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
+        if (pool_container[NEXT_LINE_ID]->get_type() == LINE_TYPE_SIMPLE_OF_5 &&
+            Utils::get_random_number(0, 5) == 5 && !star_bonus_active) {
+            pool_container[NEXT_LINE_ID]->attach_star_bonus();
+            star_bonus_active = true;
+            star_line_id = NEXT_LINE_ID;
+        }
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
@@ -907,12 +932,6 @@ void GameScene::shop(cocos2d::Ref *pSender) {
 void GameScene::play(cocos2d::Ref *pSender) {
     // auto scene = HelloWorld::createScene();
     // Director::getInstance()->pushScene(scene);
-}
-
-void GameScene::skip(cocos2d::Ref *pSender) {
-    removeChild(continue_menu);
-    end_menu = get_end_game_menu();
-    addChild(end_menu);
 }
 
 void GameScene::back_to_menu(cocos2d::Ref *pSender) {

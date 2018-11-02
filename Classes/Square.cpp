@@ -37,6 +37,14 @@ void Square::reset_square() {
     this->square_pv = 0;
     std::string st = StringUtils::format("%i", this->square_pv);
     this->points->setString(st);
+    if (this->star_bonus == 1)
+        detach_square();
+}
+
+void Square::detach_square() {
+    removeChildByTag(STAR_BONUS_TAG);
+    this->points->setPosition(Vec2(this->rect_size[0] / 2, this->rect_size[1] / 2));
+    this->star_bonus = 0;
 }
 
 void Square::assign_point(int pv) {
@@ -58,6 +66,7 @@ Square *Square::create(int line_size) {
     if (s) {
         s->setAnchorPoint(Vec2(0.5, 0.5));
         s->square_pv = 10;
+        s->star_bonus = 0;
         s->setContentSize(get_square_size(line_size));
         s->rect_size[0] = s->getContentSize().width;
         s->rect_size[1] = s->getContentSize().height;

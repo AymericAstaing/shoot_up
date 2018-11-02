@@ -40,7 +40,6 @@ private:
     Sprite**            bonus_container;
     Sprite**            rect_container;
     Circle**            pool_circle;
-    MenuItemImage*      skip_btn;
     MenuItemImage*      back_to_main;
     MenuItemImage*      rate;
     MenuItemImage*      share;
@@ -50,7 +49,6 @@ private:
     Sprite*             shield_rect;
     Sprite*             tuto;
     Menu*               game_menu;
-    Menu*               continue_menu;
     MenuItemImage*      options_btn;
     MenuItemFont*       menu_title;
     MenuItemFont*       menu_surclassement_txt;
@@ -71,6 +69,7 @@ private:
     bool                rect_animated = false;
     bool                shield_live_used = false;
     bool                star_bonus_active = false;
+    int                 star_line_id = -1;
     int                 bonus_active = 0;
     int                 bonus_id = -1;
     float               x_screen;
@@ -103,6 +102,7 @@ public:
     void                    remove_active_line(int);
     void                    init_bonus_components();
     void                    reset_arrays();
+    void                    destroy_complete_line(int, float);
     void                    main_menu_coming_animation();
     void                    update_game_score(int);
     float                   get_shoot_interval();
@@ -134,7 +134,6 @@ public:
     void                    stop_game_loop();
     void                    move_active_lines();
     void                    check_into_line();
-    Menu*                   get_continue_menu();
     void                    increase_speed(Label *);
     void                    increase_power(Label*);
     void                    check_lines_out();

@@ -20,6 +20,8 @@ USING_NS_CC;
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
 #define NORMAL_BULLET_SIZE              1
+#define STAR_BONUS_TAG                  7
+#define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
 #define BIG_BULLET_SIZE                 1.3f
 #define TRANSITION_FROM_4_TO_5          8
 #define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"

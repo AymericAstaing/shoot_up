@@ -27,6 +27,23 @@ int Line::get_index_random(int *choosen, int max) {
     return (0);
 }
 
+void Line::attach_star_bonus() {
+    int selected = Utils::get_random_number(0, 4);
+    auto child = getChildByTag(selected);
+    if (!child)
+        return;
+    Square *sq = ((Square *) child);
+    sq->star_bonus = 1;
+    Sprite *star = Sprite::create(STAR_BONUS_TEXTURE);
+    star->setScale(0.85f);
+    star->setContentSize(Size(sq->getContentSize().width / 2, sq->getContentSize().height / 2));
+    sq->addChild(star, 200);
+    star->setTag(STAR_BONUS_TAG);
+    star->setPosition(Vec2(sq->getContentSize().width / 2,
+                           star->getPositionY() + star->getContentSize().height / 2));
+    sq->points->setPositionY(sq->getPositionY() + sq->getContentSize().height / 2 -
+                             sq->points->getContentSize().height / 2);
+}
 
 void Line::change_square_color(int index, int color) {
     Square *sq = ((Square *) getChildByTag(index));
