@@ -19,6 +19,8 @@ USING_NS_CC;
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
+#define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
+#define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"
 #define NORMAL_BULLET_SIZE              1
 #define STAR_BONUS_TAG                  7
 #define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"

@@ -132,7 +132,7 @@ void GameScene::init_bonus_components() {
     bonus_container = new Sprite *[3];
     rect_container = new Sprite *[3];
     shield_rect = Sprite::create(SHIELD_RECT_TEXTURE);
-    shield_rect->setScale(static_cast<float>(player->getContentSize().height * 0.95 /
+    shield_rect->setScale(static_cast<float>(player->getContentSize().height /
                                              shield_rect->getContentSize().height));
     bonus_container[BONUS_BULLET] = Sprite::createWithSpriteFrameName(DEFAULT_BULLET_TEXTURE);
     bonus_container[BONUS_POWER] = Sprite::createWithSpriteFrameName(DEFAULT_POWER_TEXTURE);
@@ -203,8 +203,40 @@ void GameScene::end_of_game() {
         best_img->setPositionX(x_screen + best_img->getContentSize().height);
     }
     stop_bullet_shoot();
-    end_menu = get_end_game_menu();
-    addChild(end_menu);
+    if (!game_already_resumed) {
+        display_end_menu();
+    } else {
+        end_menu = get_end_game_menu();
+        addChild(end_menu);
+    }
+}
+
+void GameScene::display_end_menu() {
+    continue_button = Sprite::createWithSpriteFrameName(DEFAULT_CONTINUE_TEXTURE);
+    continue_button->setScale(1.2);
+    next_button = Sprite::create(NEXT_BUTTON_TEXTURE);
+    next_button->setPosition(
+            Vec2(x_screen / 2, static_cast<float>(y_screen / 2 - (0.4 * (y_screen / 2)))));
+    continue_button->setPosition(Vec2(x_screen / 2,
+                                      static_cast<float>(next_button->getPositionY() + continue_button->getContentSize().height)));
+    addChild(continue_button);
+    auto delay = DelayTime::create(6.0f);
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                continue_button->stopAllActions();
+                removeChild(continue_button);
+                removeChild(next_button);
+                end_menu = get_end_game_menu();
+                addChild(end_menu);
+            });
+    wait_sequence = Sequence::create(delay, callback, nullptr);
+    runAction(wait_sequence);
+    auto scale_up = ScaleTo::create(0.4, static_cast<float>(continue_button->getScale() + 0.1));
+    auto scale_down = ScaleTo::create(0.4, static_cast<float>(continue_button->getScale() - 0.1));
+    auto blink_seq = Sequence::create(scale_up, scale_down, nullptr);
+    continue_button->runAction(Utils::get_continue_anim());
+    continue_button->runAction(RepeatForever::create(blink_seq));
+    addChild(next_button);
 }
 
 void GameScene::reset_arrays() {
@@ -377,10 +409,12 @@ bool GameScene::point_into_square(Square *sq, Vec2 bullet_pos) {
 }
 
 void GameScene::show_destruction_circle(Vec2 pos) {
-    int i = 0;
-    for (; pool_circle[i]->active_circle; i++);
-    if (!pool_circle[i]->active_circle)
-        pool_circle[i]->anim_circle(pos);
+    for (int i = 0; pool_circle[i]; i++) {
+        if (!pool_circle[i]->active_circle) {
+            pool_circle[i]->anim_circle(pos);
+            return;
+        }
+    }
 }
 
 void GameScene::show_particle(Vec2 pos) {
@@ -462,7 +496,16 @@ void GameScene::check_hit_color_change(Line *l, Square *sq) {
         e->setSpriteFrame(COLOR_HIT[default_color_code][step]);
 }
 
+void GameScene::destroy_all_lines() {
+    for (int i = 0; active_lines[i]; i++) {
+        if (active_lines[i] != EMPTY_VALUE && pool_container[active_lines[i]]->line_active)
+            destroy_complete_line(active_lines[i], pool_container[active_lines[i]]->getPositionY());
+    }
+}
+
 void GameScene::destroy_complete_line(int line_id, float line_y) {
+    if (!pool_container[line_id]->line_active)
+        return;
     int i = 0;
     auto batch = pool_container[line_id]->getChildByTag(LINE_BATCH_ID);
     while (1) {
@@ -479,8 +522,10 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
         sprite->setVisible(false);
         i++;
     }
-    star_bonus_active = false;
-    star_line_id = -1;
+    if (star_bonus_active) {
+        star_bonus_active = false;
+        star_line_id = -1;
+    }
 }
 
 void GameScene::check_into_line() {
@@ -513,6 +558,7 @@ void GameScene::check_into_line() {
                         Vec2 square_pos;
                         square_pos.x = sq->getPositionX();
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
+                        update_game_score(sq->square_pv);
                         if (sq->star_bonus == 1) {
                             destroy_complete_line(bullet_container[i]->contact_index,
                                                   static_cast<int>(current_line->getPositionY() +
@@ -527,14 +573,13 @@ void GameScene::check_into_line() {
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
                                 sq->initial_color);
                         game_block_destroyed++;
-                        update_game_score(sq->square_pv);
                     } else {
                         update_game_score(bullet_hit);
                         show_particle(bullet_container[i]->getPosition());
                         sq->square_pv -= bullet_hit;
                         char pv[DEFAULT_CHAR_LENGHT];
                         if (sq->square_pv > 1000)
-                            sprintf(pv, "%.1fK", static_cast<double>(sq->square_pv / 1000));
+                            sprintf(pv, "%.1fK", static_cast<float>(sq->square_pv) / 1000);
                         else
                             sprintf(pv, "%i", sq->square_pv);
                         if (current_line->get_type() > LINE_TYPE_STARTUP_5)
@@ -887,8 +932,10 @@ void GameScene::stop_game_loop() {
 }
 
 void GameScene::score_animation() {
-    auto scale_up = ScaleTo::create(0.05, 1.2f);
-    auto scale_down = ScaleTo::create(0.05, 1.0f);
+    if (score->getNumberOfRunningActions() > 0)
+        return;
+    auto scale_up = ScaleTo::create(0.04, 1.15f);
+    auto scale_down = ScaleTo::create(0.04, 1.0f);
     auto sequence = Sequence::create(scale_up, scale_down, nullptr);
     score->runAction(sequence);
     if (best_img->isVisible())
@@ -924,6 +971,7 @@ int GameScene::get_h_value() {
 }
 
 void GameScene::start_game() {
+    game_already_resumed = false;
     game_shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
     if (game_shooter_type == SHIELD_TANK) {
         shield_rect->setVisible(true);
@@ -942,6 +990,30 @@ void GameScene::start_game() {
     run_start_animation();
     start_bullet_shoot();
     run_game_loop();
+}
+
+void GameScene::resume_game() {
+    game_already_resumed = true;
+    stopAction(wait_sequence);
+    continue_button->stopAllActions();
+    removeChild(continue_button);
+    removeChild(next_button);
+    destroy_all_lines();
+    if (game_shooter_type == SHIELD_TANK && !shield_live_used) {
+        shield_rect->setOpacity(100);
+        shield_rect->setVisible(true);
+    }
+    if (LINE_GENERATED > TRANSITION_FROM_4_TO_5)
+        player->setScale(0.85f);
+    score->setVisible(true);
+    player->setVisible(true);
+    player->setPositionX(x_screen / 2);
+    if (game_score >= UserLocalStore::get_achievement_variable(SCORE)) {
+        best_img->setVisible(true);
+        best_img->setPosition(Vec2(x_screen / 2, best_img->getPositionY()));
+    }
+    game_state = GAME_RUNNING;
+    start_bullet_shoot();
 }
 
 void GameScene::shop(cocos2d::Ref *pSender) {
@@ -1037,9 +1109,40 @@ bool GameScene::is_touch_on_player_zone(Vec2 touch_position) {
            touch_position.y <= player_pos.y + gap_y && player_pos.y >= player_pos.y - gap_y;
 }
 
+bool GameScene::is_next_button_touched(Vec2 touch_location) {
+    float x_pos = next_button->getPosition().x - next_button->getContentSize().width / 2;
+    float y_pos = next_button->getPosition().y - next_button->getContentSize().height / 2;
+    return touch_location.x >= x_pos &&
+           touch_location.x <= x_pos + next_button->getContentSize().width &&
+           touch_location.y >= y_pos &&
+           touch_location.y <= y_pos + next_button->getContentSize().height;
+}
+
+bool GameScene::is_continue_button_touched(Vec2 touch_location) {
+    float x_pos = continue_button->getPosition().x - continue_button->getContentSize().width / 2;
+    float y_pos = continue_button->getPosition().y - continue_button->getContentSize().height / 2;
+    return touch_location.x >= x_pos &&
+           touch_location.x <= x_pos + continue_button->getContentSize().width &&
+           touch_location.y >= y_pos &&
+           touch_location.y <= y_pos + continue_button->getContentSize().height;
+}
+
 bool GameScene::onTouchBegan(Touch *touch, Event *event) {
     if (game_state == GAME_RUNNING && !is_touch_on_player_zone(touch->getLocation()))
         return false;
+    if (game_state == GAME_END && continue_button &&
+        is_continue_button_touched(touch->getLocation())) {
+        resume_game();
+        return false;
+    }
+    if (game_state == GAME_END && next_button && is_next_button_touched(touch->getLocation())) {
+        stopAction(wait_sequence);
+        continue_button->stopAllActions();
+        removeChild(continue_button);
+        removeChild(next_button);
+        end_menu = get_end_game_menu();
+        addChild(end_menu);
+    }
     if (options_state == OPTIONS_DISPLAYED && is_sound_button_touched(touch->getLocation())) {
         manage_options();
         return true;

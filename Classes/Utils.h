@@ -70,6 +70,7 @@ public:
     static Action*      get_bonus_bullet_anim();
     static Action*      get_bonus_power_anim();
     static Action*      get_bonus_speed_anim();
+    static Action*      get_continue_anim();
     static int          get_bullet_shoot_index(int);
     static Action*      get_bonus_animation(int);
     static int*         get_complex_distribution_points(int*, int, int, int);

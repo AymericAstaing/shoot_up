@@ -178,7 +178,7 @@ Size ShopScene::tableCellSizeForIndex(cocos2d::extension::TableView *table, ssiz
 
 void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
                                  cocos2d::extension::TableViewCell *cell) {
-    if (table->getTag() == SHOOTER_ARRAY && cell->getIdx() == 11 || cell->getIdx() == 25 ||
+    if ((table->getTag() == SHOOTER_ARRAY && cell->getIdx() == 11) || cell->getIdx() == 25 ||
         cell->getIdx() == 26)
         return;
     int cell_id = cell->getIdx();

@@ -48,6 +48,8 @@ private:
     Sprite*             best_img;
     Sprite*             shield_rect;
     Sprite*             tuto;
+    Sprite*             next_button;
+    Sprite*             continue_button;
     Menu*               game_menu;
     MenuItemImage*      options_btn;
     MenuItemFont*       menu_title;
@@ -63,12 +65,14 @@ private:
     MenuItemImage*      menu_stats_img;
     Menu*               end_menu;
     Layer*              stats;
+    Sequence*           wait_sequence;
     float               bonus_time = 0;
     bool                bonus_selected = false;
     bool                bonus_displayed = false;
     bool                rect_animated = false;
     bool                shield_live_used = false;
     bool                star_bonus_active = false;
+    bool                game_already_resumed = false;
     int                 star_line_id = -1;
     int                 bonus_active = 0;
     int                 bonus_id = -1;
@@ -112,6 +116,7 @@ public:
     void                    show_particle(Vec2);
     void                    bonus_collision();
     void                    load_bonus();
+    void                    destroy_all_lines();
     void                    remove_bonus();
     void                    move_bonus();
     void                    bonus_managment();
@@ -122,6 +127,8 @@ public:
     void                    start_game();
     void                    score_animation();
     bool                    is_sound_button_touched(Vec2);
+    bool                    is_next_button_touched(Vec2);
+    bool                    is_continue_button_touched(Vec2);
     void                    init_options_menu();
     void                    init_ui_components();
     int                     get_next_line_type();
@@ -129,6 +136,7 @@ public:
     void                    init_listeners();
     void                    play(cocos2d::Ref *);
     int                     get_h_value();
+    void                    resume_game();
     void                    run_game_loop();
     void                    stop_game_loop();
     void                    move_active_lines();
@@ -142,6 +150,7 @@ public:
     void                    value_to_update();
     void                    back_to_menu(cocos2d::Ref *);
     void                    update(float) override;
+    void                    display_end_menu();
     void                    surclassement(cocos2d::Ref *);
     int                     get_next_line_id(int);
     void                    init_pool_objects();

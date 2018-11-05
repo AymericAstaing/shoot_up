@@ -29,7 +29,6 @@ Action *Utils::get_shield_blink_animation() {
     return (sequence);
 }
 
-
 Sprite *Utils::get_player() {
     auto winSize = Director::getInstance()->getVisibleSize();
     int current_shooter = UserLocalStore::get_current_shooter();
@@ -52,6 +51,20 @@ Action *Utils::get_bonus_animation(int type) {
             break;
     }
     return (nullptr);
+}
+
+Action *Utils::get_continue_anim() {
+    auto spritecache = SpriteFrameCache::getInstance();
+    spritecache->addSpriteFramesWithFile("spritesheet/continue_animation.plist");
+    Vector<SpriteFrame *> frames;
+    for (int i = 0; i < 33; i++) {
+        stringstream ss;
+        ss << "continue_" << i << ".png";
+        frames.pushBack(spritecache->getSpriteFrameByName(ss.str()));
+    }
+    Animation *anim = Animation::createWithSpriteFrames(frames, 0.18f);
+    CCAction *action = CCRepeatForever::create(CCAnimate::create(anim));
+    return (action);
 }
 
 Action *Utils::get_bonus_power_anim() {

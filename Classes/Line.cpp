@@ -11,6 +11,7 @@
 #include    "Utils.h"
 #include    "ShootUp.h"
 #include    "GameScene.h"
+#include    "UserLocalStore.h"
 
 Line::Line(int type) {
 }
@@ -71,6 +72,24 @@ void Line::assign_color(int sq_id, int m_factor, int current_point) {
         change_square_color(sq_id, RED);
 }
 
+int Line::get_modified_total(int total) { // AUGMENTATION DU NIVEAU QUAND SPECIAL SHOOTER
+    int shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
+
+    switch (shooter_type) {
+        case SPEED_TANK:
+            return static_cast<int>(total * 1.5);
+        case POWER_TANK:
+            return static_cast<int>(total * 1.5);
+        case TRIPLE_TANK:
+            return total * 2;
+        case DOUBLE_TANK:
+            return static_cast<int>(total * 1.5);
+        default:
+            return 0;
+    }
+    return (0);
+}
+
 void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LIGNES DE 4 ou 5
     int type = get_type();
     int total = 0;
@@ -83,12 +102,12 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
                                      ceil(static_cast<float>(h_factor * 0.8)));
         total = Utils::get_random_number(min_h, max_h);
     }
+    total += get_modified_total(total);
     int *distrib = new int[this->square_nbr];
     int *choosen = new int[this->square_nbr];
     distrib = Utils::get_simple_distribution_points(distrib, total, type, this->square_nbr);
     int i = 0;
     int index = 0;
-
     while (i == 0) {
         auto child = getChildByTag(index);
         Square *sq = ((Square *) child);
@@ -114,8 +133,8 @@ void Line::assign_line_points_complex(int h_factor,
                                  ceil(static_cast<float>(h_factor * 0.3)));
     int max_h = static_cast<int>(h_factor +
                                  ceil(static_cast<float>(h_factor * 0.4)));
-    int total = Utils::get_random_number(min_h, max_h);
-    total *= 1.4;
+    int total = static_cast<int>(Utils::get_random_number(min_h, max_h) * 1.4);
+    total += get_modified_total(total);
     int *distrib = new int[this->square_nbr];
     distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
     int index = 0;
@@ -124,7 +143,8 @@ void Line::assign_line_points_complex(int h_factor,
         if (!child)
             break;
         Square *sq = ((Square *) child);
-        distrib[index] += (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
+        distrib[index] +=
+                (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
         sq->assign_point(distrib[index]);
         assign_color(index, total / this->square_nbr, distrib[index]);
 
@@ -152,23 +172,20 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
         int index = i * 5;
         int k = 0;
         auto batchnode = getChildByTag(LINE_BATCH_ID);
-
         for (int j = index; j < (i * 5 + 5); j++, k++) {
             auto child = getChildByTag(j);
+            if (!child)
+                break;
             Square *sq = ((Square *) child);
             sq->initial_color = GREEN;
-            if (!child || !sq) {
-                break;
-            } else {
-                if (batchnode) {
-                    auto sprite = batchnode->getChildByTag(sq->getTag());
-                    Sprite *e = ((Sprite *) sprite);
-                    char color[15];
-                    sprintf(color, "%s%i%s", "startup_", j, ".png");
-                    e->setSpriteFrame(color);
-                }
-                sq->assign_point(distrib[k]);
+            if (batchnode) {
+                auto sprite = batchnode->getChildByTag(sq->getTag());
+                Sprite *e = ((Sprite *) sprite);
+                char color[15];
+                sprintf(color, "%s%i%s", "startup_", j, ".png");
+                e->setSpriteFrame(color);
             }
+            sq->assign_point(distrib[k]);
         }
     }
 }
