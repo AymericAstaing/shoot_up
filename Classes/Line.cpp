@@ -115,6 +115,7 @@ void Line::assign_line_points_complex(int h_factor,
     int max_h = static_cast<int>(h_factor +
                                  ceil(static_cast<float>(h_factor * 0.4)));
     int total = Utils::get_random_number(min_h, max_h);
+    total *= 1.4;
     int *distrib = new int[this->square_nbr];
     distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
     int index = 0;
@@ -123,8 +124,7 @@ void Line::assign_line_points_complex(int h_factor,
         if (!child)
             break;
         Square *sq = ((Square *) child);
-        distrib[index] +=
-                (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
+        distrib[index] += (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
         sq->assign_point(distrib[index]);
         assign_color(index, total / this->square_nbr, distrib[index]);
 
@@ -138,7 +138,6 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
     int lines_nbr = square_nbr / 5;
     if (h_factor < 25)
         h_factor = 25;
-
     for (int i = 0; i < lines_nbr; i++) {
         float ratio = 0;
         if (type == LINE_TYPE_STARTUP_3)
@@ -148,10 +147,8 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
         if (type == LINE_TYPE_STARTUP_5)
             ratio = line_2[i];
         int *distrib = new int[5];
-
         distrib = Utils::get_distribution_points(distrib, static_cast<int>(h_factor * ratio),
                                                  5);
-
         int index = i * 5;
         int k = 0;
         auto batchnode = getChildByTag(LINE_BATCH_ID);
@@ -159,6 +156,7 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
         for (int j = index; j < (i * 5 + 5); j++, k++) {
             auto child = getChildByTag(j);
             Square *sq = ((Square *) child);
+            sq->initial_color = GREEN;
             if (!child || !sq) {
                 break;
             } else {
@@ -563,7 +561,6 @@ void Line::load_square(Line *l, int type) {
 /********************************** BASICS *****************************/
 
 void Line::set_active(int factor_h, int line_generated) {
-    log("ACTIVE LINE OF %i", square_nbr);
     setVisible(true);
     line_active = true;
     if (get_type() <= LINE_TYPE_STARTUP_5) // STARTUP LINES
@@ -594,7 +591,7 @@ void Line::reset() {
     line_active = false;
     setVisible(false);
     auto winSize = Director::getInstance()->getVisibleSize();
-    setPosition(Vec2(0, winSize.height + line_size[HEIGHT]));
+    setPosition(initial_pos);
 }
 
 Line *Line::create(int type) {
@@ -604,9 +601,10 @@ Line *Line::create(int type) {
     auto size = get_line_size(type);
     l->line_size[WIDTH] = size.width;
     l->line_size[HEIGHT] = size.height;
+    l->initial_pos = Vec2(0, winSize.height + l->line_size[HEIGHT]);
     l->line_active = false;
     l->setContentSize(Size(l->line_size[WIDTH], l->line_size[HEIGHT]));
-    l->setPosition(Vec2(0, (winSize.height + l->line_size[HEIGHT])));
+    l->setPosition(l->initial_pos);
     load_square(l, type);
     l->setVisible(false);
     return (l);

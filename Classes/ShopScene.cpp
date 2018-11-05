@@ -107,6 +107,7 @@ ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
     if (!cell) {
         cell = new(std::nothrow) CustomTableViewCell();
         cell->autorelease();
+
         Sprite *sprite = nullptr;
         if (table->getTag() == SHOOTER_ARRAY)
             sprite = Sprite::create(shooter_content[idx]);
@@ -196,24 +197,20 @@ void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
         if (UserLocalStore::get_shooter(cell_id) != 2) {
             UserLocalStore::store_shooter(UserLocalStore::get_current_shooter(), 1);
             UserLocalStore::store_shooter(cell_id, 2);
-            shooter_grid->setVisible(false);
-            shooter_grid->release();
             shooter_content = UserLocalStore::get_final_shooter_array();
-            shooter_grid = init_grid(SHOOTER_ARRAY);
-            addChild(shooter_grid);
-            shooter_grid->setVisible(true);
+            for (int i = 0; i < numberOfCellsInTableView(shooter_grid); i++) {
+                shooter_grid->updateCellAtIndex(i);
+            }
         }
         return;
     } else if (mode == BALL && UserLocalStore::get_ball(cell->getIdx()) != 0) {
         if (UserLocalStore::get_ball(cell->getIdx()) != 2) {
             UserLocalStore::store_ball(UserLocalStore::get_current_ball(), 1);
             UserLocalStore::store_ball(cell->getIdx(), 2);
-            ball_grid->setVisible(false);
-            ball_grid->release();
             ball_content = UserLocalStore::get_final_ball_array();
-            ball_grid = init_grid(BALL_ARRAY);
-            addChild(ball_grid);
-            ball_grid->setVisible(true);
+            for (int i = 0; i < numberOfCellsInTableView(ball_grid); i++) {
+                ball_grid->updateCellAtIndex(i);
+            }
         }
         return;
     }

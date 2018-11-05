@@ -15,7 +15,7 @@ void Circle::reset() {
     this->setPosition(Vec2(getContentSize().width / 2,
                            winSize.height - getContentSize().height / 2));
     auto fadeIn = FadeIn::create(0);
-    setScale(0.0f);
+    setScale(0.5f);
     runAction(fadeIn);
 }
 
@@ -27,7 +27,7 @@ void Circle::anim_circle(Vec2 pos) {
             [&](Node *sender) {
                 reset();
             });
-    auto move_ease_in = EaseOut::create(ScaleTo::create(1.4f, 2), 2);
+    auto move_ease_in = EaseOut::create(ScaleTo::create(1.4f, 2.5), 2);
     auto fadeOut = FadeOut::create(0.55f);
     runAction(fadeOut);
     runAction(Sequence::create(move_ease_in, callback, nullptr));
@@ -37,7 +37,7 @@ Circle *Circle::create() {
     auto winSize = Director::getInstance()->getVisibleSize();
     Circle *c = new Circle();
     if (c->initWithFile(HIT_CIRCLE)) {
-        c->setScale(0.0f);
+        c->setScale(0.5f);
         c->setPosition(Vec2(-c->getContentSize().width / 2,
                             winSize.height - c->getContentSize().height / 2));
         c->setVisible(false);

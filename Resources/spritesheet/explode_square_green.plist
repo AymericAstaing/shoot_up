@@ -73,11 +73,11 @@
 <key>startColorAlpha</key>
 <real>1</real>
 <key>startColorBlue</key>
-<real>0.407843</real>
+<real>0</real>
 <key>startColorGreen</key>
-<real>0.545098</real>
+<real>1</real>
 <key>startColorRed</key>
-<real>0.807843</real>
+<real>0</real>
 <key>startColorVarianceAlpha</key>
 <real>0.500008</real>
 <key>startColorVarianceBlue</key>

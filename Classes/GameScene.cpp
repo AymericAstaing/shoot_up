@@ -160,8 +160,8 @@ void GameScene::init_options_menu() {
     sound->setScale(0.9);
     tuto->setScale(0.9);
     sound->setPosition(
-            Vec2(static_cast<float>(options_btn->getPosition().x +
-                                    options_btn->getContentSize().height),
+            Vec2(options_btn->getPosition().x +
+                 options_btn->getContentSize().height,
                  options_btn->getPosition().y));
     tuto->setPosition(Vec2(sound->getPosition().x + sound->getContentSize().height,
                            options_btn->getPosition().y));
@@ -208,14 +208,13 @@ void GameScene::end_of_game() {
 }
 
 void GameScene::reset_arrays() {
-    for (int j = 0; active_lines[j] != NULL; j++)
+    for (int j = 0; active_lines[j] != '\0'; j++)
         active_lines[j] = EMPTY_VALUE;
     for (int i = 0; bullet_container[i] != NULL; i++)
         if (bullet_container[i]->bullet_active)
             bullet_container[i]->reset();
     for (int i = 0; pool_container[i] != NULL; i++) {
         if (pool_container[i]->line_active) {
-            pool_container[i]->stopAllActions();
             pool_container[i]->reset();
         }
     }
@@ -320,7 +319,7 @@ void GameScene::run_start_animation() {
     menu_stats_img->runAction(seq_callback);
 }
 
-int GameScene::get_line_index(int type) {
+int GameScene::get_next_line_id(int type) {
     int *range = Utils::get_container_range_research(type);
     for (int i = range[0]; i <= range[1]; i++) {
         if (pool_container[i]->get_type() == type && !pool_container[i]->line_active)
@@ -340,7 +339,10 @@ void GameScene::check_bullet_contact() {
                     if (bullet_position_y >= line_position_y &&
                         bullet_position_y <=
                         line_position_y +
-                        pool_container[id]->getContentSize().height) {
+                        pool_container[id]->getContentSize().height &&
+                        pool_container[id]->getPositionY() +
+                        pool_container[id]->getContentSize().height >
+                        player->getPositionY() + player->getContentSize().height / 2) {
                         //IN CONTACT
                         if (!bullet_container[i]->contact) {
                             // ENTER CONTACT ZONE
@@ -395,18 +397,33 @@ void GameScene::show_particle(Vec2 pos) {
 
 void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
     auto fileUtil = FileUtils::getInstance();
-    if (!fileUtil || !explode_plist[default_color_code])
-        return;
-    auto plistData = fileUtil->getValueMapFromFile(explode_plist[default_color_code]);
+    auto plistData = fileUtil->getValueMapFromFile(explode_plist[RED]);
+    switch (default_color_code) {
+        case RED:
+            plistData = fileUtil->getValueMapFromFile(explode_plist[RED]);
+            break;
+        case ORANGE:
+            plistData = fileUtil->getValueMapFromFile(explode_plist[ORANGE]);
+            break;
+        case YELLOW:
+            plistData = fileUtil->getValueMapFromFile(explode_plist[YELLOW]);
+            break;
+        case GREEN:
+            plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
+            break;
+            plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
+        default:
+            break;
+    }
     ParticleSystemQuad *stars = ParticleSystemQuad::create(plistData);
     if (!stars)
         return;
-    stars->setScale(1);
-    stars->setDuration(0.3);
+    stars->setScale(0.7);
+    stars->setDuration(0.5);
     stars->setPosition(square_pos);
-    stars->setTotalParticles(30);
+    stars->setTotalParticles(20);
     stars->setAutoRemoveOnFinish(true);
-    addChild(stars, 2, 1);
+    addChild(stars, 2);
 }
 
 void GameScene::show_bonus_particle_explode(Vec2 bonus_pos) {
@@ -455,6 +472,9 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
         Square *sq = ((Square *) child);
         auto sprite = batch->getChildByTag(sq->getTag());
         show_destruction_circle(Vec2(sq->getPositionX(), line_y));
+        show_particle_explode(
+                Vec2(sq->getPositionX(), line_y - sq->getContentSize().height),
+                sq->initial_color);
         sq->setVisible(false);
         sprite->setVisible(false);
         i++;
@@ -503,9 +523,9 @@ void GameScene::check_into_line() {
                             return;
                         }
                         show_destruction_circle(square_pos);
-                        /*show_particle_explode(
+                        show_particle_explode(
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
-                                sq->initial_color);*/
+                                sq->initial_color);
                         game_block_destroyed++;
                         update_game_score(sq->square_pv);
                     } else {
@@ -514,7 +534,7 @@ void GameScene::check_into_line() {
                         sq->square_pv -= bullet_hit;
                         char pv[DEFAULT_CHAR_LENGHT];
                         if (sq->square_pv > 1000)
-                            sprintf(pv, "%.1f", static_cast<float>(sq->square_pv / 1000));
+                            sprintf(pv, "%.1fK", static_cast<double>(sq->square_pv / 1000));
                         else
                             sprintf(pv, "%i", sq->square_pv);
                         if (current_line->get_type() > LINE_TYPE_STARTUP_5)
@@ -558,7 +578,7 @@ void GameScene::move_active_lines() {
 }
 
 void GameScene::check_player_collision() {
-    for (int i = 0; active_lines[i] != NULL; i++) {
+    for (int i = 0; active_lines[i] != '\0'; i++) {
         if (active_lines[i] != -1 && pool_container[active_lines[i]]->getPositionY() <
                                      player->getPositionY() +
                                      (1.1 * player->getContentSize().height / 2)) {
@@ -709,10 +729,10 @@ void GameScene::bonus_collision() {
             bonus_active = bonus_id;
         }
         bonus_container[bonus_id]->setTexture(default_bonus_texture[bonus_id]);
+        bonus_container[bonus_id]->setVisible(false);
         rect_container[bonus_id]->setVisible(true);
         rect_container[bonus_id]->setScale(player->getScale());
         rect_container[bonus_id]->setPosition(player->getPosition());
-        bonus_container[bonus_id]->setVisible(false);
         show_destruction_circle(bonus_container[bonus_id]->getPosition());
         show_bonus_particle_explode(Vec2(bonus_container[bonus_id]->getPosition().x,
                                          bonus_container[bonus_id]->getPosition().y -
@@ -785,7 +805,7 @@ void GameScene::update(float ft) {
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
-        NEXT_LINE_ID = get_line_index(get_next_line_type());
+        NEXT_LINE_ID = get_next_line_id(get_next_line_type());
         LINE_GENERATED++;
         if (NEXT_LINE_ID != -1)
             NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
@@ -793,7 +813,7 @@ void GameScene::update(float ft) {
                                              pool_container[NEXT_LINE_ID]->line_size);
     }
     if (NEXT_LINE_ID == -1) {
-        NEXT_LINE_ID = get_line_index(get_next_line_type());
+        NEXT_LINE_ID = get_next_line_id(get_next_line_type());
         if (NEXT_LINE_ID != -1)
             NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
                                              pool_container[NEXT_LINE_ID]->get_type(),
@@ -1046,7 +1066,7 @@ void GameScene::launch_bullet(float dt) {
                 bullet_container[i]->launch(bullet_state, player->getPosition(),
                                             player->getContentSize(), NORMAL_LAUNCH);
                 if (bonus_active == BONUS_POWER)
-                    bullet_container[i]->setScale(1.3f);
+                    bullet_container[i]->setScale(BIG_BULLET_SIZE);
                 if (bullet_state == BULLET_LEFT)
                     bullet_state = BULLET_RIGHT;
                 else

@@ -15,7 +15,7 @@
 static const char *explode_plist[4] = {"spritesheet/explode_square_red.plist",
                                        "spritesheet/explode_square_orange.plist",
                                        "spritesheet/explode_square_yellow.plist",
-                                       "spritesheet/explode_square_red.plist"};
+                                       "spritesheet/explode_square_green.plist"};
 
 static const char *explode_bonus_plist[3] = {"spritesheet/explode_bonus_bullet.plist",
                                        "spritesheet/explode_bonus_power.plist",
@@ -97,7 +97,6 @@ public:
     CREATE_FUNC(GameScene);
     static cocos2d::Scene*  createScene();
     virtual bool            init();
-    void                    skip(cocos2d::Ref*);
     void                    store_active_line(int);
     void                    remove_active_line(int);
     void                    init_bonus_components();
@@ -144,7 +143,7 @@ public:
     void                    back_to_menu(cocos2d::Ref *);
     void                    update(float) override;
     void                    surclassement(cocos2d::Ref *);
-    int                     get_line_index(int);
+    int                     get_next_line_id(int);
     void                    init_pool_objects();
     void                    manage_options();
     void                    run_start_animation();
