@@ -69,8 +69,8 @@ void GameScene::init_main_variable() {
 void GameScene::init_ui_components() {
     player = Utils::get_player();
     this->addChild(player);
-    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 100);
-    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen - 0.15 * y_screen)));
+    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 90);
+    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen - 0.12 * y_screen)));
     score->setVisible(false);
     addChild(score, 10);
     best_img = Sprite::create(BEST_SCORE_IMG);
@@ -79,6 +79,10 @@ void GameScene::init_ui_components() {
                                                   (score->getContentSize().height / 2 +
                                                    best_img->getContentSize().height / 3))));
     best_img->setVisible(false);
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("spritesheet/bullets_game.plist");
+    bullet_batch_node = SpriteBatchNode::create("spritesheet/bullets_game.png");
+    bullet_batch_node->setTag(BULLET_BATCH_TAG);
+    addChild(bullet_batch_node, 10);
     addChild(best_img, 20);
 }
 
@@ -112,7 +116,7 @@ void GameScene::init_pool_objects() {
     active_lines[4] = '\0';
     for (int j = 0; j < 100; j++) {
         bullet_container[j] = Bullet::create();
-        addChild(bullet_container[j], 4);
+        bullet_batch_node->addChild(bullet_container[j]);
     }
     bullet_container[100] = NULL;
     for (int i = 4; i < 7; i++)
@@ -218,7 +222,8 @@ void GameScene::display_end_menu() {
     next_button->setPosition(
             Vec2(x_screen / 2, static_cast<float>(y_screen / 2 - (0.4 * (y_screen / 2)))));
     continue_button->setPosition(Vec2(x_screen / 2,
-                                      static_cast<float>(next_button->getPositionY() + continue_button->getContentSize().height)));
+                                      static_cast<float>(next_button->getPositionY() +
+                                                         continue_button->getContentSize().height)));
     addChild(continue_button);
     auto delay = DelayTime::create(6.0f);
     auto callback = CallFuncN::create(
@@ -417,15 +422,25 @@ void GameScene::show_destruction_circle(Vec2 pos) {
     }
 }
 
-void GameScene::show_particle(Vec2 pos) {
+void GameScene::show_particle(Vec2 pos, Square *sq) {
+    if (sq->particle_played == 2)
+        return;
+    sq->particle_played++;
     auto fileUtil = FileUtils::getInstance();
     auto plistData = fileUtil->getValueMapFromFile(PARTICLE_ANIM);
     auto stars = ParticleSystemQuad::create(plistData);
-    stars->setScale(1);
+    auto delay = DelayTime::create(0.2);
+
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                sq->particle_played--;
+            });
+    auto sequence = Sequence::create(delay, callback, nullptr);
     stars->setDuration(0.2);
     stars->setPosition(pos);
-    stars->setTotalParticles(2);
+    stars->setTotalParticles(10);
     stars->setAutoRemoveOnFinish(true);
+    runAction(sequence);
     addChild(stars, 1, 1);
 }
 
@@ -445,8 +460,8 @@ void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
         case GREEN:
             plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
             break;
-            plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
         default:
+            plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
             break;
     }
     ParticleSystemQuad *stars = ParticleSystemQuad::create(plistData);
@@ -560,10 +575,7 @@ void GameScene::check_into_line() {
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
                         update_game_score(sq->square_pv);
                         if (sq->star_bonus == 1) {
-                            destroy_complete_line(bullet_container[i]->contact_index,
-                                                  static_cast<int>(current_line->getPositionY() +
-                                                                   current_line->getContentSize().height /
-                                                                   2));
+                            destroy_all_lines();
                             game_block_destroyed++;
                             bullet_container[i]->reset();
                             return;
@@ -575,7 +587,7 @@ void GameScene::check_into_line() {
                         game_block_destroyed++;
                     } else {
                         update_game_score(bullet_hit);
-                        show_particle(bullet_container[i]->getPosition());
+                        show_particle(bullet_container[i]->getPosition(), sq);
                         sq->square_pv -= bullet_hit;
                         char pv[DEFAULT_CHAR_LENGHT];
                         if (sq->square_pv > 1000)
@@ -711,6 +723,10 @@ void GameScene::load_bonus() {
 
 void GameScene::active_bonus() {
     bonus_container[bonus_id]->setTag(BONUS_IN_GAME);
+    if (LINE_GENERATED > TRANSITION_FROM_4_TO_5)
+        bonus_container[bonus_id]->setScale(1);
+    else
+        bonus_container[bonus_id]->setScale(1.2f);
     bonus_container[bonus_id]->setVisible(true);
     bonus_container[bonus_id]->runAction(Utils::get_bonus_animation(bonus_id));
     bonus_displayed = true;

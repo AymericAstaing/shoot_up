@@ -29,6 +29,7 @@ public:
     int                     star_bonus;
     int                     square_pv;
     int                     initial_pv;
+    int                     particle_played;
     int                     initial_color;
     Label*                  points;
 

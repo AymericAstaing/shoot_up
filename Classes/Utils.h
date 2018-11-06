@@ -38,14 +38,14 @@ static const char *shooters[31] = {"shooter_asset/game_shooter/shooter_0.png",
                                    "shooter_asset/game_shooter/shooter_29.png",
                                    "shooter_asset/game_shooter/shooter_30.png"};
 
-static const char *balls[8] = {"bullets_asset/game_bullet/bullet_0.png",
-                               "bullets_asset/game_bullet/bullet_1.png",
-                               "bullets_asset/game_bullet/bullet_2.png",
-                               "bullets_asset/game_bullet/bullet_3.png",
-                               "bullets_asset/game_bullet/bullet_4.png",
-                               "bullets_asset/game_bullet/bullet_5.png",
-                               "bullets_asset/game_bullet/bullet_6.png",
-                               "bullets_asset/game_bullet/bullet_7.png"};
+static const char *balls[8] = {"bullet_0.png",
+                               "bullet_1.png",
+                               "bullet_2.png",
+                               "bullet_3.png",
+                               "bullet_4.png",
+                               "bullet_5.png",
+                               "bullet_6.png",
+                               "bullet_7.png"};
 
 static const int random_type[8] = {LINE_TYPE_COMPLEX_0,
                                    LINE_TYPE_COMPLEX_1,

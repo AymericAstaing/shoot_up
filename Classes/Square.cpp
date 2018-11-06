@@ -34,6 +34,7 @@ int Square::get_square_pv() {
 }
 
 void Square::reset_square() {
+    this->particle_played = 0;
     this->square_pv = 0;
     std::string st = StringUtils::format("%i", this->square_pv);
     this->points->setString(st);
@@ -67,6 +68,7 @@ Square *Square::create(int line_size) {
         s->setAnchorPoint(Vec2(0.5, 0.5));
         s->square_pv = 10;
         s->star_bonus = 0;
+        s->particle_played = 0;
         s->setContentSize(get_square_size(line_size));
         s->rect_size[0] = s->getContentSize().width;
         s->rect_size[1] = s->getContentSize().height;

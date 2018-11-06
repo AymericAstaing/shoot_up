@@ -36,6 +36,7 @@ class GameScene : public cocos2d::Scene {
 private:
     Line**              pool_container;
     Bullet**            bullet_container;
+    SpriteBatchNode*    bullet_batch_node;
     Sprite*             player;
     Sprite**            bonus_container;
     Sprite**            rect_container;
@@ -113,7 +114,7 @@ public:
     void                    show_bonus_particle_explode(Vec2);
     void                    check_hit_color_change(Line*, Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
-    void                    show_particle(Vec2);
+    void                    show_particle(Vec2, Square*);
     void                    bonus_collision();
     void                    load_bonus();
     void                    destroy_all_lines();

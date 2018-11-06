@@ -32,6 +32,7 @@ USING_NS_CC;
 #define MIN_LINE_BEFORE_BONUS_SPAWN     5
 #define COMPLEX_STRUCT_ELMTS            7
 #define NO_SHOOTER_UPGRADE              2
+#define BULLET_BATCH_TAG                12
 #define SQUARE_SIZE_5                   4.95
 #define NOT_FROM_SHOP                   0
 #define SQUARE_SIZE_4                   3.95
