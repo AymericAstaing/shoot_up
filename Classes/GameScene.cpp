@@ -1426,8 +1426,12 @@ Menu *GameScene::get_end_game_menu() {
     sprintf(power_price, "%i PTS",
             UserLocalStore::get_achievement_variable(POWER_LEVEL_PRICE));
     char speed_price[DEFAULT_CHAR_LENGHT];
-    sprintf(speed_price, "%i PTS",
-            UserLocalStore::get_achievement_variable(SPEED_LEVEL_PRICE));
+    if (UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) > 999)
+        sprintf(speed_price, "%.1fK pts",
+                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) / 1000);
+    else
+        sprintf(speed_price, "%1.f pts",
+                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE));
     char current_power[DEFAULT_CHAR_LENGHT];
     sprintf(current_power, "LEVEL %i",
             UserLocalStore::get_achievement_variable(POWER_LEVEL));
@@ -1468,7 +1472,8 @@ Menu *GameScene::get_end_game_menu() {
                                                            POPUP_MENU_PATH::SPEED_SELECTED,
                                                            [=](Ref *sender) {
                                                                GameScene::increase_speed(
-                                                                       speed_current_level);
+                                                                       speed_current_level,
+                                                                       speed_price_txt);
                                                            });
     MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
                                                            POWER,
@@ -1503,8 +1508,8 @@ Menu *GameScene::get_end_game_menu() {
                                        stats->getContentSize().height / 2 -
                                        1.5 * back_to_main->getContentSize().height) +
                                0.5 * back_to_main->getContentSize().height)));
-    auto move_to_share_1 = MoveTo::create(0.1, Vec2(static_cast<float>(x_screen / 2 -
-                                                                       back_to_main->getContentSize().width),
+    auto move_to_share_1 = MoveTo::create(0.1, Vec2(x_screen / 2 -
+                                                    back_to_main->getContentSize().width,
                                                     static_cast<float>(
                                                             (static_cast<float>(y_screen /
                                                                                 1.75)) -
@@ -1590,24 +1595,44 @@ Menu *GameScene::get_end_game_menu() {
     return (end_menu);
 }
 
-void GameScene::increase_speed(Label *speed) {
+void GameScene::increase_speed(Label *level, Label *price) {
+    int ex_level = UserLocalStore::get_achievement_variable(SPEED_LEVEL);
+    float new_speed_factor = 0.5;
+    if (ex_level > 7)
+        new_speed_factor = 0.3;
     UserLocalStore::store_achievement_variable_float(SPEED_VALUE,
-                                                     static_cast<float>(
-                                                             UserLocalStore::get_achievement_variable_float(
-                                                                     SPEED_VALUE) + 0.5));
+                                                     UserLocalStore::get_achievement_variable_float(
+                                                             SPEED_VALUE) +
+                                                     new_speed_factor);
+    if (ex_level + 1 > 4) {
+        UserLocalStore::store_achievement_variable_float(SPEED_LEVEL_PRICE,
+                                                         static_cast<float>(
+                                                                 UserLocalStore::get_achievement_variable_float(
+                                                                         SPEED_LEVEL_PRICE) *
+                                                                 1.62));
+    } else {
+        UserLocalStore::store_achievement_variable_float(SPEED_LEVEL_PRICE,
+                                                         speed_price[UserLocalStore::get_achievement_variable(
+                                                                 SPEED_LEVEL)]);
+    }
     UserLocalStore::store_achievement_variable(
             SPEED_LEVEL,
             UserLocalStore::get_achievement_variable(
                     SPEED_LEVEL) +
             1);
-    if (UserLocalStore::get_achievement_variable(SPEED_LEVEL) ==
-        10)
+    if (UserLocalStore::get_achievement_variable(SPEED_LEVEL) == 10)
         UserLocalStore::store_shooter(20, 1);
     char s[DEFAULT_CHAR_LENGHT];
-    sprintf(s, "SPEED %i",
-            UserLocalStore::get_achievement_variable(
-                    SPEED_LEVEL));
-    speed->setString(s);
+    sprintf(s, "SPEED %i", UserLocalStore::get_achievement_variable(SPEED_LEVEL));
+    level->setString(s);
+    char price2[DEFAULT_CHAR_LENGHT];
+    if (UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) > 999)
+        sprintf(price2, "%.1fK pts",
+                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) / 1000);
+    else
+        sprintf(price2, "%1.f pts",
+                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE));
+    price->setString(price2);
 }
 
 void GameScene::increase_power(Label *power) {

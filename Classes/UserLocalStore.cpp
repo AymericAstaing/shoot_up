@@ -81,11 +81,11 @@ void UserLocalStore::init_achievement_variables() {
     def->setIntegerForKey(GLOBAL::KEY_GAME_NBR, 0);
     def->setIntegerForKey(GLOBAL::KEY_POINT, 0);
     def->setIntegerForKey(GLOBAL::KEY_BLOCK_DESTROYED, 0);
-    def->setIntegerForKey(GLOBAL::KEY_POWER_LEVEL_PRICE, 0);
-    def->setIntegerForKey(GLOBAL::KEY_SPEED_LEVEL_PRICE, 0);
+    def->setFloatForKey(GLOBAL::KEY_POWER_LEVEL_PRICE, 50);
+    def->setFloatForKey(GLOBAL::KEY_SPEED_LEVEL_PRICE, 50);
     def->setIntegerForKey(GLOBAL::KEY_SOUND, 0);
     def->setIntegerForKey(GLOBAL::KEY_POWER_VALUE, 1);
-    def->setFloatForKey(GLOBAL::KEY_SPEED_VALUE, 1); // car de 0.5 en 0.5
+    def->setFloatForKey(GLOBAL::KEY_SPEED_VALUE, 1);
     def->setIntegerForKey(STARTER_TANK::KEY_BLOCK_STARTER_TANK, 0);
     def->setIntegerForKey(STARTER_TANK::KEY_ITEM_STARTER_TANK, 0);
     def->setIntegerForKey(STARTER_TANK::KEY_GAME_STARTER_TANK, 0);
@@ -641,7 +641,6 @@ void UserLocalStore::store_asset_ball(int balls[8]) {
         def->flush();
     }
 }
-
 
 void UserLocalStore::init_asset_arrays() {
     int shooters[31] = {2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
