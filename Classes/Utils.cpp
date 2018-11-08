@@ -188,7 +188,7 @@ const std::string Utils::get_reduced_value(float value, int type) {
         if (value > 1000)
             return (StringUtils::format("%.1fK", value / 1000));
         return (StringUtils::format("%1.f", value));
-    } else {
+    } else if (type == VALUE_WITH_PLUS){
         if (value > 1000000000)
             return (StringUtils::format("+%.1fB pts", value / 1000000000));
         if (value > 1000000)
@@ -196,6 +196,14 @@ const std::string Utils::get_reduced_value(float value, int type) {
         if (value > 1000)
             return (StringUtils::format("+%.1fK pts", value / 1000));
         return (StringUtils::format("+%1.f pts", value));
+    } else {
+        if (value > 1000000000)
+            return (StringUtils::format("PERFECT\n+%.1fB pts", value / 1000000000));
+        if (value > 1000000)
+            return (StringUtils::format("PERFECT\n+%.1fM pts", value / 1000000));
+        if (value > 1000)
+            return (StringUtils::format("PERFECT\n+%.1fK pts", value / 1000));
+        return (StringUtils::format("PERFECT\n+%1.f pts", value));
     }
 }
 
@@ -205,7 +213,7 @@ float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2
     if (current_type >= LINE_TYPE_STARTUP_2 && current_type <= LINE_TYPE_STARTUP_5)
         return (-line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_4)
-        return static_cast<float>(screen_height * 0.55 + line_height);
+        return static_cast<float>(screen_height * 0.50 + line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_4 && next_type == LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.30 + line_height);
     if (current_type == LINE_TYPE_SIMPLE_OF_5 && next_type == LINE_TYPE_SIMPLE_OF_5)

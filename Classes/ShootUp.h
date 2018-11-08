@@ -46,6 +46,7 @@ USING_NS_CC;
 #define VALUE_SIMPLE                    0
 #define VALUE_WITH_POINT                1
 #define VALUE_WITH_PLUS                 2
+#define VALUE_BONUS_COMMENT             3
 #define OPTIONS_HIDE                    0
 #define OPTIONS_DISPLAYED               1
 

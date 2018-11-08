@@ -52,8 +52,6 @@ bool ShopScene::init() {
     listener->setSwallowTouches(true);
     listener->onTouchBegan = CC_CALLBACK_2(ShopScene::onTouchBegan, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-    if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 1)
-        UserLocalStore::store_achievement_variable(NEW_SHOP_ELEMENT, 0);
     return true;
 }
 
@@ -66,6 +64,8 @@ void ShopScene::init_shop_grids() {
 }
 
 void ShopScene::init_ui_components() {
+    if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 1)
+        UserLocalStore::store_achievement_variable(NEW_SHOP_ELEMENT, 0);
     auto winSize = Director::getInstance()->getVisibleSize();
     back_button = Sprite::create(SHOP_SCENE::BACK_BUTTON);
     back_button->setPosition(Vec2(static_cast<float>(0 + back_button->getContentSize().width / 1.3),

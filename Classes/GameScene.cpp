@@ -436,14 +436,14 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
     auto fileUtil = FileUtils::getInstance();
     auto plistData = fileUtil->getValueMapFromFile(PARTICLE_ANIM);
     auto stars = ParticleSystemQuad::create(plistData);
-    auto delay = DelayTime::create(0.2);
+    auto delay = DelayTime::create(0.2f);
     auto callback = CallFuncN::create(
             [&](Node *sender) {
-                if (sq)
-                    sq->particle_played--;
+                Square *s = ((Square *) sender);
+                s->particle_played--;
             });
     auto sequence = Sequence::create(delay, callback, nullptr);
-    stars->setDuration(0.2);
+    stars->setDuration(0.2f);
     stars->setPosition(pos);
     stars->setTotalParticles(10);
     stars->setAutoRemoveOnFinish(true);
@@ -555,19 +555,23 @@ void GameScene::show_destruction_bonus(int value, int line_id) {
     if (!pool_container[line_id] || !pool_container[line_id]->line_active)
         return;
     pool_container[line_id]->half_animated = 1;
-    Label *bonus = Label::createWithTTF(Utils::get_reduced_value(value, VALUE_WITH_PLUS),
-                                        FIRE_UP_FONT, 40);
-    bonus->setPosition(Vec2(x_screen / 2, pool_container[line_id]->getPositionY() +
-                                          pool_container[line_id]->getContentSize().height / 2));
-    auto callback = CallFuncN::create(
-            [&](Node *sender) {
-                bonus->removeAllChildrenWithCleanup(true);
-            });
-    auto move = MoveBy::create(2, Vec2(0, y_screen / 8));
-    auto fadeout = FadeTo::create(2, 10);
-    auto sequence = Sequence::create(move, callback, nullptr);
+    Label *bonus = Label::createWithTTF(Utils::get_reduced_value(value, VALUE_BONUS_COMMENT),
+                                        FIRE_UP_FONT_NUMBERS, 40);
+    bonus->setAnchorPoint(Vec2(0, 0));
+    bonus->setPosition(
+            Vec2(x_screen / 2 - bonus->getContentSize().width / 2, y_screen / 2 + y_screen / 12));
+    auto move = MoveBy::create(1.0f, Vec2(0, y_screen / 16));
+    bonus->setHorizontalAlignment(TextHAlignment::CENTER);
+    bonus->setOpacity(0);
+    auto actionRemove = RemoveSelf::create();
+    auto fadeout = FadeTo::create(1.0f, 10);
+    auto fadein = FadeIn::create(0.1f);
+    auto delay = DelayTime::create(0.1f);
+    auto sequence = Sequence::create(delay, move, actionRemove, nullptr);
+    auto sequence_fadeout = Sequence::create(delay, fadeout, nullptr);
     addChild(bonus);
-    bonus->runAction(fadeout);
+    bonus->runAction(fadein);
+    bonus->runAction(sequence_fadeout);
     bonus->runAction(sequence);
 }
 
@@ -587,7 +591,7 @@ void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
         index++;
     }
     if (square_dead == l->square_nbr)
-        show_destruction_bonus(l->half_total,  line_id);
+        show_destruction_bonus(l->half_total, line_id);
 }
 
 void GameScene::check_into_line() {
@@ -627,7 +631,8 @@ void GameScene::check_into_line() {
                             bullet_container[i]->reset();
                             return;
                         }
-                        check_full_destruction_bonus(current_line,bullet_container[i]->contact_index);
+                        check_full_destruction_bonus(current_line,
+                                                     bullet_container[i]->contact_index);
                         show_destruction_circle(square_pos);
                         show_particle_explode(
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
@@ -1015,12 +1020,7 @@ void GameScene::update_game_score(int points) {
         auto move = MoveTo::create(0.2, Vec2(x_screen / 2, best_img->getPositionY()));
         best_img->runAction(move);
     }
-    char score_value[DEFAULT_CHAR_LENGHT];
-    if (game_score < 1000)
-        sprintf(score_value, "%i", game_score);
-    else
-        sprintf(score_value, "%.1fK", static_cast<float>(game_score) / 1000);
-    score->setString(score_value);
+    score->setString(Utils::get_reduced_value(game_score, VALUE_SIMPLE));
 }
 
 float GameScene::get_shoot_interval() {
