@@ -1,6 +1,7 @@
 #include    "Popup.h"
 #include    "ShootUp.h"
 #include    "GameScene.h"
+#include    "Utils.h"
 #include    "UserLocalStore.h"
 
 USING_NS_CC;
@@ -109,14 +110,8 @@ namespace UICustom {
 
         if (node && node->init()) {
             if (YesFunc) {
-                char user_points[DEFAULT_CHAR_LENGHT];
-                if (UserLocalStore::get_achievement_variable(POINT) > 1000)
-                    sprintf(user_points, "%.1fK pts",
-                            static_cast<float>(UserLocalStore::get_achievement_variable(POINT) /
-                                               1000));
-                else
-                    sprintf(user_points, "%i pts", UserLocalStore::get_achievement_variable(POINT));
-                MenuItemFont *point_nbr = MenuItemFont::create(user_points,
+                float point_value = UserLocalStore::get_achievement_variable(POINT);
+                MenuItemFont *point_nbr = MenuItemFont::create(Utils::get_reduced_value(point_value, VALUE_WITH_POINT),
                                                                [=](Ref *sender) {
                                                                });
                 char power_level[DEFAULT_CHAR_LENGHT];
@@ -125,20 +120,12 @@ namespace UICustom {
                 char speed_level[DEFAULT_CHAR_LENGHT];
                 sprintf(speed_level, "LEVEL %i",
                         UserLocalStore::get_achievement_variable(SPEED_LEVEL));
-                char power_price[DEFAULT_CHAR_LENGHT];
-                sprintf(power_price, "%1.f pts",
-                        UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE));
-                char speed_price[DEFAULT_CHAR_LENGHT];
-                if (UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) > 999)
-                    sprintf(speed_price, "%.1fK pts",
-                            UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) / 1000);
-                else
-                    sprintf(speed_price, "%1.f pts",
-                            UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE));
-                MenuItemFont *power_price_txt = MenuItemFont::create(power_price,
+                float speed_price_value = UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE);
+                float power_price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
+                MenuItemFont *power_price_txt = MenuItemFont::create(Utils::get_reduced_value(power_price_value, VALUE_WITH_POINT),
                                                                      [=](Ref *sender) {
                                                                      });
-                MenuItemFont *speed_price_txt = MenuItemFont::create(speed_price,
+                MenuItemFont *speed_price_txt = MenuItemFont::create(Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT),
                                                                      [=](Ref *sender) {
                                                                      });
                 MenuItemFont *power_level_txt = MenuItemFont::create(power_level,
@@ -153,7 +140,7 @@ namespace UICustom {
                                                                  POPUP_PATH::POWER_SELECTED,
                                                                  [=](Ref *sender) {
                                                                      Popup::increase_power(
-                                                                             power_level_txt);
+                                                                             power_level_txt, power_price_txt);
                                                                  });
 
                 MenuItemImage *speed_btn = MenuItemImage::create(POPUP_PATH::SPEED,
@@ -251,8 +238,7 @@ namespace UICustom {
                                                                      1.62));
         } else {
             UserLocalStore::store_achievement_variable_float(SPEED_LEVEL_PRICE,
-                                                             speed_price[UserLocalStore::get_achievement_variable(
-                                                                     SPEED_LEVEL)]);
+                                                             speed_price[ex_level]);
         }
         UserLocalStore::store_achievement_variable(
                 SPEED_LEVEL,
@@ -264,34 +250,40 @@ namespace UICustom {
         char s[DEFAULT_CHAR_LENGHT];
         sprintf(s, "SPEED %i", UserLocalStore::get_achievement_variable(SPEED_LEVEL));
         level->setString(s);
-        char price2[DEFAULT_CHAR_LENGHT];
-        if (UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) > 999)
-            sprintf(price2, "%.1fK pts",
-                    UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) / 1000);
-        else
-            sprintf(price2, "%1.f pts",
-                    UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE));
-        price->setString(price2);
+        float price_value = UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE);
+        price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
     }
 
-    void Popup::increase_power(MenuItemFont *pFont) {
+    void Popup::increase_power(MenuItemFont *pFont, MenuItemFont *price) {
+        int ex_level = UserLocalStore::get_achievement_variable(POWER_LEVEL);
         UserLocalStore::store_achievement_variable(
                 POWER_VALUE,
                 UserLocalStore::get_achievement_variable(
                         POWER_VALUE) +
                 2);
+        if (ex_level + 1 > 4) {
+            UserLocalStore::store_achievement_variable_float(POWER_LEVEL_PRICE,
+                                                             static_cast<float>(
+                                                                     UserLocalStore::get_achievement_variable_float(
+                                                                             POWER_LEVEL_PRICE) *
+                                                                     1.62));
+        } else {
+            UserLocalStore::store_achievement_variable_float(POWER_LEVEL_PRICE,
+                                                             power_price[ex_level]);
+        }
         UserLocalStore::store_achievement_variable(
                 POWER_LEVEL,
                 UserLocalStore::get_achievement_variable(
                         POWER_LEVEL) +
                 1);
-        if (UserLocalStore::get_achievement_variable(POWER_LEVEL) ==
-            20) // DEBLOCAGE D'UN SHOOTER (6:)
+        if (UserLocalStore::get_achievement_variable(POWER_LEVEL) == 20) // DEBLOCAGE D'UN SHOOTER (6:)
             UserLocalStore::store_shooter(6, 1);
         char p[DEFAULT_CHAR_LENGHT];
         sprintf(p, "LEVEL %i",
                 UserLocalStore::get_achievement_variable(POWER_LEVEL));
         pFont->setString(p);
+        float price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
+        price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
     }
 
     void Popup::initBg() {

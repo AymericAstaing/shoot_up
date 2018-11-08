@@ -36,7 +36,7 @@ namespace UICustom {
     public:
         static Popup* create(const std::string &title, const std::string &msg, const std::function<void ()> &YesFunc);
         static void increase_speed(MenuItemFont *, MenuItemFont *);
-        static void increase_power(MenuItemFont *);
+        static void increase_power(MenuItemFont *, MenuItemFont *);
         
     private:
         void initBg();

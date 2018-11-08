@@ -43,6 +43,9 @@ USING_NS_CC;
 #define DEFAULT_CHAR_LENGHT             10
 #define BULLET_LEFT                     0
 #define BULLET_RIGHT                    1
+#define VALUE_SIMPLE                    0
+#define VALUE_WITH_POINT                1
+#define VALUE_WITH_PLUS                 2
 #define OPTIONS_HIDE                    0
 #define OPTIONS_DISPLAYED               1
 
@@ -121,6 +124,7 @@ USING_NS_CC;
 #define SPEED_LEVEL                     "SPEED_LEVEL"
 #define POWER_VALUE                     "POWER_VALUE"
 #define SPEED_VALUE                     "SPEED_VALUE"
+#define NEW_SHOP_ELEMENT                "NEW_SHOP_ELEMENT"
 #define POWER_LEVEL_PRICE               "POWER_LEVEL_PRICE"
 #define SPEED_LEVEL_PRICE               "SPEED_LEVEL_PRICE"
 #define SCORE                           "SCORE"
@@ -168,6 +172,8 @@ USING_NS_CC;
 #define BEST_SCORE_IMG                  "menu/best_img.png"
 #define SHOP_UNSELECTED                 "menu/shop.png"
 #define SHOP_SELECTED                   "menu/shop_selected.png"
+#define SHOP_UNSELECTED_NEW             "menu/shop_new.png"
+#define SHOP_SELECTED_NEW               "menu/shop_selected_new.png"
 
 class ShootUp {
 

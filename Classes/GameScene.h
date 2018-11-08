@@ -25,8 +25,8 @@ static const char *default_bonus_texture[3] = {"bonus_bullet_0.png",
                                                "bonus_power_0.png",
                                                "bonus_speed_0.png"};
 
-static const float speed_price[5] = {50, 100, 850, 1700, 7400};
-static const float power_price[5] = {50, 100, 750, 1600, 7300};
+static const float speed_price[5] = {50, 100, 850, 1700, 7500};
+static const float power_price[5] = {50, 150, 700, 1600, 7200};
 
 static const int BULLET_SHOOT[3][3] = {{DOUBLE_LAUNCH_LEFT, DOUBLE_LAUNCH_RIGHT},
                                             {SIDEWAY_LAUNCH_LEFT, SIDEWAY_LAUNCH_CENTER, SIDEWAY_LAUNCH_RIGHT},
@@ -115,6 +115,8 @@ public:
     float                   get_shoot_interval();
     bool                    is_touch_on_player_zone(Vec2);
     void                    show_bonus_particle_explode(Vec2);
+    void                    check_full_destruction_bonus(Line*, int);
+    void                    show_destruction_bonus(int, int);
     void                    check_hit_color_change(Line*, Square*);
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2, Square*);
@@ -146,7 +148,7 @@ public:
     void                    move_active_lines();
     void                    check_into_line();
     void                    increase_speed(Label*, Label*);
-    void                    increase_power(Label*);
+    void                    increase_power(Label*, Label*);
     void                    check_lines_out();
     bool                    point_into_square(Square*, Vec2);
     void                    check_bullet_contact();

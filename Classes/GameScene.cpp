@@ -225,7 +225,7 @@ void GameScene::display_end_menu() {
                                       static_cast<float>(next_button->getPositionY() +
                                                          continue_button->getContentSize().height)));
     addChild(continue_button);
-    auto delay = DelayTime::create(6.0f);
+    auto delay = DelayTime::create(6.0);
     auto callback = CallFuncN::create(
             [&](Node *sender) {
                 continue_button->stopAllActions();
@@ -274,6 +274,13 @@ void GameScene::stop_bullet_shoot() {
 void GameScene::surclassement(cocos2d::Ref *pSender) {
     UICustom::Popup *popup = UICustom::Popup::create("Test 3", "", [=]() {});
     popup->setScale(0);
+    popup->setOnExitCallback([&]() {
+        if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 0)
+            return;
+        removeChild(game_menu);
+        game_menu = get_main_menu();
+        this->addChild(game_menu);
+    });
     auto scaleTo = ScaleTo::create(0.1f, 1.0f);
     addChild(popup);
     popup->runAction(scaleTo);
@@ -423,17 +430,17 @@ void GameScene::show_destruction_circle(Vec2 pos) {
 }
 
 void GameScene::show_particle(Vec2 pos, Square *sq) {
-    if (sq->particle_played == 2)
+    if (!sq || !sq->isVisible() || sq->particle_played == 2)
         return;
     sq->particle_played++;
     auto fileUtil = FileUtils::getInstance();
     auto plistData = fileUtil->getValueMapFromFile(PARTICLE_ANIM);
     auto stars = ParticleSystemQuad::create(plistData);
     auto delay = DelayTime::create(0.2);
-
     auto callback = CallFuncN::create(
             [&](Node *sender) {
-                sq->particle_played--;
+                if (sq)
+                    sq->particle_played--;
             });
     auto sequence = Sequence::create(delay, callback, nullptr);
     stars->setDuration(0.2);
@@ -441,7 +448,8 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
     stars->setTotalParticles(10);
     stars->setAutoRemoveOnFinish(true);
     runAction(sequence);
-    addChild(stars, 1, 1);
+    if (stars)
+        addChild(stars, 1, 1);
 }
 
 void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
@@ -543,6 +551,45 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
     }
 }
 
+void GameScene::show_destruction_bonus(int value, int line_id) {
+    if (!pool_container[line_id] || !pool_container[line_id]->line_active)
+        return;
+    pool_container[line_id]->half_animated = 1;
+    Label *bonus = Label::createWithTTF(Utils::get_reduced_value(value, VALUE_WITH_PLUS),
+                                        FIRE_UP_FONT, 40);
+    bonus->setPosition(Vec2(x_screen / 2, pool_container[line_id]->getPositionY() +
+                                          pool_container[line_id]->getContentSize().height / 2));
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                bonus->removeAllChildrenWithCleanup(true);
+            });
+    auto move = MoveBy::create(2, Vec2(0, y_screen / 8));
+    auto fadeout = FadeTo::create(2, 10);
+    auto sequence = Sequence::create(move, callback, nullptr);
+    addChild(bonus);
+    bonus->runAction(fadeout);
+    bonus->runAction(sequence);
+}
+
+void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
+    if (!l || !pool_container[line_id]->line_active)
+        return;
+    if (l->half_animated == 1)
+        return;
+    int index = 0;
+    int square_dead = 0;
+    while (1) {
+        Square *sq = ((Square *) l->getChildByTag(index));
+        if (!sq)
+            break;
+        if (!sq->isVisible())
+            square_dead++;
+        index++;
+    }
+    if (square_dead == l->square_nbr)
+        show_destruction_bonus(l->half_total,  line_id);
+}
+
 void GameScene::check_into_line() {
     for (int i = 0; bullet_container[i] != NULL; i++) {
         if (bullet_container[i] && bullet_container[i]->bullet_active &&
@@ -580,6 +627,7 @@ void GameScene::check_into_line() {
                             bullet_container[i]->reset();
                             return;
                         }
+                        check_full_destruction_bonus(current_line,bullet_container[i]->contact_index);
                         show_destruction_circle(square_pos);
                         show_particle_explode(
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
@@ -1325,9 +1373,14 @@ Menu *GameScene::get_main_menu() {
     menu_anim_img = MenuItemImage::create(HAND_RAIL, HAND_RAIL);
     menu_best_img = MenuItemImage::create(BEST_IMG, BEST_IMG);
     menu_best_txt = MenuItemFont::create(best_score);
-    menu_shop_img = MenuItemImage::create(SHOP_UNSELECTED,
-                                          SHOP_SELECTED,
-                                          CC_CALLBACK_1(GameScene::shop, this));
+    if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 0)
+        menu_shop_img = MenuItemImage::create(SHOP_UNSELECTED,
+                                              SHOP_SELECTED,
+                                              CC_CALLBACK_1(GameScene::shop, this));
+    else
+        menu_shop_img = MenuItemImage::create(SHOP_UNSELECTED_NEW,
+                                              SHOP_SELECTED_NEW,
+                                              CC_CALLBACK_1(GameScene::shop, this));
     menu_title->setFontNameObj(FIRE_UP_FONT);
     menu_power_level->setFontNameObj(FIRE_UP_FONT);
     menu_power_level->setFontSizeObj(20);
@@ -1415,23 +1468,12 @@ Menu *GameScene::get_main_menu() {
 }
 
 Menu *GameScene::get_end_game_menu() {
-    char points[DEFAULT_CHAR_LENGHT];
-    if (UserLocalStore::get_achievement_variable(POINT) > 1000)
-        sprintf(points, "%.1fk",
-                static_cast<float>(UserLocalStore::get_achievement_variable(POINT)) / 1000);
-    else
-        sprintf(points, "%i PTS",
-                UserLocalStore::get_achievement_variable(POINT));
     char power_price[DEFAULT_CHAR_LENGHT];
     sprintf(power_price, "%i PTS",
             UserLocalStore::get_achievement_variable(POWER_LEVEL_PRICE));
-    char speed_price[DEFAULT_CHAR_LENGHT];
-    if (UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) > 999)
-        sprintf(speed_price, "%.1fK pts",
-                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) / 1000);
-    else
-        sprintf(speed_price, "%1.f pts",
-                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE));
+    float speed_price_value = UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE);
+    float power_price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
+    float point_value = UserLocalStore::get_achievement_variable(POINT);
     char current_power[DEFAULT_CHAR_LENGHT];
     sprintf(current_power, "LEVEL %i",
             UserLocalStore::get_achievement_variable(POWER_LEVEL));
@@ -1439,15 +1481,14 @@ Menu *GameScene::get_end_game_menu() {
     sprintf(current_speed, "LEVEL %i",
             UserLocalStore::get_achievement_variable(SPEED_LEVEL));
     stats = Menu::create();
-    Label *current_point = Label::createWithTTF(points, FIRE_UP_FONT, 60);
-    char earned[DEFAULT_CHAR_LENGHT];
-    if (game_score > 1000)
-        sprintf(earned, "+ %.1fk pts", static_cast<float>(game_score) / 1000);
-    else
-        sprintf(earned, "+ %ipts", game_score);
-    Label *earned_point = Label::createWithTTF(earned, FIRE_UP_FONT, 25);
-    Label *speed_price_txt = Label::createWithTTF(speed_price, FIRE_UP_FONT, 20);
-    Label *power_price_txt = Label::createWithTTF(power_price, FIRE_UP_FONT, 20);
+    Label *current_point = Label::createWithTTF(
+            Utils::get_reduced_value(point_value, VALUE_WITH_POINT), FIRE_UP_FONT, 60);
+    Label *earned_point = Label::createWithTTF(
+            Utils::get_reduced_value(game_score, VALUE_WITH_PLUS), FIRE_UP_FONT, 25);
+    Label *speed_price_txt = Label::createWithTTF(
+            Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT), FIRE_UP_FONT, 25);
+    Label *power_price_txt = Label::createWithTTF(
+            Utils::get_reduced_value(power_price_value, VALUE_WITH_POINT), FIRE_UP_FONT, 25);
     Label *speed_info = Label::createWithTTF("SHOOTING SPEED", FIRE_UP_FONT, 24);
     Label *power_info = Label::createWithTTF("SHOOTING POWER", FIRE_UP_FONT, 24);
     Label *speed_current_level = Label::createWithTTF(current_speed, FIRE_UP_FONT, 25);
@@ -1480,7 +1521,8 @@ Menu *GameScene::get_end_game_menu() {
                                                            POPUP_MENU_PATH::POWER_SELECTED,
                                                            [=](Ref *sender) {
                                                                GameScene::increase_power(
-                                                                       power_current_level);
+                                                                       power_current_level,
+                                                                       power_price_txt);
                                                            });
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
@@ -1548,13 +1590,11 @@ Menu *GameScene::get_end_game_menu() {
                                                                                           current_point->getContentSize().height /
                                                                                           2))));
     speed_price_txt->setPosition(Vec2(speed_level_btn->getPosition().x,
-                                      static_cast<float>(speed_level_btn->getPosition().y -
-                                                         (0.25 *
-                                                          speed_level_btn->getContentSize().height))));
+                                      speed_level_btn->getPosition().y -
+                                      (speed_level_btn->getContentSize().height / 6)));
     power_price_txt->setPosition(Vec2(power_level_btn->getPosition().x,
-                                      static_cast<float>(speed_level_btn->getPosition().y -
-                                                         (0.25 *
-                                                          power_level_btn->getContentSize().height))));
+                                      power_level_btn->getPosition().y -
+                                      (power_level_btn->getContentSize().height / 6)));
     speed_current_level->setPosition(Vec2(speed_level_btn->getPosition().x,
                                           static_cast<float>(speed_level_btn->getPosition().y +
                                                              speed_level_btn->getContentSize().height /
@@ -1635,12 +1675,23 @@ void GameScene::increase_speed(Label *level, Label *price) {
     price->setString(price2);
 }
 
-void GameScene::increase_power(Label *power) {
+void GameScene::increase_power(Label *power, Label *price) {
+    int ex_level = UserLocalStore::get_achievement_variable(POWER_LEVEL);
     UserLocalStore::store_achievement_variable(
             POWER_VALUE,
             UserLocalStore::get_achievement_variable(
                     POWER_VALUE) +
             2);
+    if (ex_level + 1 > 4) {
+        UserLocalStore::store_achievement_variable_float(POWER_LEVEL_PRICE,
+                                                         static_cast<float>(
+                                                                 UserLocalStore::get_achievement_variable_float(
+                                                                         POWER_LEVEL_PRICE) *
+                                                                 1.62));
+    } else {
+        UserLocalStore::store_achievement_variable_float(POWER_LEVEL_PRICE,
+                                                         power_price[ex_level]);
+    }
     UserLocalStore::store_achievement_variable(
             POWER_LEVEL,
             UserLocalStore::get_achievement_variable(
@@ -1653,6 +1704,8 @@ void GameScene::increase_power(Label *power) {
     sprintf(p, "LEVEL %i",
             UserLocalStore::get_achievement_variable(POWER_LEVEL));
     power->setString(p);
+    float price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
+    price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
 }
 
 void GameScene::check_first_launch() {

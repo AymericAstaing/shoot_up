@@ -47,6 +47,9 @@ static const char *balls[8] = {"bullet_0.png",
                                "bullet_6.png",
                                "bullet_7.png"};
 
+static const char *basic_colors[4] = {BASIC_COLOR_RED, BASIC_COLOR_ORANGE, BASIC_COLOR_YELLOW,
+                                      BASIC_COLOR_GREEN};
+
 static const int random_type[8] = {LINE_TYPE_COMPLEX_0,
                                    LINE_TYPE_COMPLEX_1,
                                    LINE_TYPE_COMPLEX_2,
@@ -55,35 +58,32 @@ static const int random_type[8] = {LINE_TYPE_COMPLEX_0,
                                    LINE_TYPE_COMPLEX_5,
                                    LINE_TYPE_COMPLEX_6,
                                    LINE_TYPE_COMPLEX_7};
-
-
 class Utils {
 
 public:
-    static int*         get_distribution_points(int*, int, int);
-    static int          get_random_number(int, int);
-    static bool         is_into_list(int*, int, int);
-    static int          get_bullet_nbr(int);
-    static float        get_finger_move_factor(float, int);
-    static Action*      get_shield_blink_animation();
-    static Action*      get_blink_animation();
-    static Action*      get_bonus_bullet_anim();
-    static Action*      get_bonus_power_anim();
-    static Action*      get_bonus_speed_anim();
-    static Action*      get_continue_anim();
-    static int          get_bullet_shoot_index(int);
-    static Action*      get_bonus_animation(int);
-    static int*         get_complex_distribution_points(int*, int, int, int);
-    static int*         get_simple_distribution_points(int*, int, int, int);
-    static int          array_sum(int*,int);
-    static const char*  get_color(int);
-    static int          get_shooter_type(int);
-    static int*         get_container_range_research(int);
-    static Sprite*      get_player();
-    static float        get_spawn_y(int, int, float[2]);
-    static int          get_random_line_type();
-    static Vec2         get_coordinate_from_id(int, int);
-
+    static int *get_distribution_points(int *, int, int);
+    static const std::string get_reduced_value(float, int);
+    static int get_random_number(int, int);
+    static bool is_into_list(int *, int, int);
+    static int get_bullet_nbr(int);
+    static float get_finger_move_factor(float, int);
+    static Action *get_shield_blink_animation();
+    static Action *get_blink_animation();
+    static Action *get_bonus_bullet_anim();
+    static Action *get_bonus_power_anim();
+    static Action *get_bonus_speed_anim();
+    static Action *get_continue_anim();
+    static int get_bullet_shoot_index(int);
+    static Action *get_bonus_animation(int);
+    static int *get_complex_distribution_points(int *, int, int, int);
+    static int *get_simple_distribution_points(int *, int, int, int);
+    static int array_sum(int *, int);
+    static int get_shooter_type(int);
+    static int *get_container_range_research(int);
+    static Sprite *get_player();
+    static float get_spawn_y(int, int, float[2]);
+    static int get_random_line_type();
+    static Vec2 get_coordinate_from_id(int, int);
 private:
 };
 

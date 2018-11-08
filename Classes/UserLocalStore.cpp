@@ -18,6 +18,7 @@ namespace GLOBAL {
     const char *KEY_SPEED_LEVEL = "SPEED_LEVEL";
     const char *KEY_SPEED_VALUE = "SPEED_VALUE";
     const char *KEY_POWER_VALUE = "POWER_VALUE";
+    const char *KEY_NEW_SHOP_ELEMENT = "NEW_SHOP_ELEMENT";
     const char *KEY_SCORE = "SCORE";
     const char *KEY_POINT = "POINT";
     const char *KEY_SOUND = "SOUND";
@@ -74,6 +75,7 @@ namespace TRIPLE_TANK {
 
 void UserLocalStore::init_achievement_variables() {
     UserDefault *def = UserDefault::sharedUserDefault();
+    def->setIntegerForKey(GLOBAL::KEY_NEW_SHOP_ELEMENT, 0);
     def->setIntegerForKey(GLOBAL::KEY_POWER_LEVEL, 1);
     def->setIntegerForKey(GLOBAL::KEY_SPEED_LEVEL, 1);
     def->setIntegerForKey(GLOBAL::KEY_POWER_UP_ITEMS, 0);
@@ -326,12 +328,14 @@ int UserLocalStore::get_current_shooter() {
 }
 
 void UserLocalStore::store_shooter(int index, int value) {
+    UserLocalStore::store_achievement_variable(GLOBAL::KEY_NEW_SHOP_ELEMENT, 1);
     UserDefault *def = UserDefault::sharedUserDefault();
     def->setIntegerForKey(shooter_ids[index], value);
     def->flush();
 }
 
 void UserLocalStore::store_ball(int index, int value) {
+    UserLocalStore::store_achievement_variable(GLOBAL::KEY_NEW_SHOP_ELEMENT, 1);
     UserDefault *def = UserDefault::sharedUserDefault();
     def->setIntegerForKey(ball_ids[index], value);
     def->flush();
@@ -643,8 +647,8 @@ void UserLocalStore::store_asset_ball(int balls[8]) {
 }
 
 void UserLocalStore::init_asset_arrays() {
-    int shooters[31] = {2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1};
+    int shooters[31] = {2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0};
     int balls[8] = {2, 0, 0, 0, 0, 0, 0, 0};
     store_asset_ball(balls);
     store_asset_shooter(shooters);

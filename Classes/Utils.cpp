@@ -25,7 +25,8 @@ Action *Utils::get_shield_blink_animation() {
                 sender->setVisible(false);
 
             });
-    auto sequence = Sequence::create(fadeout, fadein, fadeout->clone(), fadein->clone(), callback, nullptr);
+    auto sequence = Sequence::create(fadeout, fadein, fadeout->clone(), fadein->clone(), callback,
+                                     nullptr);
     return (sequence);
 }
 
@@ -89,7 +90,8 @@ int Utils::get_bullet_nbr(int type) {
             return (3);
         case TRIPLE_TANK:
             return (3);
-        default:break;
+        default:
+            break;
     }
     return (0);
 }
@@ -169,6 +171,34 @@ int *Utils::get_distribution_points(int *distribution, int total_number, int nbr
     return (distribution);
 }
 
+const std::string Utils::get_reduced_value(float value, int type) {
+    if (type == VALUE_WITH_POINT) {
+        if (value > 1000000000)
+            return (StringUtils::format("%.1fB pts", value / 1000000000));
+        if (value > 1000000)
+            return (StringUtils::format("%.1fM pts", value / 1000000));
+        if (value > 1000)
+            return (StringUtils::format("%.1fK pts", value / 1000));
+        return (StringUtils::format("%1.f pts", value));
+    } else if (type == VALUE_SIMPLE){
+        if (value > 1000000000)
+            return (StringUtils::format("%.1fB", value / 1000000000));
+        if (value > 1000000)
+            return (StringUtils::format("%.1fM", value / 1000000));
+        if (value > 1000)
+            return (StringUtils::format("%.1fK", value / 1000));
+        return (StringUtils::format("%1.f", value));
+    } else {
+        if (value > 1000000000)
+            return (StringUtils::format("+%.1fB pts", value / 1000000000));
+        if (value > 1000000)
+            return (StringUtils::format("+%.1fM pts", value / 1000000));
+        if (value > 1000)
+            return (StringUtils::format("+%.1fK pts", value / 1000));
+        return (StringUtils::format("+%1.f pts", value));
+    }
+}
+
 float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2]) {
     auto screen_height = Director::getInstance()->getVisibleSize().height;
     auto line_height = next_line_size[HEIGHT] / 2;
@@ -187,22 +217,6 @@ float Utils::get_spawn_y(int current_type, int next_type, float next_line_size[2
     if (current_type > LINE_TYPE_SIMPLE_OF_5 && next_type > LINE_TYPE_SIMPLE_OF_5)
         return static_cast<float>(screen_height * 0.23 + line_height);
     return (-1);
-}
-
-const char *Utils::get_color(int color_id) {
-    switch (color_id) {
-        case 0:
-            return (BASIC_COLOR_RED);
-        case 1:
-            return (BASIC_COLOR_ORANGE);
-        case 2:
-            return (BASIC_COLOR_YELLOW);
-        case 3:
-            return (BASIC_COLOR_GREEN);
-        default:
-            break;
-    }
-    return (nullptr);
 }
 
 int Utils::get_bullet_shoot_index(int tank_type) {

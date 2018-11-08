@@ -35,6 +35,8 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
             public:
             float line_size[2];
             int line_type;
+            int half_total;
+            int half_animated;
             int square_nbr;
             bool line_active;
             Vec2 initial_pos;

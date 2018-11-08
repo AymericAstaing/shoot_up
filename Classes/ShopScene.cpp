@@ -5,6 +5,7 @@
 #include    <iomanip>
 #include    "cocos2d.h"
 #include    "Popup.h"
+#include    "Utils.h"
 #include    "GridView.h"
 #include    "CustomTableViewCell.h"
 #include    "UserLocalStore.h"
@@ -51,6 +52,8 @@ bool ShopScene::init() {
     listener->setSwallowTouches(true);
     listener->onTouchBegan = CC_CALLBACK_2(ShopScene::onTouchBegan, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+    if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 1)
+        UserLocalStore::store_achievement_variable(NEW_SHOP_ELEMENT, 0);
     return true;
 }
 
@@ -69,13 +72,8 @@ void ShopScene::init_ui_components() {
                                   static_cast<float>(winSize.height - (1.2 *
                                                                        back_button->getContentSize().height))));
     this->addChild(back_button);
-    char text[DEFAULT_CHAR_LENGHT];
-    if (UserLocalStore::get_achievement_variable(POINT) > 1000)
-        sprintf(text, "%.1fK  pts",
-                static_cast<float>(UserLocalStore::get_achievement_variable(POINT) / 1000));
-    else
-        sprintf(text, "%i  pts", UserLocalStore::get_achievement_variable(POINT));
-    points = Label::createWithTTF(text,
+    float point_value = UserLocalStore::get_achievement_variable(POINT);
+    points = Label::createWithTTF(Utils::get_reduced_value(point_value, VALUE_WITH_POINT),
                                   FIRE_UP_FONT, (50));
     points->setPosition(Vec2(static_cast<float>(winSize.width / 1.8), back_button->getPosition().y -
                                                                       back_button->getContentSize().height /

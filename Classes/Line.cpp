@@ -53,9 +53,9 @@ void Line::change_square_color(int index, int color) {
     if (batchnode) {
         auto sprite = batchnode->getChildByTag(index);
         Sprite *e = ((Sprite *) sprite);
-        SpriteFrame *tmp = (SpriteFrame *) Utils::get_color(color);
+        SpriteFrame *tmp = (SpriteFrame *) basic_colors[color];
         if (e->getSpriteFrame() != tmp)
-            e->setSpriteFrame(Utils::get_color(color));
+            e->setSpriteFrame(basic_colors[color]);
     }
 }
 
@@ -117,6 +117,7 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
             choosen[index] = get_index_random(choosen, this->square_nbr - 1);
             distrib[choosen[index]] +=
                     (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
+            half_total += distrib[index];
             sq->assign_point(distrib[choosen[index]]);
             assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
 
@@ -145,6 +146,7 @@ void Line::assign_line_points_complex(int h_factor,
         Square *sq = ((Square *) child);
         distrib[index] +=
                 (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
+        half_total += distrib[index];
         sq->assign_point(distrib[index]);
         assign_color(index, total / this->square_nbr, distrib[index]);
 
@@ -605,6 +607,8 @@ void Line::reset() {
             sq->setVisible(true);
         index++;
     }
+    half_animated = 0;
+    half_total = 0;
     line_active = false;
     setVisible(false);
     auto winSize = Director::getInstance()->getVisibleSize();
@@ -617,6 +621,8 @@ Line *Line::create(int type) {
     l->setAnchorPoint(Vec2(0, 0));
     auto size = get_line_size(type);
     l->line_size[WIDTH] = size.width;
+    l->half_total = 0;
+    l->half_animated = 0;
     l->line_size[HEIGHT] = size.height;
     l->initial_pos = Vec2(0, winSize.height + l->line_size[HEIGHT]);
     l->line_active = false;
