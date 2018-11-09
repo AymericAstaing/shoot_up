@@ -1,6 +1,8 @@
 #include    <math.h>
 #include    <vector>
 #include    <iomanip>
+#include    <audio/android/jni/cddandroidAndroidJavaEngine.h>
+#include    <SimpleAudioEngine.h>
 #include    "cocos2d.h"
 #include    "GameScene.h"
 #include    "Square.h"
@@ -64,6 +66,10 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, NOT_FROM_SHOP);
     init_options_menu();
     init_bonus_components();
+    auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+    audio->preloadEffect("sound/square_explode.mp3");
+    audio->setEffectsVolume(1);
+    audio->playEffect("sound/square_explode.mp3");
 }
 
 void GameScene::init_ui_components() {
@@ -74,10 +80,11 @@ void GameScene::init_ui_components() {
     score->setVisible(false);
     addChild(score, 10);
     best_img = Sprite::create(BEST_SCORE_IMG);
-    best_img->setPosition(Vec2(x_screen + best_img->getContentSize().height,
-                               static_cast<float>(score->getPositionY() -
-                                                  (score->getContentSize().height / 2 +
-                                                   best_img->getContentSize().height / 3))));
+    best_img->setPosition(Vec2(x_screen + best_img->getContentSize().height, score->getPositionY() -
+                                                                             (score->getContentSize().height /
+                                                                              2 +
+                                                                              best_img->getContentSize().height /
+                                                                              3)));
     best_img->setVisible(false);
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile("spritesheet/bullets_game.plist");
     bullet_batch_node = SpriteBatchNode::create("spritesheet/bullets_game.png");
@@ -591,8 +598,10 @@ void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
             square_dead++;
         index++;
     }
-    if (square_dead == l->square_nbr)
+    if (square_dead == l->square_nbr) {
+        update_game_score(l->half_total);
         show_destruction_bonus(l->half_total, line_id);
+    }
 }
 
 void GameScene::check_into_line() {
@@ -1226,6 +1235,11 @@ bool GameScene::is_sound_button_touched(Vec2 touch_location) {
            touch_location.y <= y_pos + sound->getContentSize().height;
 }
 
+void GameScene::play_bullet_sound() {
+    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sound/bullet_launch.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sound/bullet_launch.mp3");
+}
+
 void GameScene::launch_bullet(float dt) {
     if (game_shooter_type != DOUBLE_TANK && game_shooter_type != SIDEWAY_TANK &&
         game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET) {
@@ -1233,6 +1247,7 @@ void GameScene::launch_bullet(float dt) {
             if (!bullet_container[i]->bullet_active) {
                 bullet_container[i]->launch(bullet_state, player->getPosition(),
                                             player->getContentSize(), NORMAL_LAUNCH);
+                play_bullet_sound();
                 if (bonus_active == BONUS_POWER)
                     bullet_container[i]->setScale(BIG_BULLET_SIZE);
                 if (bullet_state == BULLET_LEFT)
@@ -1248,6 +1263,7 @@ void GameScene::launch_bullet(float dt) {
             if (!bullet_container[i]->bullet_active) {
                 bullet_container[i]->launch(bullet_state, player->getPosition(),
                                             player->getContentSize(), bullet_founded);
+                play_bullet_sound();
                 bullet_founded++;
                 if (bullet_founded == 3)
                     return;
@@ -1270,6 +1286,7 @@ void GameScene::launch_bullet(float dt) {
             bullet_container[bullet_ids[i]]->launch(bullet_state, player->getPosition(),
                                                     player->getContentSize(),
                                                     BULLET_SHOOT[type][i]);
+            play_bullet_sound();
             if (bonus_active == BONUS_POWER)
                 bullet_container[i]->setScale(BIG_BULLET_SIZE);
         }
@@ -1482,6 +1499,7 @@ Menu *GameScene::get_end_game_menu() {
     sprintf(current_speed, "LEVEL %i",
             UserLocalStore::get_achievement_variable(SPEED_LEVEL));
     stats = Menu::create();
+    Sprite *s = Sprite::create(BONUS_X2);
     Label *current_point = Label::createWithTTF(
             Utils::get_reduced_value(point_value, VALUE_WITH_POINT), FIRE_UP_FONT, 60);
     Label *earned_point = Label::createWithTTF(
@@ -1515,7 +1533,7 @@ Menu *GameScene::get_end_game_menu() {
                                                            [=](Ref *sender) {
                                                                GameScene::increase_speed(
                                                                        speed_current_level,
-                                                                       speed_price_txt);
+                                                                       speed_price_txt, current_point);
                                                            });
     MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
                                                            POWER,
@@ -1523,7 +1541,7 @@ Menu *GameScene::get_end_game_menu() {
                                                            [=](Ref *sender) {
                                                                GameScene::increase_power(
                                                                        power_current_level,
-                                                                       power_price_txt);
+                                                                       power_price_txt, current_point);
                                                            });
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
@@ -1613,7 +1631,12 @@ Menu *GameScene::get_end_game_menu() {
                                                     1.6 *
                                                     power_current_level->getContentSize().height)));
     background->setContentSize(stats->getContentSize());
+    s->setAnchorPoint(Vec2(0, 0));
+    s->setScale(0.7);
+    s->setPositionY(
+            static_cast<float>(s->getPositionY() + (0.9 * stats->getContentSize().height / 2)));
     stats->addChild(background);
+    stats->addChild(s);
     stats->addChild(earned_point);
     stats->addChild(current_point);
     stats->addChild(power_level_btn);
@@ -1636,7 +1659,11 @@ Menu *GameScene::get_end_game_menu() {
     return (end_menu);
 }
 
-void GameScene::increase_speed(Label *level, Label *price) {
+void GameScene::increase_speed(Label *level, Label *price, Label *points) {
+    float actual_coin = UserLocalStore::get_achievement_variable(POINT);
+    float actual_price = UserLocalStore::get_achievement_variable(SPEED_LEVEL_PRICE);
+    if (actual_coin < actual_price)
+        return;
     int ex_level = UserLocalStore::get_achievement_variable(SPEED_LEVEL);
     float new_speed_factor = 0.5;
     if (ex_level > 7)
@@ -1645,6 +1672,8 @@ void GameScene::increase_speed(Label *level, Label *price) {
                                                      UserLocalStore::get_achievement_variable_float(
                                                              SPEED_VALUE) +
                                                      new_speed_factor);
+    UserLocalStore::store_achievement_variable(POINT,
+                                               static_cast<int>(actual_coin - actual_price));
     if (ex_level + 1 > 4) {
         UserLocalStore::store_achievement_variable_float(SPEED_LEVEL_PRICE,
                                                          static_cast<float>(
@@ -1668,15 +1697,23 @@ void GameScene::increase_speed(Label *level, Label *price) {
     level->setString(s);
     float price_value = UserLocalStore::get_achievement_variable(SPEED_LEVEL_PRICE);
     price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
+    float final_point = UserLocalStore::get_achievement_variable(POINT);
+    points->setString(Utils::get_reduced_value(final_point, VALUE_WITH_POINT));
 }
 
-void GameScene::increase_power(Label *power, Label *price) {
+void GameScene::increase_power(Label *power, Label *price, Label *points) {
+    float actual_coin = UserLocalStore::get_achievement_variable(POINT);
+    float actual_price = UserLocalStore::get_achievement_variable(POWER_LEVEL_PRICE);
+    if (actual_coin < actual_price)
+        return;
     int ex_level = UserLocalStore::get_achievement_variable(POWER_LEVEL);
     UserLocalStore::store_achievement_variable(
             POWER_VALUE,
             UserLocalStore::get_achievement_variable(
                     POWER_VALUE) +
             2);
+    UserLocalStore::store_achievement_variable(POINT,
+                                               static_cast<int>(actual_coin - actual_price));
     if (ex_level + 1 > 4) {
         UserLocalStore::store_achievement_variable_float(POWER_LEVEL_PRICE,
                                                          static_cast<float>(
@@ -1701,6 +1738,8 @@ void GameScene::increase_power(Label *power, Label *price) {
     power->setString(p);
     float price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
     price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
+    float final_point = UserLocalStore::get_achievement_variable(POINT);
+    points->setString(Utils::get_reduced_value(final_point, VALUE_WITH_POINT));
 }
 
 void GameScene::check_first_launch() {

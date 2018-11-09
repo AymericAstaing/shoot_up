@@ -111,23 +111,28 @@ namespace UICustom {
         if (node && node->init()) {
             if (YesFunc) {
                 float point_value = UserLocalStore::get_achievement_variable(POINT);
-                MenuItemFont *point_nbr = MenuItemFont::create(Utils::get_reduced_value(point_value, VALUE_WITH_POINT),
-                                                               [=](Ref *sender) {
-                                                               });
+                MenuItemFont *point_nbr = MenuItemFont::create(
+                        Utils::get_reduced_value(point_value, VALUE_WITH_POINT),
+                        [=](Ref *sender) {
+                        });
                 char power_level[DEFAULT_CHAR_LENGHT];
                 sprintf(power_level, "LEVEL %i",
                         UserLocalStore::get_achievement_variable(POWER_LEVEL));
                 char speed_level[DEFAULT_CHAR_LENGHT];
                 sprintf(speed_level, "LEVEL %i",
                         UserLocalStore::get_achievement_variable(SPEED_LEVEL));
-                float speed_price_value = UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE);
-                float power_price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
-                MenuItemFont *power_price_txt = MenuItemFont::create(Utils::get_reduced_value(power_price_value, VALUE_WITH_POINT),
-                                                                     [=](Ref *sender) {
-                                                                     });
-                MenuItemFont *speed_price_txt = MenuItemFont::create(Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT),
-                                                                     [=](Ref *sender) {
-                                                                     });
+                float speed_price_value = UserLocalStore::get_achievement_variable_float(
+                        SPEED_LEVEL_PRICE);
+                float power_price_value = UserLocalStore::get_achievement_variable_float(
+                        POWER_LEVEL_PRICE);
+                MenuItemFont *power_price_txt = MenuItemFont::create(
+                        Utils::get_reduced_value(power_price_value, VALUE_WITH_POINT),
+                        [=](Ref *sender) {
+                        });
+                MenuItemFont *speed_price_txt = MenuItemFont::create(
+                        Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT),
+                        [=](Ref *sender) {
+                        });
                 MenuItemFont *power_level_txt = MenuItemFont::create(power_level,
                                                                      [=](Ref *sender) {
                                                                      });
@@ -140,7 +145,9 @@ namespace UICustom {
                                                                  POPUP_PATH::POWER_SELECTED,
                                                                  [=](Ref *sender) {
                                                                      Popup::increase_power(
-                                                                             power_level_txt, power_price_txt);
+                                                                             power_level_txt,
+                                                                             power_price_txt,
+                                                                             point_nbr);
                                                                  });
 
                 MenuItemImage *speed_btn = MenuItemImage::create(POPUP_PATH::SPEED,
@@ -148,7 +155,8 @@ namespace UICustom {
                                                                  [=](Ref *sender) {
                                                                      Popup::increase_speed(
                                                                              speed_level_txt,
-                                                                             speed_price_txt);
+                                                                             speed_price_txt,
+                                                                             point_nbr);
                                                                  });
                 speed_btn->setPosition(Vec2(
                         static_cast<float>(speed_btn->getPosition().x - popup_width / 4),
@@ -221,7 +229,11 @@ namespace UICustom {
         return nullptr;
     }
 
-    void Popup::increase_speed(MenuItemFont *level, MenuItemFont *price) {
+    void Popup::increase_speed(MenuItemFont *level, MenuItemFont *price, MenuItemFont *points) {
+        float actual_coin = UserLocalStore::get_achievement_variable(POINT);
+        float actual_price = UserLocalStore::get_achievement_variable(SPEED_LEVEL_PRICE);
+        if (actual_coin < actual_price)
+            return;
         int ex_level = UserLocalStore::get_achievement_variable(SPEED_LEVEL);
         float new_speed_factor = 0.5;
         if (ex_level > 7)
@@ -230,6 +242,8 @@ namespace UICustom {
                                                          UserLocalStore::get_achievement_variable_float(
                                                                  SPEED_VALUE) +
                                                          new_speed_factor);
+        UserLocalStore::store_achievement_variable(POINT,
+                                                   static_cast<int>(actual_coin - actual_price));
         if (ex_level + 1 > 4) {
             UserLocalStore::store_achievement_variable_float(SPEED_LEVEL_PRICE,
                                                              static_cast<float>(
@@ -252,15 +266,24 @@ namespace UICustom {
         level->setString(s);
         float price_value = UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE);
         price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
+        float final_coin = UserLocalStore::get_achievement_variable(POINT);
+        points->setString(Utils::get_reduced_value(final_coin, VALUE_WITH_POINT));
+
     }
 
-    void Popup::increase_power(MenuItemFont *pFont, MenuItemFont *price) {
+    void Popup::increase_power(MenuItemFont *pFont, MenuItemFont *price, MenuItemFont *points) {
+        float actual_coin = UserLocalStore::get_achievement_variable(POINT);
+        float actual_price = UserLocalStore::get_achievement_variable(POWER_LEVEL_PRICE);
+        if (actual_coin < actual_price)
+            return;
         int ex_level = UserLocalStore::get_achievement_variable(POWER_LEVEL);
         UserLocalStore::store_achievement_variable(
                 POWER_VALUE,
                 UserLocalStore::get_achievement_variable(
                         POWER_VALUE) +
                 2);
+        UserLocalStore::store_achievement_variable(POINT,
+                                                   static_cast<int>(actual_coin - actual_price));
         if (ex_level + 1 > 4) {
             UserLocalStore::store_achievement_variable_float(POWER_LEVEL_PRICE,
                                                              static_cast<float>(
@@ -276,7 +299,8 @@ namespace UICustom {
                 UserLocalStore::get_achievement_variable(
                         POWER_LEVEL) +
                 1);
-        if (UserLocalStore::get_achievement_variable(POWER_LEVEL) == 20) // DEBLOCAGE D'UN SHOOTER (6:)
+        if (UserLocalStore::get_achievement_variable(POWER_LEVEL) ==
+            20) // DEBLOCAGE D'UN SHOOTER (6:)
             UserLocalStore::store_shooter(6, 1);
         char p[DEFAULT_CHAR_LENGHT];
         sprintf(p, "LEVEL %i",
@@ -284,6 +308,8 @@ namespace UICustom {
         pFont->setString(p);
         float price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
         price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
+        float final_coin = UserLocalStore::get_achievement_variable(POINT);
+        points->setString(Utils::get_reduced_value(final_coin, VALUE_WITH_POINT));
     }
 
     void Popup::initBg() {

@@ -122,7 +122,6 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         }
 
         this.hideVirtualButton();
-
         onLoadNativeLibraries();
 
         sContext = this;
@@ -167,12 +166,16 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
     @Override
     protected void onResume() {
-    	Log.d(TAG, "onResume()");
+        Log.d(TAG, "onResume()");
         super.onResume();
-        Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
+        AudioManager manager =
+                (AudioManager)this.getSystemService(Context.AUDIO_SERVICE);
+        assert manager != null;
+        if (!manager.isMusicActive()) {
+            Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
+        }
         this.hideVirtualButton();
-       	resumeIfHasFocus();
-
+        resumeIfHasFocus();
         Cocos2dxEngineDataManager.resume();
     }
     

@@ -1,16 +1,17 @@
 #ifndef __GameScene_SCENE_H__
 #define __GameScene_SCENE_H__
 
-#include <vector>
-#include <cocos2d.h>
-#include <cocos-ext.h>
-#include <GUI/CCScrollView/CCTableViewCell.h>
-#include "GridView.h"
-#include "Square.h"
-#include "ShootUp.h"
-#include "Circle.h"
-#include "Bullet.h"
-#include "Line.h"
+#include    <vector>
+#include    <cocos2d.h>
+#include    <cocos-ext.h>
+#include    <GUI/CCScrollView/CCTableViewCell.h>
+#include    <audio/android/audio.h>
+#include    "GridView.h"
+#include    "Square.h"
+#include    "ShootUp.h"
+#include    "Circle.h"
+#include    "Bullet.h"
+#include    "Line.h"
 
 static const char *explode_plist[4] = {"spritesheet/explode_square_red.plist",
                                        "spritesheet/explode_square_orange.plist",
@@ -129,6 +130,7 @@ public:
     void                    active_bonus();
     void                    move_circles();
     void                    scale_animation();
+    void                    play_bullet_sound();
     void                    show_particle_explode(Vec2, int);
     void                    start_game();
     void                    score_animation();
@@ -147,8 +149,8 @@ public:
     void                    stop_game_loop();
     void                    move_active_lines();
     void                    check_into_line();
-    void                    increase_speed(Label*, Label*);
-    void                    increase_power(Label*, Label*);
+    void                    increase_speed(Label*, Label*, Label *);
+    void                    increase_power(Label*, Label*, Label *);
     void                    check_lines_out();
     bool                    point_into_square(Square*, Vec2);
     void                    check_bullet_contact();

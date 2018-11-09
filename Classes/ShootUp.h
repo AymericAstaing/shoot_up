@@ -14,6 +14,7 @@ USING_NS_CC;
 #define TITLE                           "S H O O T  U P !"
 #define PARTICLE_ANIM                   "spritesheet/hit.plist"
 #define SURCLASSEMENT                   "SURCLASSEMENT"
+#define BONUS_X2                        "end_of_game_menu/bonusx2.png"
 #define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
 #define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
