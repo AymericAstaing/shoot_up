@@ -11,6 +11,7 @@ USING_NS_CC;
 #define EMPTY_VALUE                     -1
 #define FIRE_UP_FONT                    "fonts/fire_up.ttf"
 #define FIRE_UP_FONT_NUMBERS            "fonts/numbers.ttf"
+#define LOGO_FONT                       "fonts/name_font.ttf"
 #define TITLE                           "S H O O T  U P !"
 #define PARTICLE_ANIM                   "spritesheet/hit.plist"
 #define SURCLASSEMENT                   "SURCLASSEMENT"
@@ -20,6 +21,7 @@ USING_NS_CC;
 #define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
+#define SPLASH_BACKGROUND_TEXTURE       "splash_screen/splash_background.png"
 #define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
 #define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"
 #define NORMAL_BULLET_SIZE              1
@@ -50,6 +52,8 @@ USING_NS_CC;
 #define VALUE_BONUS_COMMENT             3
 #define OPTIONS_HIDE                    0
 #define OPTIONS_DISPLAYED               1
+#define FIRST_OPEN                      0
+#define ALREADY_OPEN                    1
 
 /******************* ACHIEVEMENT CATEGORIES ***************/
 #define STARTER_TANK                    0
@@ -123,6 +127,7 @@ USING_NS_CC;
 #define GAME_NBR                        "GAME_NBR"
 #define BLOCK_DESTROYED                 "BLOCK_DESTROYED"
 #define POWER_LEVEL                     "POWER_LEVEL"
+#define APP_FIRST_OPEN                  "FIRST_OPEN"
 #define SPEED_LEVEL                     "SPEED_LEVEL"
 #define POWER_VALUE                     "POWER_VALUE"
 #define SPEED_VALUE                     "SPEED_VALUE"

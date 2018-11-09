@@ -18,6 +18,7 @@ namespace GLOBAL {
     const char *KEY_SPEED_LEVEL = "SPEED_LEVEL";
     const char *KEY_SPEED_VALUE = "SPEED_VALUE";
     const char *KEY_POWER_VALUE = "POWER_VALUE";
+    const char *KEY_APP_FIRST_OPEN = "FIRST_OPEN";
     const char *KEY_NEW_SHOP_ELEMENT = "NEW_SHOP_ELEMENT";
     const char *KEY_SCORE = "SCORE";
     const char *KEY_POINT = "POINT";
@@ -86,6 +87,7 @@ void UserLocalStore::init_achievement_variables() {
     def->setFloatForKey(GLOBAL::KEY_POWER_LEVEL_PRICE, 50);
     def->setFloatForKey(GLOBAL::KEY_SPEED_LEVEL_PRICE, 50);
     def->setIntegerForKey(GLOBAL::KEY_SOUND, 0);
+    def->setIntegerForKey(GLOBAL::KEY_APP_FIRST_OPEN, 0);
     def->setIntegerForKey(GLOBAL::KEY_POWER_VALUE, 1);
     def->setFloatForKey(GLOBAL::KEY_SPEED_VALUE, 1);
     def->setIntegerForKey(STARTER_TANK::KEY_BLOCK_STARTER_TANK, 0);

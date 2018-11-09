@@ -5,7 +5,7 @@
 #include    <cocos2d.h>
 #include    <cocos-ext.h>
 #include    <GUI/CCScrollView/CCTableViewCell.h>
-#include    <audio/android/audio.h>
+#include    <audio/android/jni/cddandroidAndroidJavaEngine.h>
 #include    "GridView.h"
 #include    "Square.h"
 #include    "ShootUp.h"
@@ -34,6 +34,7 @@ static const int BULLET_SHOOT[3][3] = {{DOUBLE_LAUNCH_LEFT, DOUBLE_LAUNCH_RIGHT}
                                             {TRIPLE_LAUNCH_LEFT, TRIPLE_LAUNCH_CENTER, TRIPLE_LAUNCH_RIGHT}};
 
 using namespace cocos2d;
+using namespace CocosDenshion;
 
 class GameScene : public cocos2d::Scene {
 
@@ -56,6 +57,7 @@ private:
     Sprite*             next_button;
     Sprite*             continue_button;
     Menu*               game_menu;
+    SimpleAudioEngine*  game_audio;
     MenuItemImage*      options_btn;
     MenuItemFont*       menu_title;
     MenuItemFont*       menu_surclassement_txt;
@@ -101,6 +103,11 @@ private:
     int                 LINE_GENERATED;
     float               NEW_SPAWN_Y;
 
+    /******************* SOUND MANAGMENT ***************/
+    int                 hit_played = 0;
+    int                 launch_played = 0;
+    bool                sound_activated = true;
+
 
 public:
     CREATE_FUNC(GameScene);
@@ -119,6 +126,8 @@ public:
     void                    check_full_destruction_bonus(Line*, int);
     void                    show_destruction_bonus(int, int);
     void                    check_hit_color_change(Line*, Square*);
+    void                    play_bullet_impact();
+    void                    play_square_explode();
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2, Square*);
     void                    bonus_collision();
@@ -127,6 +136,7 @@ public:
     void                    remove_bonus();
     void                    move_bonus();
     void                    bonus_managment();
+    void                    check_first_open();
     void                    active_bonus();
     void                    move_circles();
     void                    scale_animation();

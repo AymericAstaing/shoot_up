@@ -17,6 +17,7 @@
 #include    "Circle.h"
 
 using namespace std;
+using namespace CocosDenshion;
 
 namespace POPUP_MENU_PATH {
     const char *POWER = "pop_up/power.png";
@@ -53,6 +54,9 @@ void GameScene::init_main_variable() {
     game_state = MENU;
     x_screen = winSize.width;
     y_screen = winSize.height;
+    check_first_open();
+    hit_played = 0;
+    launch_played = 0;
     options_state = OPTIONS_HIDE;
     bullet_state = 0;
     init_ui_components();
@@ -66,10 +70,31 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, NOT_FROM_SHOP);
     init_options_menu();
     init_bonus_components();
-    auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
-    audio->preloadEffect("sound/square_explode.mp3");
-    audio->setEffectsVolume(1);
-    audio->playEffect("sound/square_explode.mp3");
+    game_audio = SimpleAudioEngine::getInstance();
+}
+
+void GameScene::check_first_open() {
+    if (UserLocalStore::get_achievement_variable(APP_FIRST_OPEN) == ALREADY_OPEN)
+        return;
+    Sprite *splash_background = Sprite::create(SPLASH_BACKGROUND_TEXTURE);
+    Label *logo = Label::createWithTTF("AAA", LOGO_FONT, 100);
+    Label *logo_studio = Label::createWithTTF("studio", LOGO_FONT, 30);
+    logo->setPosition(Vec2(x_screen / 2, y_screen / 2 + logo->getContentSize().height));
+    logo_studio->setPosition(Vec2(x_screen / 2, static_cast<float>(logo->getPositionY() -
+                                                                   (logo->getContentSize().height / 2 +
+                                                     1.1 * logo_studio->getContentSize().height / 2))));
+    splash_background->setContentSize(Size(x_screen, y_screen));
+    splash_background->setPosition(Vec2(x_screen / 2, y_screen / 2));
+    addChild(splash_background, 200);
+    addChild(logo, 201);
+    addChild(logo_studio, 202);
+    auto delay = DelayTime::create(1.5f);
+    auto remove = RemoveSelf::create();
+    auto sequence = Sequence::create(delay, remove, nullptr);
+    splash_background->runAction(sequence);
+    logo->runAction(sequence->clone());
+    logo_studio->runAction(sequence->clone());
+    UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, ALREADY_OPEN);
 }
 
 void GameScene::init_ui_components() {
@@ -203,6 +228,8 @@ void GameScene::end_of_game() {
         shield_rect->setOpacity(100);
         shield_rect->setVisible(false);
     }
+    hit_played = 0;
+    launch_played = 0;
     player->setScale(1);
     remove_bonus();
     value_to_update();
@@ -228,9 +255,8 @@ void GameScene::display_end_menu() {
     next_button = Sprite::create(NEXT_BUTTON_TEXTURE);
     next_button->setPosition(
             Vec2(x_screen / 2, static_cast<float>(y_screen / 2 - (0.4 * (y_screen / 2)))));
-    continue_button->setPosition(Vec2(x_screen / 2,
-                                      static_cast<float>(next_button->getPositionY() +
-                                                         continue_button->getContentSize().height)));
+    continue_button->setPosition(Vec2(x_screen / 2, next_button->getPositionY() +
+                                                    continue_button->getContentSize().height));
     addChild(continue_button);
     auto delay = DelayTime::create(6.0);
     auto callback = CallFuncN::create(
@@ -584,7 +610,7 @@ void GameScene::show_destruction_bonus(int value, int line_id) {
 }
 
 void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
-    if (!l || !pool_container[line_id]->line_active)
+    if (!l || !l->line_active || l->square_nbr >= 15)
         return;
     if (l->half_animated == 1)
         return;
@@ -635,6 +661,7 @@ void GameScene::check_into_line() {
                         square_pos.x = sq->getPositionX();
                         square_pos.y = current_line->getPositionY() + sq->getPositionY();
                         update_game_score(sq->square_pv);
+                        play_square_explode();
                         if (sq->star_bonus == 1) {
                             destroy_all_lines();
                             game_block_destroyed++;
@@ -650,6 +677,7 @@ void GameScene::check_into_line() {
                         game_block_destroyed++;
                     } else {
                         update_game_score(bullet_hit);
+                        play_bullet_impact();
                         show_particle(bullet_container[i]->getPosition(), sq);
                         sq->square_pv -= bullet_hit;
                         char pv[DEFAULT_CHAR_LENGHT];
@@ -1166,9 +1194,11 @@ void GameScene::manage_options() {
     if (UserLocalStore::get_achievement_variable(SOUND) == SOUND_ON) {
         UserLocalStore::store_achievement_variable(SOUND, SOUND_OFF);
         sound->setTexture(OPTIONS_SOUND_OFF);
+        sound_activated = true;
     } else {
         UserLocalStore::store_achievement_variable(SOUND, SOUND_ON);
         sound->setTexture(OPTIONS_SOUND_ON);
+        sound_activated = false;
     }
 }
 
@@ -1236,8 +1266,37 @@ bool GameScene::is_sound_button_touched(Vec2 touch_location) {
 }
 
 void GameScene::play_bullet_sound() {
-    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sound/bullet_launch.mp3");
-    CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sound/bullet_launch.mp3");
+    if (!sound_activated)
+        return;
+    if (launch_played != 0) {
+        if (launch_played == 1)
+            launch_played = 0;
+        else
+            launch_played++;
+        return;
+    }
+    launch_played++;
+    game_audio->playEffect("sound/bullet_launch.mp3", false, 1.0f, 1.0f, 1.0f);
+}
+
+void GameScene::play_bullet_impact() {
+    if (!sound_activated)
+        return;
+    if (hit_played != 0) {
+        if (hit_played == 1)
+            hit_played = 0;
+        else
+            hit_played++;
+        return;
+    }
+    hit_played++;
+    game_audio->playEffect("sound/square_hited.mp3", false, 1.0f, 1.0f, 1.0f);
+}
+
+void GameScene::play_square_explode() {
+    if (!sound_activated)
+        return;
+    game_audio->playEffect("sound/square_explode.mp3", false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::launch_bullet(float dt) {
@@ -1533,7 +1592,8 @@ Menu *GameScene::get_end_game_menu() {
                                                            [=](Ref *sender) {
                                                                GameScene::increase_speed(
                                                                        speed_current_level,
-                                                                       speed_price_txt, current_point);
+                                                                       speed_price_txt,
+                                                                       current_point);
                                                            });
     MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
                                                            POWER,
@@ -1541,7 +1601,8 @@ Menu *GameScene::get_end_game_menu() {
                                                            [=](Ref *sender) {
                                                                GameScene::increase_power(
                                                                        power_current_level,
-                                                                       power_price_txt, current_point);
+                                                                       power_price_txt,
+                                                                       current_point);
                                                            });
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
@@ -1550,11 +1611,10 @@ Menu *GameScene::get_end_game_menu() {
                                static_cast<float>(y_screen / 2.5)));
     back_to_main->setPosition(Vec2(x_screen / 2, -2 * back_to_main->getContentSize().height));
     share->setPosition(
-            Vec2(static_cast<float>(x_screen / 2 - back_to_main->getContentSize().width),
+            Vec2(x_screen / 2 - back_to_main->getContentSize().width,
                  -2 * back_to_main->getContentSize().height));
-    rate->setPosition(
-            Vec2(static_cast<float>(x_screen / 2 + back_to_main->getContentSize().width),
-                 -2 * back_to_main->getContentSize().height));
+    rate->setPosition(x_screen / 2 + back_to_main->getContentSize().width,
+                      -2 * back_to_main->getContentSize().height);
     auto move_to_skip = MoveTo::create(0.2, Vec2(x_screen / 2,
                                                  static_cast<float>(
                                                          (static_cast<float>(y_screen /

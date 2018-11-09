@@ -1,3 +1,4 @@
+#include "cocos2d.h"
 #include "AppDelegate.h"
 #include "GameScene.h"
 #include "UserLocalStore.h"
@@ -63,7 +64,6 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setDisplayStats(true);
     director->setAnimationInterval(1.0f / 60);
     register_all_packages();
-
     auto spritecache = SpriteFrameCache::getInstance();
     spritecache->addSpriteFramesWithFile("spritesheet/block_color.plist");
     spritecache->addSpriteFramesWithFile("spritesheet/bullets_game.plist");
@@ -72,6 +72,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     spritecache->addSpriteFramesWithFile("spritesheet/bonus_speed.plist");
     spritecache->addSpriteFramesWithFile("spritesheet/bonus_bullet.plist");
     UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
+    UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, FIRST_OPEN);
     auto scene = GameScene::createScene();
     director->runWithScene(scene);
     return true;
