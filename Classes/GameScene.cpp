@@ -277,9 +277,10 @@ void GameScene::surclassement(cocos2d::Ref *pSender) {
     popup->setOnExitCallback([&]() {
         if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 0)
             return;
-        removeChild(game_menu);
-        game_menu = get_main_menu();
-        this->addChild(game_menu);
+        auto image_unselected = Sprite::create(SHOP_UNSELECTED_NEW);
+        auto image_selected = Sprite::create(SHOP_SELECTED_NEW);
+        menu_shop_img->setNormalImage(image_unselected);
+        menu_shop_img->setSelectedImage(image_selected);
     });
     auto scaleTo = ScaleTo::create(0.1f, 1.0f);
     addChild(popup);
@@ -1665,14 +1666,8 @@ void GameScene::increase_speed(Label *level, Label *price) {
     char s[DEFAULT_CHAR_LENGHT];
     sprintf(s, "SPEED %i", UserLocalStore::get_achievement_variable(SPEED_LEVEL));
     level->setString(s);
-    char price2[DEFAULT_CHAR_LENGHT];
-    if (UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) > 999)
-        sprintf(price2, "%.1fK pts",
-                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE) / 1000);
-    else
-        sprintf(price2, "%1.f pts",
-                UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE));
-    price->setString(price2);
+    float price_value = UserLocalStore::get_achievement_variable(SPEED_LEVEL_PRICE);
+    price->setString(Utils::get_reduced_value(price_value, VALUE_WITH_POINT));
 }
 
 void GameScene::increase_power(Label *power, Label *price) {
