@@ -17,6 +17,13 @@ Action *Utils::get_blink_animation() {
     return (RepeatForever::create(sequence));
 }
 
+Action *Utils::get_pop_animation() {
+    auto scale_out = ScaleBy::create(0.3f, 0.5f);
+    auto scale_in = ScaleBy::create(0.3f, -0.5f);
+    auto sequence = Sequence::create(scale_out, scale_in, nullptr);
+    return (RepeatForever::create(sequence));
+}
+
 Action *Utils::get_shield_blink_animation() {
     auto fadeout = FadeOut::create(0.5);
     auto fadein = FadeIn::create(0.5);

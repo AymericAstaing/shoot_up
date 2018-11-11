@@ -99,6 +99,7 @@ USING_NS_CC;
 #define MENU                            0
 #define GAME_RUNNING                    1
 #define GAME_END                        2
+#define RESUME                          3
 
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4

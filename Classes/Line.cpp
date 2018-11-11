@@ -94,7 +94,7 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
     int type = get_type();
     int total = 0;
     if (type == LINE_TYPE_SIMPLE_OF_4) {
-        total = h_factor + ((line_generated / 40) * h_factor);
+        total = h_factor + ((line_generated / 10) * h_factor);
     } else {
         int min_h = static_cast<int>(h_factor +
                                      ceil(static_cast<float>(h_factor * 0.6)));
@@ -115,9 +115,7 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
             i = 1;
         } else {
             choosen[index] = get_index_random(choosen, this->square_nbr - 1);
-            distrib[choosen[index]] +=
-                    (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
-            half_total += distrib[index];
+            half_total += distrib[index] / 2;
             sq->assign_point(distrib[choosen[index]]);
             assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
 
@@ -146,7 +144,7 @@ void Line::assign_line_points_complex(int h_factor,
         Square *sq = ((Square *) child);
         distrib[index] +=
                 (Utils::get_random_number(0, line_generated) / POINTS_TO_ADD_FACTOR) * total;
-        half_total += distrib[index];
+        half_total += distrib[index] / 2;
         sq->assign_point(distrib[index]);
         assign_color(index, total / this->square_nbr, distrib[index]);
 

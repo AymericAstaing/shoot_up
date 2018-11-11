@@ -68,6 +68,7 @@ public:
     static int get_bullet_nbr(int);
     static float get_finger_move_factor(float, int);
     static Action *get_shield_blink_animation();
+    static Action *get_pop_animation();
     static Action *get_blink_animation();
     static Action *get_bonus_bullet_anim();
     static Action *get_bonus_power_anim();

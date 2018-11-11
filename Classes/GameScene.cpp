@@ -49,11 +49,14 @@ bool GameScene::init() {
 }
 
 void GameScene::init_main_variable() {
+    log("SOUND = %i", UserLocalStore::get_achievement_variable(SOUND));
     auto winSize = Director::getInstance()->getVisibleSize();
     check_first_launch();
     game_state = MENU;
     x_screen = winSize.width;
     y_screen = winSize.height;
+    if (UserLocalStore::get_achievement_variable(SOUND) == SOUND_OFF)
+        sound_activated = false;
     check_first_open();
     hit_played = 0;
     launch_played = 0;
@@ -70,7 +73,8 @@ void GameScene::init_main_variable() {
         UserLocalStore::store_achievement_variable(FROM_SHOP, NOT_FROM_SHOP);
     init_options_menu();
     init_bonus_components();
-    game_audio = SimpleAudioEngine::getInstance();
+    if (!game_audio)
+        game_audio = SimpleAudioEngine::getInstance();
 }
 
 void GameScene::check_first_open() {
@@ -81,8 +85,11 @@ void GameScene::check_first_open() {
     Label *logo_studio = Label::createWithTTF("studio", LOGO_FONT, 30);
     logo->setPosition(Vec2(x_screen / 2, y_screen / 2 + logo->getContentSize().height));
     logo_studio->setPosition(Vec2(x_screen / 2, static_cast<float>(logo->getPositionY() -
-                                                                   (logo->getContentSize().height / 2 +
-                                                     1.1 * logo_studio->getContentSize().height / 2))));
+                                                                   (logo->getContentSize().height /
+                                                                    2 +
+                                                                    1.1 *
+                                                                    logo_studio->getContentSize().height /
+                                                                    2))));
     splash_background->setContentSize(Size(x_screen, y_screen));
     splash_background->setPosition(Vec2(x_screen / 2, y_screen / 2));
     addChild(splash_background, 200);
@@ -250,6 +257,7 @@ void GameScene::end_of_game() {
 }
 
 void GameScene::display_end_menu() {
+    game_state = RESUME;
     continue_button = Sprite::createWithSpriteFrameName(DEFAULT_CONTINUE_TEXTURE);
     continue_button->setScale(1.2);
     next_button = Sprite::create(NEXT_BUTTON_TEXTURE);
@@ -264,6 +272,7 @@ void GameScene::display_end_menu() {
                 continue_button->stopAllActions();
                 removeChild(continue_button);
                 removeChild(next_button);
+                game_state = GAME_END;
                 end_menu = get_end_game_menu();
                 addChild(end_menu);
             });
@@ -1119,7 +1128,7 @@ void GameScene::resume_game() {
 }
 
 void GameScene::shop(cocos2d::Ref *pSender) {
-    auto shop = ShopScene::create();
+    auto shop = ShopScene::createScene();
     Director::getInstance()->replaceScene(shop);
 }
 
@@ -1193,12 +1202,12 @@ void GameScene::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *event) {
 void GameScene::manage_options() {
     if (UserLocalStore::get_achievement_variable(SOUND) == SOUND_ON) {
         UserLocalStore::store_achievement_variable(SOUND, SOUND_OFF);
-        sound->setTexture(OPTIONS_SOUND_OFF);
-        sound_activated = true;
-    } else {
-        UserLocalStore::store_achievement_variable(SOUND, SOUND_ON);
         sound->setTexture(OPTIONS_SOUND_ON);
         sound_activated = false;
+    } else {
+        UserLocalStore::store_achievement_variable(SOUND, SOUND_ON);
+        sound->setTexture(OPTIONS_SOUND_OFF);
+        sound_activated = true;
     }
 }
 
@@ -1239,7 +1248,8 @@ bool GameScene::onTouchBegan(Touch *touch, Event *event) {
         resume_game();
         return false;
     }
-    if (game_state == GAME_END && next_button && is_next_button_touched(touch->getLocation())) {
+    if (game_state == RESUME && is_next_button_touched(touch->getLocation())) {
+        game_state = GAME_END;
         stopAction(wait_sequence);
         continue_button->stopAllActions();
         removeChild(continue_button);
@@ -1276,7 +1286,7 @@ void GameScene::play_bullet_sound() {
         return;
     }
     launch_played++;
-    game_audio->playEffect("sound/bullet_launch.mp3", false, 1.0f, 1.0f, 1.0f);
+    game_audio->playEffect("sound/bullet_launch.wav", false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::play_bullet_impact() {
@@ -1290,13 +1300,13 @@ void GameScene::play_bullet_impact() {
         return;
     }
     hit_played++;
-    game_audio->playEffect("sound/square_hited.mp3", false, 1.0f, 1.0f, 1.0f);
+    game_audio->playEffect("sound/square_hited.wav", false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::play_square_explode() {
     if (!sound_activated)
         return;
-    game_audio->playEffect("sound/square_explode.mp3", false, 1.0f, 1.0f, 1.0f);
+    game_audio->playEffect("sound/square_explode.wav", false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::launch_bullet(float dt) {
@@ -1604,6 +1614,11 @@ Menu *GameScene::get_end_game_menu() {
                                                                        power_price_txt,
                                                                        current_point);
                                                            });
+    MenuItemImage *bonus_x2 = MenuItemImage::create(BONUS_X2,
+                                                    BONUS_X2,
+                                                    [=](Ref *sender) {
+
+                                                    });
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
                                                              1.3)));
@@ -1622,8 +1637,7 @@ Menu *GameScene::get_end_game_menu() {
                                                          stats->getContentSize().height / 2 -
                                                          1.5 *
                                                          back_to_main->getContentSize().height)));
-    auto move_to_share_0 = MoveTo::create(0.2, Vec2(
-            static_cast<float>(x_screen / 2 - back_to_main->getContentSize().width),
+    auto move_to_share_0 = MoveTo::create(0.2, Vec2(x_screen / 2 - back_to_main->getContentSize().width,
             static_cast<float>(static_cast<float>(
                                        (static_cast<float>(y_screen / 1.75)) -
                                        stats->getContentSize().height / 2 -
@@ -1644,8 +1658,8 @@ Menu *GameScene::get_end_game_menu() {
                                        stats->getContentSize().height / 2 -
                                        1.5 * back_to_main->getContentSize().height) +
                                0.5 * back_to_main->getContentSize().height)));
-    auto move_to_rate_1 = MoveTo::create(0.1, Vec2(static_cast<float>(x_screen / 2 +
-                                                                      back_to_main->getContentSize().width),
+    auto move_to_rate_1 = MoveTo::create(0.1, Vec2(x_screen / 2 +
+                                                                      back_to_main->getContentSize().width,
                                                    static_cast<float>(
                                                            (static_cast<float>(y_screen /
                                                                                1.75)) -
@@ -1691,12 +1705,13 @@ Menu *GameScene::get_end_game_menu() {
                                                     1.6 *
                                                     power_current_level->getContentSize().height)));
     background->setContentSize(stats->getContentSize());
-    s->setAnchorPoint(Vec2(0, 0));
-    s->setScale(0.7);
-    s->setPositionY(
-            static_cast<float>(s->getPositionY() + (0.9 * stats->getContentSize().height / 2)));
+    bonus_x2->setAnchorPoint(Vec2(0, 0));
+    bonus_x2->setScale(0.7);
+    bonus_x2->setPositionY(
+            static_cast<float>(bonus_x2->getPositionY() +
+                               (0.9 * stats->getContentSize().height / 2)));
     stats->addChild(background);
-    stats->addChild(s);
+    stats->addChild(bonus_x2);
     stats->addChild(earned_point);
     stats->addChild(current_point);
     stats->addChild(power_level_btn);
@@ -1712,6 +1727,7 @@ Menu *GameScene::get_end_game_menu() {
     rate->runAction(sequence_rate);
     stats->runAction(move_to_stats);
     addChild(stats);
+    bonus_x2->isIgnoreAnchorPointForPosition();
     auto end_menu = Menu::create(back_to_main, share, rate, NULL);
     end_menu->setAnchorPoint(Vec2(0.5, 0.5));
     end_menu->setPosition(Vec2(0, 0));
