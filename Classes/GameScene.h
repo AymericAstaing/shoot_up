@@ -92,6 +92,7 @@ private:
     int                 next_bonus_spawn = 0;
     int                 bullet_state;
     int                 game_state;
+    int                 last_line_hited_id;
     int                 game_block_destroyed = 0;
     int                 game_power_up_collected = 0;
     int                 current_factor_h = 0;

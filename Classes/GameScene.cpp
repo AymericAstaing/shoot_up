@@ -26,9 +26,6 @@ namespace POPUP_MENU_PATH {
     const char *SPEED_SELECTED = "pop_up/speed_selected.png";
 }
 
-namespace END_MENU_PATH {
-    const char *SKIP = "continue_menu/continue_btn.png";
-}
 
 USING_NS_CC;
 
@@ -49,7 +46,6 @@ bool GameScene::init() {
 }
 
 void GameScene::init_main_variable() {
-    log("SOUND = %i", UserLocalStore::get_achievement_variable(SOUND));
     auto winSize = Director::getInstance()->getVisibleSize();
     check_first_launch();
     game_state = MENU;
@@ -118,8 +114,8 @@ void GameScene::init_ui_components() {
                                                                               best_img->getContentSize().height /
                                                                               3)));
     best_img->setVisible(false);
-    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("spritesheet/bullets_game.plist");
-    bullet_batch_node = SpriteBatchNode::create("spritesheet/bullets_game.png");
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile(BULLETS_PLIST);
+    bullet_batch_node = SpriteBatchNode::create(DEFAULT_BULLET_TEXTURE_PLIST);
     bullet_batch_node->setTag(BULLET_BATCH_TAG);
     addChild(bullet_batch_node, 10);
     addChild(best_img, 20);
@@ -175,8 +171,8 @@ void GameScene::init_bonus_components() {
     bonus_container = new Sprite *[3];
     rect_container = new Sprite *[3];
     shield_rect = Sprite::create(SHIELD_RECT_TEXTURE);
-    shield_rect->setScale(static_cast<float>(player->getContentSize().height /
-                                             shield_rect->getContentSize().height));
+    shield_rect->setScale(player->getContentSize().height /
+                          shield_rect->getContentSize().height);
     bonus_container[BONUS_BULLET] = Sprite::createWithSpriteFrameName(DEFAULT_BULLET_TEXTURE);
     bonus_container[BONUS_POWER] = Sprite::createWithSpriteFrameName(DEFAULT_POWER_TEXTURE);
     bonus_container[BONUS_SPEED] = Sprite::createWithSpriteFrameName(DEFAULT_SPEED_TEXTURE);
@@ -226,16 +222,14 @@ void GameScene::end_of_game() {
     if (game_state != GAME_RUNNING)
         return;
     if (game_shooter_type == SHIELD_TANK && !shield_live_used) {
-        log("FIRST COLLISION");
         shield_live_used = true;
         shield_rect->runAction(Utils::get_shield_blink_animation());
-        destroy_complete_line(CURRENT_LINE_ID, pool_container[CURRENT_LINE_ID]->getPositionY());
+        destroy_complete_line(last_line_hited_id,
+                              pool_container[last_line_hited_id]->getPositionY());
         return;
     }
     if (game_shooter_type == SHIELD_TANK) {
-        log("REMOVE SHIELD");
         shield_live_used = false;
-        shield_rect->setOpacity(100);
         shield_rect->setVisible(false);
     }
     show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED, MAX_PARTICLE);
@@ -481,7 +475,7 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
         return;
     sq->particle_played++;
     auto fileUtil = FileUtils::getInstance();
-    auto plistData = fileUtil->getValueMapFromFile(PARTICLE_ANIM);
+    auto plistData = fileUtil->getValueMapFromFile(PARTICLE_ANIM_PLIST);
     auto stars = ParticleSystemQuad::create(plistData);
     auto delay = DelayTime::create(0.2f);
     auto callback = CallFuncN::create(
@@ -699,14 +693,11 @@ void GameScene::check_into_line() {
                         play_bullet_impact();
                         show_particle(bullet_container[i]->getPosition(), sq);
                         sq->square_pv -= bullet_hit;
-                        char pv[DEFAULT_CHAR_LENGHT];
-                        if (sq->square_pv > 1000)
-                            sprintf(pv, "%.1fK", static_cast<float>(sq->square_pv) / 1000);
-                        else
-                            sprintf(pv, "%i", sq->square_pv);
                         if (current_line->get_type() > LINE_TYPE_STARTUP_5)
                             check_hit_color_change(current_line, sq);
-                        sq->points->setString(pv);
+                        int sq_points_value = sq->square_pv;
+                        sq->points->setString(
+                                Utils::get_reduced_value(sq_points_value, VALUE_SIMPLE));
                     }
                     bullet_container[i]->reset();
                     break;
@@ -786,15 +777,21 @@ void GameScene::check_player_collision() {
 
                 if (sq->isVisible() && sq_bounding_box.intersectsRect(player_full_rect)) {
                     if (sq->isVisible() &&
-                        sq_bounding_box.intersectsRect(player_crash_bounding_box)) {// DANS LE SQ
+                        sq_bounding_box.intersectsRect(player_crash_bounding_box)) {
+                        last_line_hited_id = active_lines[i];
                         end_of_game();
                     } else if (sq->isVisible() && sq_bounding_box.intersectsRect(
-                            player_collision_left)) { // SQ TAPE UN SQUARE A  SA GAUCHE
+                            player_collision_left)) {
                         player->setPositionX(player->getPositionX() + player_width / 4);
                     } else if (sq->isVisible() && sq_bounding_box.intersectsRect(
-                            player_collision_right)) { // SQ TAPE UN SQUARE A  SA DROITE
+                            player_collision_right)) {
                         player->setPositionX(player->getPositionX() - player_width / 4);
                     }
+                    if (player->getPositionX() - player_width / 2 < 0 ||
+                        player->getPositionX() + player_width / 2 > x_screen ||
+                        player->getPositionY() + player_height / 2 > y_screen ||
+                        player->getPositionY() - player_height / 2 < 0)
+                        end_of_game();
                 }
                 index++;
             }
@@ -949,10 +946,10 @@ void GameScene::update(float ft) {
         shield_rect->setPosition(player->getPosition());
     check_lines_out();
     move_active_lines();
-    if (LINE_GENERATED == TRANSITION_FROM_4_TO_5 && shooter_never_updated == 0 &&
-        player->getScale() != 0.85)
-        scale_animation();
     if (game_state == GAME_RUNNING) {
+        if (LINE_GENERATED == TRANSITION_FROM_4_TO_5 && shooter_never_updated == 0 &&
+            player->getScale() != 0.85)
+            scale_animation();
         move_circles();
         bonus_managment();
         check_bullet_contact();
@@ -1089,6 +1086,7 @@ void GameScene::start_game() {
     game_shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
     if (game_shooter_type == SHIELD_TANK) {
         shield_rect->setVisible(true);
+        //shield_rect->setOpacity(100);
         shield_rect->setPosition(player->getPosition());
     }
     if (options_state == OPTIONS_DISPLAYED)
@@ -1114,7 +1112,7 @@ void GameScene::resume_game() {
     removeChild(next_button);
     destroy_all_lines();
     if (game_shooter_type == SHIELD_TANK && !shield_live_used) {
-        shield_rect->setOpacity(100);
+        //shield_rect->setOpacity(100);
         shield_rect->setVisible(true);
     }
     if (LINE_GENERATED > TRANSITION_FROM_4_TO_5)
@@ -1138,11 +1136,9 @@ void GameScene::shop(cocos2d::Ref *pSender) {
 void GameScene::back_to_menu(cocos2d::Ref *pSender) {
     auto callback = CallFuncN::create(
             [&](Node *sender) {
-                log("CURRENT SHOOTER = %i", UserLocalStore::get_current_shooter());
                 UserLocalStore::update_achievements(
                         Utils::get_shooter_type(UserLocalStore::get_current_shooter()),
                         game_block_destroyed, game_power_up_collected);
-                log("CURRENT SHOOTER = %i", UserLocalStore::get_current_shooter());
                 game_block_destroyed = 0;
                 game_power_up_collected = 0;
                 LINE_GENERATED = 0;
@@ -1499,7 +1495,7 @@ Menu *GameScene::get_main_menu() {
                                0.20 * (0.5 * menu_anim_img->getContentSize().width)),
             static_cast<float>(y_screen * 0.17)));
     menu_title->setPosition(Point(x_screen / 2,
-                                  static_cast<float>(y_screen - (y_screen / 5))));
+                                  y_screen - (y_screen / 5)));
     options_btn->setPosition(
             static_cast<float>(0 + (options_btn->getContentSize().height / 2) +
                                (0.3 * options_btn->getContentSize().height)),
@@ -1581,17 +1577,17 @@ Menu *GameScene::get_end_game_menu() {
     Label *power_info = Label::createWithTTF("SHOOTING POWER", FIRE_UP_FONT, 24);
     Label *speed_current_level = Label::createWithTTF(current_speed, FIRE_UP_FONT, 25);
     Label *power_current_level = Label::createWithTTF(current_power, FIRE_UP_FONT, 25);
-    back_to_main = MenuItemImage::create("end_of_game_menu/replay_btn.png",
-                                         "end_of_game_menu/replay_btn.png",
+    back_to_main = MenuItemImage::create(REPLAY_TEXTURE,
+                                         REPLAY_TEXTURE,
                                          CC_CALLBACK_1(GameScene::back_to_menu, this));
     share = MenuItemImage::create
-            ("end_of_game_menu/share_btn.png",
-             "end_of_game_menu/share_btn.png",
+            (SHARE_TEXTURE,
+             SHARE_TEXTURE,
              CC_CALLBACK_1(GameScene::back_to_menu, this));
-    rate = MenuItemImage::create("end_of_game_menu/rate_btn.png",
-                                 "end_of_game_menu/rate_btn.png",
+    rate = MenuItemImage::create(RATE_TEXTURE,
+                                 RATE_TEXTURE,
                                  CC_CALLBACK_1(GameScene::back_to_menu, this));
-    Sprite *background = Sprite::create("end_of_game_menu/background.png");
+    Sprite *background = Sprite::create(BACKGROUND_TEXTURE);
     speed_current_level->setColor(Color3B(124, 184, 255));
     power_current_level->setColor(Color3B(255, 124, 124));
     auto move_to_stats = MoveTo::create(0.2, Vec2(x_screen / 2,
@@ -1657,13 +1653,17 @@ Menu *GameScene::get_end_game_menu() {
                                                             stats->getContentSize().height / 2 -
                                                             1.5 *
                                                             back_to_main->getContentSize().height)));
-    auto move_to_rate_0 = MoveTo::create(0.2, Vec2(
-            static_cast<float>(x_screen / 2 + back_to_main->getContentSize().width),
-            static_cast<float>(static_cast<float>(
-                                       (static_cast<float>(y_screen / 1.75)) -
-                                       stats->getContentSize().height / 2 -
-                                       1.5 * back_to_main->getContentSize().height) +
-                               0.5 * back_to_main->getContentSize().height)));
+    auto move_to_rate_0 = MoveTo::create(0.2,
+                                         Vec2(x_screen / 2 + back_to_main->getContentSize().width,
+                                              static_cast<float>(static_cast<float>(
+                                                                         (static_cast<float>(
+                                                                                 y_screen / 1.75)) -
+                                                                         stats->getContentSize().height /
+                                                                         2 -
+                                                                         1.5 *
+                                                                         back_to_main->getContentSize().height) +
+                                                                 0.5 *
+                                                                 back_to_main->getContentSize().height)));
     auto move_to_rate_1 = MoveTo::create(0.1, Vec2(x_screen / 2 +
                                                    back_to_main->getContentSize().width,
                                                    static_cast<float>(

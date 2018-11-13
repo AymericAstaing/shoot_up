@@ -13,12 +13,8 @@ USING_NS_CC;
 #define FIRE_UP_FONT_NUMBERS            "fonts/numbers.ttf"
 #define LOGO_FONT                       "fonts/name_font.ttf"
 #define TITLE                           "S H O O T  U P !"
-#define PARTICLE_ANIM                   "spritesheet/hit.plist"
 #define SURCLASSEMENT                   "SURCLASSEMENT"
 #define BONUS_X2                        "end_of_game_menu/bonusx2.png"
-#define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
-#define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
-#define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
 #define SPLASH_BACKGROUND_TEXTURE       "splash_screen/splash_background.png"
@@ -56,6 +52,19 @@ USING_NS_CC;
 #define OPTIONS_DISPLAYED               1
 #define FIRST_OPEN                      0
 #define ALREADY_OPEN                    1
+
+/******************* PLIST SPRITESHEETS ***************/
+#define PARTICLE_ANIM_PLIST             "spritesheet/hit.plist"
+#define BLOCK_COLOR_PLIST               "spritesheet/block_color.plist"
+#define BULLETS_PLIST                   "spritesheet/bullets_game.plist"
+#define CONTINUE_PLIST                  "spritesheet/continue_animation.plist"
+#define BONUS_POWER_PLIST               "spritesheet/bonus_power.plist"
+#define BONUS_SPEED_PLIST               "spritesheet/bonus_speed.plist"
+#define BONUS_BULLET_PLIST              "spritesheet/bonus_bullet.plist"
+#define DEFAULT_BULLET_TEXTURE_PLIST    "spritesheet/bullets_game.png"
+#define DEFAULT_BLOCK_TEXTURE_PLIST     "spritesheet/block_color.png"
+
+
 
 /******************* ACHIEVEMENT CATEGORIES ***************/
 #define STARTER_TANK                    0
@@ -130,10 +139,6 @@ USING_NS_CC;
 #define LINE_TYPE_COMPLEX_7             13
 
 /*******************GAME VARIABLES ***************/
-#define ITEM_COLLECTED                  "ITEM_COLLECTED" //achievement
-#define POWER_UP_ITEMS                  "POWER_UP_ITEMS"
-#define GAME_NBR                        "GAME_NBR"
-#define BLOCK_DESTROYED                 "BLOCK_DESTROYED"
 #define POWER_LEVEL                     "POWER_LEVEL"
 #define APP_FIRST_OPEN                  "FIRST_OPEN"
 #define SPEED_LEVEL                     "SPEED_LEVEL"
@@ -176,7 +181,10 @@ USING_NS_CC;
 #define STARTUP_LINE_5                  6
 
 
-/*******************MENU MAIN***************/
+/******************* MENUS ***************/
+#define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
+#define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
+#define OPTIONS_TUTO                    "menu/options/tuto.png"
 #define SURCLASSEMENT_UNSELECTED        "menu/surclassement.png"
 #define SURCLASSEMENT_SELECTED          "menu/surclassement_selected.png"
 #define OPTIONS                         "menu/options.png"
@@ -189,6 +197,11 @@ USING_NS_CC;
 #define SHOP_SELECTED                   "menu/shop_selected.png"
 #define SHOP_UNSELECTED_NEW             "menu/shop_new.png"
 #define SHOP_SELECTED_NEW               "menu/shop_selected_new.png"
+#define REPLAY_TEXTURE                  "end_of_game_menu/replay_btn.png"
+#define SHARE_TEXTURE                   "end_of_game_menu/share_btn.png"
+#define RATE_TEXTURE                    "end_of_game_menu/rate_btn.png"
+#define BACKGROUND_TEXTURE              "end_of_game_menu/background.png"
+
 
 class ShootUp {
 

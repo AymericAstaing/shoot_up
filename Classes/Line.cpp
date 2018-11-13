@@ -87,7 +87,6 @@ int Line::get_modified_total(int total) { // AUGMENTATION DU NIVEAU QUAND SPECIA
         default:
             return 0;
     }
-    return (0);
 }
 
 void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LIGNES DE 4 ou 5
@@ -388,8 +387,8 @@ int Line::struct_element_nbr(int id) {
 
 SpriteBatchNode *Line::get_batch() {
     SpriteBatchNode *spriteBatchNode;
-    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("spritesheet/block_color.plist");
-    spriteBatchNode = SpriteBatchNode::create("spritesheet/block_color.png");
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile(BLOCK_COLOR_PLIST);
+    spriteBatchNode = SpriteBatchNode::create(DEFAULT_BLOCK_TEXTURE_PLIST);
     spriteBatchNode->setAnchorPoint(Vec2(0, 0));
     spriteBatchNode->setTag(LINE_BATCH_ID);
     return (spriteBatchNode);

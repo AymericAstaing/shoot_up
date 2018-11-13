@@ -21,10 +21,6 @@ using namespace CocosDenshion;
 
 USING_NS_CC;
 
-static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
-static cocos2d::Size largeResolutionSize = cocos2d::Size(2160, 1080);
 
 AppDelegate::AppDelegate()
 {
@@ -65,12 +61,12 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setAnimationInterval(1.0f / 60);
     register_all_packages();
     auto spritecache = SpriteFrameCache::getInstance();
-    spritecache->addSpriteFramesWithFile("spritesheet/block_color.plist");
-    spritecache->addSpriteFramesWithFile("spritesheet/bullets_game.plist");
-    spritecache->addSpriteFramesWithFile("spritesheet/continue_animation.plist");
-    spritecache->addSpriteFramesWithFile("spritesheet/bonus_power.plist");
-    spritecache->addSpriteFramesWithFile("spritesheet/bonus_speed.plist");
-    spritecache->addSpriteFramesWithFile("spritesheet/bonus_bullet.plist");
+    spritecache->addSpriteFramesWithFile(BLOCK_COLOR_PLIST);
+    spritecache->addSpriteFramesWithFile(BULLETS_PLIST);
+    spritecache->addSpriteFramesWithFile(CONTINUE_PLIST);
+    spritecache->addSpriteFramesWithFile(BONUS_POWER_PLIST);
+    spritecache->addSpriteFramesWithFile(BONUS_SPEED_PLIST);
+    spritecache->addSpriteFramesWithFile(BONUS_BULLET_PLIST);
     UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, FIRST_OPEN);
     auto scene = GameScene::createScene();
