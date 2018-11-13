@@ -64,8 +64,6 @@ void ShopScene::init_shop_grids() {
 }
 
 void ShopScene::init_ui_components() {
-    if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 1)
-        UserLocalStore::store_achievement_variable(NEW_SHOP_ELEMENT, 0);
     auto winSize = Director::getInstance()->getVisibleSize();
     back_button = Sprite::create(SHOP_SCENE::BACK_BUTTON);
     back_button->setPosition(Vec2(static_cast<float>(0 + back_button->getContentSize().width / 1.3),
@@ -311,6 +309,8 @@ bool ShopScene::onTouchBegan(Touch *touch, Event *event) {
         ball_grid->setVisible(false);
         shooter_grid->setVisible(true);
     } else if (is_back(touch_pos)) {
+        if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 1)
+            UserLocalStore::store_achievement_variable(NEW_SHOP_ELEMENT, 0);
         UserLocalStore::store_achievement_variable(FROM_SHOP, 1);
         auto main = GameScene::createScene();
         Director::getInstance()->replaceScene(main);

@@ -141,7 +141,7 @@ public:
     void                    move_circles();
     void                    scale_animation();
     void                    play_bullet_sound();
-    void                    show_particle_explode(Vec2, int);
+    void                    show_particle_explode(Vec2, int, int);
     void                    start_game();
     void                    score_animation();
     bool                    is_sound_button_touched(Vec2);
@@ -152,7 +152,6 @@ public:
     int                     get_next_line_type();
     void                    end_of_game();
     void                    init_listeners();
-    void                    play(cocos2d::Ref *);
     int                     get_h_value();
     void                    resume_game();
     void                    run_game_loop();

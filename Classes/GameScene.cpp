@@ -226,15 +226,19 @@ void GameScene::end_of_game() {
     if (game_state != GAME_RUNNING)
         return;
     if (game_shooter_type == SHIELD_TANK && !shield_live_used) {
+        log("FIRST COLLISION");
         shield_live_used = true;
         shield_rect->runAction(Utils::get_shield_blink_animation());
+        destroy_complete_line(CURRENT_LINE_ID, pool_container[CURRENT_LINE_ID]->getPositionY());
         return;
     }
     if (game_shooter_type == SHIELD_TANK) {
+        log("REMOVE SHIELD");
         shield_live_used = false;
         shield_rect->setOpacity(100);
         shield_rect->setVisible(false);
     }
+    show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED, MAX_PARTICLE);
     hit_played = 0;
     launch_played = 0;
     player->setScale(1);
@@ -266,7 +270,7 @@ void GameScene::display_end_menu() {
     continue_button->setPosition(Vec2(x_screen / 2, next_button->getPositionY() +
                                                     continue_button->getContentSize().height));
     addChild(continue_button);
-    auto delay = DelayTime::create(6.0);
+    auto delay = DelayTime::create(6.0f);
     auto callback = CallFuncN::create(
             [&](Node *sender) {
                 continue_button->stopAllActions();
@@ -495,7 +499,7 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
         addChild(stars, 1, 1);
 }
 
-void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
+void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code, int extra) {
     auto fileUtil = FileUtils::getInstance();
     auto plistData = fileUtil->getValueMapFromFile(explode_plist[RED]);
     switch (default_color_code) {
@@ -519,9 +523,15 @@ void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code) {
     if (!stars)
         return;
     stars->setScale(0.7);
-    stars->setDuration(0.5);
-    stars->setPosition(square_pos);
-    stars->setTotalParticles(20);
+    if (extra == MAX_PARTICLE) {
+        stars->setDuration(0.5f);
+        stars->setPosition(square_pos);
+        stars->setTotalParticles(80);
+    } else {
+        stars->setDuration(0.5f);
+        stars->setPosition(square_pos);
+        stars->setTotalParticles(20);
+    }
     stars->setAutoRemoveOnFinish(true);
     addChild(stars, 2);
 }
@@ -583,7 +593,7 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
         show_destruction_circle(Vec2(sq->getPositionX(), line_y));
         show_particle_explode(
                 Vec2(sq->getPositionX(), line_y - sq->getContentSize().height),
-                sq->initial_color);
+                sq->initial_color, NORMAL_PARTICLE);
         sq->setVisible(false);
         sprite->setVisible(false);
         i++;
@@ -682,7 +692,7 @@ void GameScene::check_into_line() {
                         show_destruction_circle(square_pos);
                         show_particle_explode(
                                 Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
-                                sq->initial_color);
+                                sq->initial_color, NORMAL_PARTICLE);
                         game_block_destroyed++;
                     } else {
                         update_game_score(bullet_hit);
@@ -741,8 +751,7 @@ void GameScene::check_player_collision() {
                                      (1.1 * player->getContentSize().height / 2)) {
             Vec2 player_pos = player->getPosition();
             int index = 0;
-            float player_y =
-                    player_pos.y - pool_container[active_lines[i]]->getPositionY();
+            float player_y = player_pos.y - pool_container[active_lines[i]]->getPositionY();
             while (1) {
                 auto child = pool_container[active_lines[i]]->getChildByTag(index);
                 Square *sq = ((Square *) child);
@@ -752,46 +761,40 @@ void GameScene::check_player_collision() {
                 float sq_height = sq->getContentSize().height;
                 float player_width = player->getContentSize().width;
                 float player_height = player->getContentSize().height;
+                Vec2 player_left_top_corner = Vec2(player_pos.x - player_width / 2,
+                                                   player_y + player_height / 2);
 
-                Rect player_left_side = Rect(
-                        player_pos.x - player_width / 2,
-                        player_y,
-                        static_cast<float>(player_width * 0.05),
-                        static_cast<float>(player_height * 0.95));
-                Rect player_right_side = Rect(
-                        player_pos.x + player_width / 2,
-                        player_y,
-                        static_cast<float>(player_width * 0.05),
-                        static_cast<float>(player_height * 0.95));
-                Rect player_top_side = Rect(
-                        player_pos.x - player_width / 2,
-                        static_cast<float>(player_y + sq_height / 2 +
-                                           (0.08 * sq_height)),
-                        player_width,
-                        static_cast<float>(player_height * 0.10));
+                Rect player_full_rect = Rect(player_pos.x - player_width / 2,
+                                             player_y + player_height / 2,
+                                             player_width, player_height);
                 Rect sq_bounding_box = Rect(sq->getPositionX() - sq_width / 2,
                                             sq->getPositionY() + sq_height / 2, sq_width,
                                             sq_height);
-                Rect sq_bottom_side = Rect(sq->getPositionX() - sq_width / 2,
-                                           sq->getPositionY() - sq_height / 2,
-                                           sq_width,
-                                           static_cast<float>(sq_height *
-                                                              0.15));
-                if (sq->isVisible() && sq_bottom_side.intersectsRect(
-                        player_top_side)) {
-                    end_of_game();
-                } else if (sq->isVisible() &&
-                           sq_bounding_box.intersectsRect(player_left_side)) {
-                    player->setPositionX(sq->getPositionX() + sq_width / 2 +
-                                         player_width / 2);
-                    if (player_pos.x + player_width / 2 > x_screen)
+                Rect player_crash_bounding_box = Rect(
+                        static_cast<float>(player_left_top_corner.x + (0.15 * player_width)),
+                        player_left_top_corner.y,
+                        static_cast<float>(0.7 * player_width), player_height);
+
+                Rect player_collision_left = Rect(player_left_top_corner.x,
+                                                  player_left_top_corner.y,
+                                                  static_cast<float>(0.15 * player_width),
+                                                  player_height);
+                Rect player_collision_right = Rect(
+                        static_cast<float>(player_left_top_corner.x + player_width * 0.85),
+                        player_left_top_corner.y,
+                        static_cast<float>(0.15 * player_width), player_height);
+
+                if (sq->isVisible() && sq_bounding_box.intersectsRect(player_full_rect)) {
+                    if (sq->isVisible() &&
+                        sq_bounding_box.intersectsRect(player_crash_bounding_box)) {// DANS LE SQ
                         end_of_game();
-                } else if (sq->isVisible() &&
-                           sq_bounding_box.intersectsRect(player_right_side)) {
-                    player->setPositionX(sq->getPositionX() - sq_width / 2 -
-                                         player_width / 2);
-                    if (player_pos.y - player_width / 2 < 0)
-                        end_of_game();
+                    } else if (sq->isVisible() && sq_bounding_box.intersectsRect(
+                            player_collision_left)) { // SQ TAPE UN SQUARE A  SA GAUCHE
+                        player->setPositionX(player->getPositionX() + player_width / 4);
+                    } else if (sq->isVisible() && sq_bounding_box.intersectsRect(
+                            player_collision_right)) { // SQ TAPE UN SQUARE A  SA DROITE
+                        player->setPositionX(player->getPositionX() - player_width / 4);
+                    }
                 }
                 index++;
             }
@@ -1132,17 +1135,14 @@ void GameScene::shop(cocos2d::Ref *pSender) {
     Director::getInstance()->replaceScene(shop);
 }
 
-void GameScene::play(cocos2d::Ref *pSender) {
-    // auto scene = HelloWorld::createScene();
-    // Director::getInstance()->pushScene(scene);
-}
-
 void GameScene::back_to_menu(cocos2d::Ref *pSender) {
     auto callback = CallFuncN::create(
             [&](Node *sender) {
+                log("CURRENT SHOOTER = %i", UserLocalStore::get_current_shooter());
                 UserLocalStore::update_achievements(
                         Utils::get_shooter_type(UserLocalStore::get_current_shooter()),
                         game_block_destroyed, game_power_up_collected);
+                log("CURRENT SHOOTER = %i", UserLocalStore::get_current_shooter());
                 game_block_destroyed = 0;
                 game_power_up_collected = 0;
                 LINE_GENERATED = 0;
@@ -1243,7 +1243,7 @@ bool GameScene::is_continue_button_touched(Vec2 touch_location) {
 bool GameScene::onTouchBegan(Touch *touch, Event *event) {
     if (game_state == GAME_RUNNING && !is_touch_on_player_zone(touch->getLocation()))
         return false;
-    if (game_state == GAME_END && continue_button &&
+    if (game_state == RESUME && continue_button &&
         is_continue_button_touched(touch->getLocation())) {
         resume_game();
         return false;
@@ -1427,7 +1427,7 @@ void GameScene::main_menu_coming_animation() {
 }
 
 Menu *GameScene::get_main_menu() {
-    menu_title = MenuItemFont::create(TITLE, CC_CALLBACK_1(GameScene::play, this));
+    menu_title = MenuItemFont::create(TITLE, nullptr);
     char power_level[DEFAULT_CHAR_LENGHT];
     sprintf(power_level, "%i",
             UserLocalStore::get_achievement_variable(POWER_VALUE));
@@ -1637,12 +1637,18 @@ Menu *GameScene::get_end_game_menu() {
                                                          stats->getContentSize().height / 2 -
                                                          1.5 *
                                                          back_to_main->getContentSize().height)));
-    auto move_to_share_0 = MoveTo::create(0.2, Vec2(x_screen / 2 - back_to_main->getContentSize().width,
-            static_cast<float>(static_cast<float>(
-                                       (static_cast<float>(y_screen / 1.75)) -
-                                       stats->getContentSize().height / 2 -
-                                       1.5 * back_to_main->getContentSize().height) +
-                               0.5 * back_to_main->getContentSize().height)));
+    auto move_to_share_0 = MoveTo::create(0.2,
+                                          Vec2(x_screen / 2 - back_to_main->getContentSize().width,
+                                               static_cast<float>(static_cast<float>(
+                                                                          (static_cast<float>(
+                                                                                  y_screen /
+                                                                                  1.75)) -
+                                                                          stats->getContentSize().height /
+                                                                          2 -
+                                                                          1.5 *
+                                                                          back_to_main->getContentSize().height) +
+                                                                  0.5 *
+                                                                  back_to_main->getContentSize().height)));
     auto move_to_share_1 = MoveTo::create(0.1, Vec2(x_screen / 2 -
                                                     back_to_main->getContentSize().width,
                                                     static_cast<float>(
@@ -1659,7 +1665,7 @@ Menu *GameScene::get_end_game_menu() {
                                        1.5 * back_to_main->getContentSize().height) +
                                0.5 * back_to_main->getContentSize().height)));
     auto move_to_rate_1 = MoveTo::create(0.1, Vec2(x_screen / 2 +
-                                                                      back_to_main->getContentSize().width,
+                                                   back_to_main->getContentSize().width,
                                                    static_cast<float>(
                                                            (static_cast<float>(y_screen /
                                                                                1.75)) -

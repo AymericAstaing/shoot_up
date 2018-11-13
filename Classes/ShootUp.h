@@ -25,6 +25,8 @@ USING_NS_CC;
 #define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
 #define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"
 #define NORMAL_BULLET_SIZE              1
+#define NORMAL_PARTICLE                 0
+#define MAX_PARTICLE                    1
 #define STAR_BONUS_TAG                  7
 #define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
 #define BIG_BULLET_SIZE                 1.3f
@@ -64,6 +66,11 @@ USING_NS_CC;
 #define SPEED_TANK                      5
 #define SIDEWAY_TANK                    6
 #define TRIPLE_TANK                     7
+
+/******************* ASSET STATES ***************/
+#define LOCK                            0
+#define UNLOCK                          1
+#define USED                            2
 
 /******************* BONUS ***************/
 #define DEFAULT_SPEED_TEXTURE           "bonus_speed_0.png"

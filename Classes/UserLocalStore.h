@@ -14,7 +14,11 @@ USING_NS_CC;
 #define TYPE_SHIELD                          4
 #define TYPE_SPEED                           5
 #define TYPE_SIDEWAY                         6
-#define TYPE_TRIPLE                          7
+
+/******************* ASSET STATES ***************/
+#define LOCK                            0
+#define UNLOCK                          1
+#define USED                            2
 
 
 static const char *FIRST_LAUNCH = "FIRST_LAUNCH";
