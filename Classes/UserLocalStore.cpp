@@ -326,7 +326,6 @@ void UserLocalStore::check_for_shooter_unlocked(int shooter_type) {
             get_shooter(16) == 0)
             store_shooter(16, 1);
     } else if (shooter_type == TYPE_SHIELD) {
-        log("PASSED");
         if (get_achievement_variable(SHIELD_TANK::KEY_ITEM_SHIELD_TANK) >= 200 &&
             get_shooter(18) == 0)
             store_shooter(18, 1);
@@ -396,7 +395,6 @@ int UserLocalStore::get_current_shooter() {
 }
 
 void UserLocalStore::store_shooter(int index, int value) {
-    log("shooter store");
     if (value == UNLOCK)
         UserLocalStore::store_achievement_variable(GLOBAL::KEY_NEW_SHOP_ELEMENT, 1);
     UserDefault *def = UserDefault::sharedUserDefault();
@@ -405,7 +403,6 @@ void UserLocalStore::store_shooter(int index, int value) {
 }
 
 void UserLocalStore::store_ball(int index, int value) {
-    log("ball store");
     if (value == UNLOCK)
         UserLocalStore::store_achievement_variable(GLOBAL::KEY_NEW_SHOP_ELEMENT, 1);
     UserDefault *def = UserDefault::sharedUserDefault();
@@ -641,15 +638,13 @@ int UserLocalStore::get_ball_achievement_target(int index) {
 }
 
 const char **UserLocalStore::get_final_shooter_array() {
-
     const char **shooter_array;
-
     shooter_array = new const char *[34];
     int asset_shooter_index = 0;
     int *shooter = UserLocalStore::get_asset_shooter();
     for (int i = 0; i < 34; i++) {
         if (i == 11 || i == 25 || i == 26) {
-            shooter_array[i] = "shop/empty_cell.png";
+            shooter_array[i] = EMPTY_ASSET;
         } else {
             if (shooter[asset_shooter_index] == LOCKED)
                 shooter_array[i] = shop_shooter_locked[asset_shooter_index];

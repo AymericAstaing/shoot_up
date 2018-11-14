@@ -155,6 +155,7 @@ public:
     void                    init_listeners();
     int                     get_h_value();
     void                    resume_game();
+    void                    generate_star_bonus();
     void                    run_game_loop();
     void                    stop_game_loop();
     void                    move_active_lines();

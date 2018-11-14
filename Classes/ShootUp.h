@@ -37,7 +37,7 @@ USING_NS_CC;
 #define SQUARE_SIZE_5                   4.95
 #define NOT_FROM_SHOP                   0
 #define SQUARE_SIZE_4                   3.95
-#define POINTS_TO_ADD_FACTOR            50
+#define INCREASE_FACTOR                 15
 #define POWER_LEVEL_BTN_TAG             34
 #define SPEED_LEVEL_BTN_TAG             35
 #define MAIN_MENU_TAG                   36
@@ -64,6 +64,10 @@ USING_NS_CC;
 #define DEFAULT_BULLET_TEXTURE_PLIST    "spritesheet/bullets_game.png"
 #define DEFAULT_BLOCK_TEXTURE_PLIST     "spritesheet/block_color.png"
 
+/******************* SOUND FILES ***************/
+#define SOUND_LAUNCH                    "sound/bullet_launch.wav"
+#define SOUND_HITED                     "sound/square_hited.wav"
+#define SOUND_EXPLODE                   "sound/square_explode.wav"
 
 
 /******************* ACHIEVEMENT CATEGORIES ***************/

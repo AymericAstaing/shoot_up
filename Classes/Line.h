@@ -49,7 +49,7 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
             int                         get_type();
             void                        attach_star_bonus();
             void                        set_active(int, int);
-            int                         get_modified_total(int);
+            int                         get_special_shooter_total(int);
             void                        change_square_color(int, int);
             void                        assign_color(int, int, int);
             int                         get_index_random(int *, int);

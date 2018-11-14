@@ -312,6 +312,8 @@ void GameScene::stop_bullet_shoot() {
 }
 
 void GameScene::surclassement(cocos2d::Ref *pSender) {
+    if (game_state != MENU)
+        return;
     UICustom::Popup *popup = UICustom::Popup::create("Test 3", "", [=]() {});
     popup->setScale(0);
     popup->setOnExitCallback([&]() {
@@ -939,6 +941,15 @@ void GameScene::scale_animation() {
     pool_container[CURRENT_LINE_ID]->runAction(scaleto->clone());
 }
 
+void GameScene::generate_star_bonus() {
+    if (pool_container[NEXT_LINE_ID]->get_type() == LINE_TYPE_SIMPLE_OF_5 &&
+        Utils::get_random_number(0, 5) == 5) {
+        pool_container[NEXT_LINE_ID]->attach_star_bonus();
+        star_bonus_active = true;
+        star_line_id = NEXT_LINE_ID;
+    }
+}
+
 void GameScene::update(float ft) {
     if (bonus_active != -1)
         bonus_time += ft;
@@ -957,12 +968,8 @@ void GameScene::update(float ft) {
         check_player_collision();
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
-        if (pool_container[NEXT_LINE_ID]->get_type() == LINE_TYPE_SIMPLE_OF_5 &&
-            Utils::get_random_number(0, 5) == 5 && !star_bonus_active) {
-            pool_container[NEXT_LINE_ID]->attach_star_bonus();
-            star_bonus_active = true;
-            star_line_id = NEXT_LINE_ID;
-        }
+        if (!star_bonus_active)
+            generate_star_bonus();
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
@@ -1129,6 +1136,8 @@ void GameScene::resume_game() {
 }
 
 void GameScene::shop(cocos2d::Ref *pSender) {
+    if (game_state != MENU)
+        return;
     auto shop = ShopScene::createScene();
     Director::getInstance()->replaceScene(shop);
 }
@@ -1282,7 +1291,7 @@ void GameScene::play_bullet_sound() {
         return;
     }
     launch_played++;
-    game_audio->playEffect("sound/bullet_launch.wav", false, 1.0f, 1.0f, 1.0f);
+    game_audio->playEffect(SOUND_LAUNCH, false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::play_bullet_impact() {
@@ -1296,13 +1305,13 @@ void GameScene::play_bullet_impact() {
         return;
     }
     hit_played++;
-    game_audio->playEffect("sound/square_hited.wav", false, 1.0f, 1.0f, 1.0f);
+    game_audio->playEffect(SOUND_HITED, false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::play_square_explode() {
     if (!sound_activated)
         return;
-    game_audio->playEffect("sound/square_explode.wav", false, 1.0f, 1.0f, 1.0f);
+    game_audio->playEffect(SOUND_EXPLODE, false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::launch_bullet(float dt) {

@@ -13,8 +13,8 @@ USING_NS_CC;
 Action *Utils::get_blink_animation() {
     auto fadeout = FadeOut::create(0.5);
     auto fadein = FadeIn::create(0.5);
-    auto sequence = Sequence::create(fadeout, fadein, nullptr);
-    return (RepeatForever::create(sequence));
+    auto sequence = Sequence::create(fadein, fadeout, fadein->clone(), fadeout->clone(), fadein->clone(), nullptr);
+    return (sequence);
 }
 
 Action *Utils::get_shield_blink_animation() {
