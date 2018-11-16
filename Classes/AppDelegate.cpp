@@ -20,37 +20,34 @@ using namespace cocos2d::experimental;
 using namespace CocosDenshion;
 #endif
 
+
 USING_NS_CC;
 
-
-AppDelegate::AppDelegate()
-{
+AppDelegate::AppDelegate() {
 }
 
-AppDelegate::~AppDelegate() 
-{
+AppDelegate::~AppDelegate() {
 #if USE_AUDIO_ENGINE
     AudioEngine::end();
 #elif USE_SIMPLE_AUDIO_ENGINE
     SimpleAudioEngine::end();
 #endif
 }
-void AppDelegate::initGLContextAttrs()
-{
+
+void AppDelegate::initGLContextAttrs() {
     GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0};
     GLView::setGLContextAttrs(glContextAttrs);
 }
 
-static int register_all_packages()
-{
+static int register_all_packages() {
     return 0;
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
-    if(!glview) {
-        glview = GLViewImpl::createWithRect("SimpleGame", Rect(0,0, 480, 320), 1.0);
+    if (!glview) {
+        glview = GLViewImpl::createWithRect("SimpleGame", Rect(0, 0, 480, 320), 1.0);
         director->setOpenGLView(glview);
     }
     Size designSize = Size(1920, 780);
@@ -72,9 +69,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, FIRST_OPEN);
     sdkbox::PluginAdMob::init();
     sdkbox::PluginAdMob::setTestDevices("791DC4365A94EB1A2E6CD5EB0F068CD5");
-    sdkbox::PluginAdMob::cache("caca");
-    auto scene = GameScene::createScene();
-    director->runWithScene(scene);
+    auto gameScene = GameScene::createScene();
+    director->runWithScene(gameScene);
     return true;
 }
 
@@ -89,6 +85,7 @@ void AppDelegate::applicationDidEnterBackground() {
     SimpleAudioEngine::getInstance()->pauseAllEffects();
 #endif
 }
+
 // this function will be called when the app is active again
 void AppDelegate::applicationWillEnterForeground() {
     Director::getInstance()->startAnimation();

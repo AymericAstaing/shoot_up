@@ -85,6 +85,7 @@ private:
     int                 bonus_id = -1;
     float               x_screen;
     float               y_screen;
+    float               game_duration;
     int                 game_score;
     int                 game_shooter_type = 0;
     int                 *active_lines;

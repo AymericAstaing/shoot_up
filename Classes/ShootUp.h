@@ -85,6 +85,16 @@ USING_NS_CC;
 #define UNLOCK                          1
 #define USED                            2
 
+/******************* ADS (ADMOB) ***************/
+#define GAME_DURATION_LIMIT_FOR_ADS     30.0f
+#define END_OF_GAME_AD                  "end_of_game"
+#define TEST_AD                         "test_ad"
+#define CONTINUE_REWARD_AD              "continue_reward"
+#define CONTINUE_REWARD_AD_TEST         "continue_reward_test"
+#define BONUSX2_AD                      "bonusx2"
+#define BONUSX2_AD_TEST                 "bonusx2_test"
+
+
 /******************* BONUS ***************/
 #define DEFAULT_SPEED_TEXTURE           "bonus_speed_0.png"
 #define DEFAULT_POWER_TEXTURE           "bonus_power_0.png"
@@ -124,7 +134,7 @@ USING_NS_CC;
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
 #define SIMPLE_LINE_NBR                 8
-#define DEFAULT_BULLET_NBR              14 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
+#define DEFAULT_BULLET_NBR              16 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0

@@ -27,8 +27,36 @@ namespace POPUP_MENU_PATH {
     const char *SPEED_SELECTED = "pop_up/speed_selected.png";
 }
 
-
 USING_NS_CC;
+
+class IMListener : public sdkbox::AdMobListener {
+public:
+    GameScene *gs;
+    virtual void adViewDidReceiveAd(const std::string &name) {
+    }
+
+    virtual void
+    adViewDidFailToReceiveAdWithError(const std::string &name, const std::string &msg) {
+    }
+
+    virtual void adViewWillPresentScreen(const std::string &name) {
+    }
+
+    virtual void adViewDidDismissScreen(const std::string &name) {
+        if (!sdkbox::PluginAdMob::isAvailable(name) && name == CONTINUE_REWARD_AD_TEST)
+            gs->resume_game();
+    }
+
+    virtual void adViewWillDismissScreen(const std::string &name) {
+    }
+
+    virtual void adViewWillLeaveApplication(const std::string &name) {
+    }
+
+    virtual void reward(const std::string &name, const std::string &currency, double amount) {
+    }
+
+};
 
 Scene *GameScene::createScene() {
     auto scene = Scene::createWithPhysics();
@@ -72,14 +100,6 @@ void GameScene::init_main_variable() {
     init_bonus_components();
     if (!game_audio)
         game_audio = SimpleAudioEngine::getInstance();
-    while (1) {
-        if (!sdkbox::PluginAdMob::isAvailable("caca")) {
-            log("init");
-        } else {
-            sdkbox::PluginAdMob::show("caca");
-            break;
-        }
-    }
 }
 
 void GameScene::check_first_open() {
@@ -131,6 +151,9 @@ void GameScene::init_ui_components() {
 }
 
 void GameScene::init_listeners() {
+    IMListener *imListener = new IMListener;
+    imListener->gs = this;
+    sdkbox::PluginAdMob::setListener(imListener);
     EventListenerTouchOneByOne *listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
     listener->onTouchBegan = CC_CALLBACK_2(GameScene::onTouchBegan, this);
@@ -458,7 +481,6 @@ int GameScene::get_line_in_contact(int bullet_id) {
     }
     return (-1);
 }
-
 
 void GameScene::show_particle(Vec2 pos, Square *sq) {
     if (!sq || !sq->isVisible() || sq->particle_played == 2)
@@ -941,6 +963,7 @@ void GameScene::generate_star_bonus() {
 }
 
 void GameScene::update(float ft) {
+    game_duration += ft;
     if (bonus_active != -1)
         bonus_time += ft;
     if (game_shooter_type == SHIELD_TANK && shield_rect->isVisible())
@@ -1078,11 +1101,13 @@ int GameScene::get_h_value() {
 }
 
 void GameScene::start_game() {
+    sdkbox::PluginAdMob::cache(CONTINUE_REWARD_AD_TEST);
+    sdkbox::PluginAdMob::cache(TEST_AD);
+    //sdkbox::PluginAdMob::cache(BONUSX2_AD_TEST);
     game_already_resumed = false;
     game_shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
     if (game_shooter_type == SHIELD_TANK) {
         shield_rect->setVisible(true);
-        //shield_rect->setOpacity(100);
         shield_rect->setPosition(player->getPosition());
     }
     if (options_state == OPTIONS_DISPLAYED)
@@ -1098,19 +1123,16 @@ void GameScene::start_game() {
     run_start_animation();
     start_bullet_shoot();
     run_game_loop();
+    game_duration = 0;
 }
 
 void GameScene::resume_game() {
     game_already_resumed = true;
-    stopAction(wait_sequence);
-    continue_button->stopAllActions();
     removeChild(continue_button);
     removeChild(next_button);
     destroy_all_lines();
-    if (game_shooter_type == SHIELD_TANK && !shield_live_used) {
-        //shield_rect->setOpacity(100);
+    if (game_shooter_type == SHIELD_TANK && !shield_live_used)
         shield_rect->setVisible(true);
-    }
     if (LINE_GENERATED > TRANSITION_FROM_4_TO_5)
         player->setScale(0.85f);
     score->setVisible(true);
@@ -1175,6 +1197,8 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
     rate->runAction(sequence_rate);
     stats->runAction(sequence_stats);
     back_to_main->runAction(sequence_back);
+    if (game_duration >= GAME_DURATION_LIMIT_FOR_ADS)
+        sdkbox::PluginAdMob::show(TEST_AD);
 }
 
 void GameScene::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *event) {
@@ -1239,7 +1263,16 @@ bool GameScene::onTouchBegan(Touch *touch, Event *event) {
         return false;
     if (game_state == RESUME && continue_button &&
         is_continue_button_touched(touch->getLocation())) {
-        resume_game();
+        while (1) {
+            if (sdkbox::PluginAdMob::isAvailable(CONTINUE_REWARD_AD_TEST)) {
+                stopAction(wait_sequence);
+                continue_button->stopAllActions();
+                continue_button->setVisible(false);
+                next_button->setVisible(false);
+                sdkbox::PluginAdMob::show(CONTINUE_REWARD_AD_TEST);
+                break;
+            }
+        }
         return false;
     }
     if (game_state == RESUME && is_next_button_touched(touch->getLocation())) {

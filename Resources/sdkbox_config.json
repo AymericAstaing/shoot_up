@@ -2,9 +2,29 @@
     "android": {
         "AdMob":{
             "ads":{
-                "caca":{
+                "test_ad":{
                     "id":"ca-app-pub-3940256099942544/1033173712",
                     "type":"interstitial"
+                },
+                "end_of_game":{
+                    "id":"ca-app-pub-5485887652363520/4180748046",
+                    "type":"interstitial"
+                },
+                "continue_reward":{
+                    "id":"ca-app-pub-5485887652363520/1818023172",
+                    "type":"rewarded_video"
+                },
+                "continue_reward_test":{
+                    "id":"ca-app-pub-3940256099942544/5224354917",
+                    "type":"rewarded_video"
+                },
+                "bonusx2":{
+                    "id":"ca-app-pub-5485887652363520/3169142609",
+                    "type":"rewarded_video"
+                },
+                "bonusx2_test":{
+                    "id":"ca-app-pub-3940256099942544/5224354917",
+                    "type":"rewarded_video"
                 }
             }
         }
