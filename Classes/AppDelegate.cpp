@@ -3,6 +3,7 @@
 #include "GameScene.h"
 #include "UserLocalStore.h"
 #include "ShootUp.h"
+#include "PluginAdMob/PluginAdMob.h"
 
 // #define USE_AUDIO_ENGINE 1
 // #define USE_SIMPLE_AUDIO_ENGINE 1
@@ -69,6 +70,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     spritecache->addSpriteFramesWithFile(BONUS_BULLET_PLIST);
     UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
     UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, FIRST_OPEN);
+    sdkbox::PluginAdMob::init();
+    sdkbox::PluginAdMob::setTestDevices("791DC4365A94EB1A2E6CD5EB0F068CD5");
+    sdkbox::PluginAdMob::cache("caca");
     auto scene = GameScene::createScene();
     director->runWithScene(scene);
     return true;

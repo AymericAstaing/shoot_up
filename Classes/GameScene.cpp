@@ -3,6 +3,8 @@
 #include    <iomanip>
 #include    <audio/android/jni/cddandroidAndroidJavaEngine.h>
 #include    <SimpleAudioEngine.h>
+#include    "PluginAdMob/PluginAdMob.h"
+#include    <pluginadmob/PluginAdMob.h>
 #include    "cocos2d.h"
 #include    "GameScene.h"
 #include    "Square.h"
@@ -71,6 +73,14 @@ void GameScene::init_main_variable() {
     init_bonus_components();
     if (!game_audio)
         game_audio = SimpleAudioEngine::getInstance();
+    while (1) {
+        if (!sdkbox::PluginAdMob::isAvailable("caca")) {
+            log("init");
+        } else {
+            sdkbox::PluginAdMob::show("caca");
+            break;
+        }
+    }
 }
 
 void GameScene::check_first_open() {
