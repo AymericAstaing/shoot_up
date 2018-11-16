@@ -4,7 +4,6 @@
 #include    <audio/android/jni/cddandroidAndroidJavaEngine.h>
 #include    <SimpleAudioEngine.h>
 #include    "PluginAdMob/PluginAdMob.h"
-#include    <pluginadmob/PluginAdMob.h>
 #include    "cocos2d.h"
 #include    "GameScene.h"
 #include    "Square.h"
@@ -425,41 +424,6 @@ int GameScene::get_next_line_id(int type) {
     return -1;
 }
 
-void GameScene::check_bullet_contact() {
-    for (int j = 0; active_lines[j] != '\0'; j++) {
-        for (int i = 0; bullet_container[i] != NULL; i++) {
-            if (bullet_container[i]->bullet_active) {
-                int id = active_lines[j];
-                if (id != -1) {
-                    float line_position_y = pool_container[id]->getPositionY();
-                    float bullet_position_y = bullet_container[i]->getPositionY();
-                    if (bullet_position_y >= line_position_y &&
-                        bullet_position_y <=
-                        line_position_y +
-                        pool_container[id]->getContentSize().height &&
-                        pool_container[id]->getPositionY() +
-                        pool_container[id]->getContentSize().height >
-                        player->getPositionY() + player->getContentSize().height / 2) {
-                        //IN CONTACT
-                        if (!bullet_container[i]->contact) {
-                            // ENTER CONTACT ZONE
-                            bullet_container[i]->contact = true;
-                            bullet_container[i]->contact_index = id;
-                        }
-                    } else {
-                        if (bullet_container[i]->contact &&
-                            id == bullet_container[i]->contact_index) {
-                            // EXIT CONTACT ZONE
-                            bullet_container[i]->contact = false;
-                            bullet_container[i]->contact_index = false;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 bool GameScene::point_into_square(Square *sq, Vec2 bullet_pos) {
     Vec2 sq_top_left;
     float sq_width = sq->getContentSize().width;
@@ -481,6 +445,20 @@ void GameScene::show_destruction_circle(Vec2 pos) {
         }
     }
 }
+
+int GameScene::get_line_in_contact(int bullet_id) {
+    float bullet_y = bullet_container[bullet_id]->getPositionY();
+    for (int i = 0; active_lines[i] != '\0'; i++) {
+        if (active_lines[i] != EMPTY_VALUE) {
+            float line_bottom = pool_container[active_lines[i]]->getPositionY();
+            float line_top = line_bottom + pool_container[active_lines[i]]->getContentSize().height;
+            if (bullet_y >= line_bottom && bullet_y <= line_top)
+                return (active_lines[i]);
+        }
+    }
+    return (-1);
+}
+
 
 void GameScene::show_particle(Vec2 pos, Square *sq) {
     if (!sq || !sq->isVisible() || sq->particle_played == 2)
@@ -655,68 +633,70 @@ void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
     }
 }
 
-void GameScene::check_into_line() {
+void GameScene::check_bullet_collision() {
     for (int i = 0; bullet_container[i] != NULL; i++) {
-        if (bullet_container[i] && bullet_container[i]->bullet_active &&
-            bullet_container[i]->contact) {
-            int index = 0;
-            Line *current_line = pool_container[bullet_container[i]->contact_index];
-            auto batch = current_line->getChildByTag(LINE_BATCH_ID);
-            while (1) {
-                Square *sq = ((Square *) current_line->getChildByTag(index));
-                if (!sq)
-                    break;
-                Vec2 bullet_pos;
-                bullet_pos.x = bullet_container[i]->getPositionX();
-                bullet_pos.y = bullet_container[i]->getPositionY() -
-                               (current_line->getPositionY());
-                if (bullet_pos.y < 0)
-                    bullet_pos.y = 0;
-                if (sq->isVisible() && point_into_square(sq, bullet_pos)) {
-                    int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
-                    if (game_shooter_type == POWER_TANK)
-                        bullet_hit *= 1.5;
-                    if (bonus_active == BONUS_POWER)
-                        bullet_hit *= 2;
-                    if (sq->get_square_pv() - bullet_hit <= 1) {
-                        auto sprite = batch->getChildByTag(sq->getTag());
-                        sprite->setVisible(false);
-                        sq->setVisible(false);
-                        Vec2 square_pos;
-                        square_pos.x = sq->getPositionX();
-                        square_pos.y = current_line->getPositionY() + sq->getPositionY();
-                        update_game_score(sq->square_pv);
-                        play_square_explode();
-                        if (sq->star_bonus == 1) {
-                            destroy_all_lines();
-                            game_block_destroyed++;
-                            bullet_container[i]->reset();
-                            return;
-                        }
-                        check_full_destruction_bonus(current_line,
-                                                     bullet_container[i]->contact_index);
-                        show_destruction_circle(square_pos);
-                        show_particle_explode(
-                                Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
-                                sq->initial_color, NORMAL_PARTICLE);
-                        game_block_destroyed++;
-                    } else {
-                        update_game_score(bullet_hit);
-                        play_bullet_impact();
-                        show_particle(bullet_container[i]->getPosition(), sq);
-                        sq->square_pv -= bullet_hit;
-                        if (current_line->get_type() > LINE_TYPE_STARTUP_5)
-                            check_hit_color_change(current_line, sq);
-                        int sq_points_value = sq->square_pv;
-                        sq->points->setString(
-                                Utils::get_reduced_value(sq_points_value, VALUE_SIMPLE));
-                    }
-                    bullet_container[i]->reset();
-                    break;
+        int into_line_id = get_line_in_contact(i);
+        if (bullet_container[i] && bullet_container[i]->bullet_active && into_line_id != -1)
+            check_into_line(i, into_line_id);
+    }
+}
+
+void GameScene::check_into_line(int bullet_id, int line_id) {
+    int index = 0;
+    Line *current_line = pool_container[line_id];
+    auto batch = current_line->getChildByTag(LINE_BATCH_ID);
+    while (1) {
+        Square *sq = ((Square *) current_line->getChildByTag(index));
+        if (!sq)
+            break;
+        Vec2 bullet_pos;
+        bullet_pos.x = bullet_container[bullet_id]->getPositionX();
+        bullet_pos.y = bullet_container[bullet_id]->getPositionY() -
+                       (current_line->getPositionY());
+        if (bullet_pos.y < 0)
+            bullet_pos.y = 0;
+        if (sq->isVisible() && point_into_square(sq, bullet_pos)) {
+            int bullet_hit = UserLocalStore::get_achievement_variable(POWER_VALUE);
+            if (game_shooter_type == POWER_TANK)
+                bullet_hit *= 1.5;
+            if (bonus_active == BONUS_POWER)
+                bullet_hit *= 2;
+            if (sq->get_square_pv() - bullet_hit <= 1) {
+                auto sprite = batch->getChildByTag(sq->getTag());
+                sprite->setVisible(false);
+                sq->setVisible(false);
+                Vec2 square_pos;
+                square_pos.x = sq->getPositionX();
+                square_pos.y = current_line->getPositionY() + sq->getPositionY();
+                update_game_score(sq->square_pv);
+                play_square_explode();
+                if (sq->star_bonus == 1) {
+                    destroy_all_lines();
+                    game_block_destroyed++;
+                    bullet_container[bullet_id]->reset();
+                    return;
                 }
-                index++;
+                check_full_destruction_bonus(current_line, line_id);
+                show_destruction_circle(square_pos);
+                show_particle_explode(
+                        Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
+                        sq->initial_color, NORMAL_PARTICLE);
+                game_block_destroyed++;
+            } else {
+                update_game_score(bullet_hit);
+                play_bullet_impact();
+                show_particle(bullet_container[bullet_id]->getPosition(), sq);
+                sq->square_pv -= bullet_hit;
+                if (current_line->get_type() > LINE_TYPE_STARTUP_5)
+                    check_hit_color_change(current_line, sq);
+                int sq_points_value = sq->square_pv;
+                sq->points->setString(
+                        Utils::get_reduced_value(sq_points_value, VALUE_SIMPLE));
             }
+            bullet_container[bullet_id]->reset();
+            break;
         }
+        index++;
     }
 }
 
@@ -973,8 +953,7 @@ void GameScene::update(float ft) {
             scale_animation();
         move_circles();
         bonus_managment();
-        check_bullet_contact();
-        check_into_line();
+        check_bullet_collision();
         check_player_collision();
     }
     if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {

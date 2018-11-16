@@ -19,8 +19,6 @@ void Bullet::reset() {
         setScale(NORMAL_BULLET_SIZE);
     this->setVisible(false);
     this->bullet_active = false;
-    this->contact = false;
-    this->contact_index = -1;
     this->setPosition(Vec2(winSize.width / 2, 0 - getContentSize().height));
 }
 
@@ -105,7 +103,6 @@ Bullet *Bullet::create() {
     int current_bullet = UserLocalStore::get_current_ball();
     if (bullet->initWithSpriteFrameName(balls[current_bullet])) {
         bullet->bullet_active = false;
-        bullet->contact = false;
         bullet->setPosition(Vec2(winSize.width / 2, 0 - bullet->getContentSize().height));
         bullet->setTag(1);
         bullet->setVisible(false);
