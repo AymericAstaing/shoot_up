@@ -32,6 +32,7 @@ USING_NS_CC;
 class IMListener : public sdkbox::AdMobListener {
 public:
     GameScene *gs;
+
     virtual void adViewDidReceiveAd(const std::string &name) {
     }
 
@@ -40,11 +41,26 @@ public:
     }
 
     virtual void adViewWillPresentScreen(const std::string &name) {
+        gs->reward_possible = false;
     }
 
     virtual void adViewDidDismissScreen(const std::string &name) {
-        if (!sdkbox::PluginAdMob::isAvailable(name) && name == CONTINUE_REWARD_AD_TEST)
-            gs->resume_game();
+        if (gs->game_state == GAME_END)
+            gs->bonus_x2->setVisible(false);
+        if (!sdkbox::PluginAdMob::isAvailable(name) && name == CONTINUE_REWARD_AD_TEST &&
+            gs->game_state == RESUME) {
+            if (gs->reward_possible)
+                gs->resume_game();
+            else
+                gs->open_end_menu();
+        }
+        if (!sdkbox::PluginAdMob::isAvailable(name) && name == BONUSX2_AD_TEST &&
+            gs->game_state == GAME_END) {
+            if (gs->reward_possible) {
+                gs->multiply_game_score_adbonus();
+            }
+            gs->reward_possible = false;
+        }
     }
 
     virtual void adViewWillDismissScreen(const std::string &name) {
@@ -54,6 +70,7 @@ public:
     }
 
     virtual void reward(const std::string &name, const std::string &currency, double amount) {
+        gs->reward_possible = true;
     }
 
 };
@@ -106,26 +123,18 @@ void GameScene::check_first_open() {
     if (UserLocalStore::get_achievement_variable(APP_FIRST_OPEN) == ALREADY_OPEN)
         return;
     Sprite *splash_background = Sprite::create(SPLASH_BACKGROUND_TEXTURE);
-    Label *logo = Label::createWithTTF("AAA", LOGO_FONT, 100);
-    Label *logo_studio = Label::createWithTTF("studio", LOGO_FONT, 30);
+    Sprite *logo = Sprite::create(SPLASH_TRIPLEA_LOGO);
     logo->setPosition(Vec2(x_screen / 2, y_screen / 2 + logo->getContentSize().height));
-    logo_studio->setPosition(Vec2(x_screen / 2, static_cast<float>(logo->getPositionY() -
-                                                                   (logo->getContentSize().height /
-                                                                    2 +
-                                                                    1.1 *
-                                                                    logo_studio->getContentSize().height /
-                                                                    2))));
+    logo->setScale(0.8);
     splash_background->setContentSize(Size(x_screen, y_screen));
     splash_background->setPosition(Vec2(x_screen / 2, y_screen / 2));
     addChild(splash_background, 200);
     addChild(logo, 201);
-    addChild(logo_studio, 202);
     auto delay = DelayTime::create(1.5f);
     auto remove = RemoveSelf::create();
     auto sequence = Sequence::create(delay, remove, nullptr);
     splash_background->runAction(sequence);
     logo->runAction(sequence->clone());
-    logo_studio->runAction(sequence->clone());
     UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, ALREADY_OPEN);
 }
 
@@ -137,11 +146,12 @@ void GameScene::init_ui_components() {
     score->setVisible(false);
     addChild(score, 10);
     best_img = Sprite::create(BEST_SCORE_IMG);
-    best_img->setPosition(Vec2(x_screen + best_img->getContentSize().height, score->getPositionY() -
-                                                                             (score->getContentSize().height /
-                                                                              2 +
-                                                                              best_img->getContentSize().height /
-                                                                              3)));
+    best_img->setPosition(
+            Vec2(x_screen + best_img->getContentSize().height, score->getPositionY() -
+                                                               (score->getContentSize().height /
+                                                                2 +
+                                                                best_img->getContentSize().height /
+                                                                3)));
     best_img->setVisible(false);
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile(BULLETS_PLIST);
     bullet_batch_node = SpriteBatchNode::create(DEFAULT_BULLET_TEXTURE_PLIST);
@@ -264,7 +274,8 @@ void GameScene::end_of_game() {
         shield_live_used = false;
         shield_rect->setVisible(false);
     }
-    show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED, MAX_PARTICLE);
+    show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED,
+                          MAX_PARTICLE);
     hit_played = 0;
     launch_played = 0;
     player->setScale(1);
@@ -309,11 +320,20 @@ void GameScene::display_end_menu() {
     wait_sequence = Sequence::create(delay, callback, nullptr);
     runAction(wait_sequence);
     auto scale_up = ScaleTo::create(0.4, static_cast<float>(continue_button->getScale() + 0.1));
-    auto scale_down = ScaleTo::create(0.4, static_cast<float>(continue_button->getScale() - 0.1));
+    auto scale_down = ScaleTo::create(0.4,
+                                      static_cast<float>(continue_button->getScale() - 0.1));
     auto blink_seq = Sequence::create(scale_up, scale_down, nullptr);
     continue_button->runAction(Utils::get_continue_anim());
     continue_button->runAction(RepeatForever::create(blink_seq));
     addChild(next_button);
+}
+
+void GameScene::open_end_menu() {
+    game_state = GAME_END;
+    removeChild(continue_button);
+    removeChild(next_button);
+    end_menu = get_end_game_menu();
+    addChild(end_menu);
 }
 
 void GameScene::reset_arrays() {
@@ -474,7 +494,8 @@ int GameScene::get_line_in_contact(int bullet_id) {
     for (int i = 0; active_lines[i] != '\0'; i++) {
         if (active_lines[i] != EMPTY_VALUE) {
             float line_bottom = pool_container[active_lines[i]]->getPositionY();
-            float line_top = line_bottom + pool_container[active_lines[i]]->getContentSize().height;
+            float line_top =
+                    line_bottom + pool_container[active_lines[i]]->getContentSize().height;
             if (bullet_y >= line_bottom && bullet_y <= line_top)
                 return (active_lines[i]);
         }
@@ -581,7 +602,8 @@ void GameScene::check_hit_color_change(Line *l, Square *sq) {
 void GameScene::destroy_all_lines() {
     for (int i = 0; active_lines[i]; i++) {
         if (active_lines[i] != EMPTY_VALUE && pool_container[active_lines[i]]->line_active)
-            destroy_complete_line(active_lines[i], pool_container[active_lines[i]]->getPositionY());
+            destroy_complete_line(active_lines[i],
+                                  pool_container[active_lines[i]]->getPositionY());
     }
 }
 
@@ -618,7 +640,8 @@ void GameScene::show_destruction_bonus(int value, int line_id) {
                                         FIRE_UP_FONT_NUMBERS, 40);
     bonus->setAnchorPoint(Vec2(0, 0));
     bonus->setPosition(
-            Vec2(x_screen / 2 - bonus->getContentSize().width / 2, y_screen / 2 + y_screen / 12));
+            Vec2(x_screen / 2 - bonus->getContentSize().width / 2,
+                 y_screen / 2 + y_screen / 12));
     auto move = MoveBy::create(1.0f, Vec2(0, y_screen / 16));
     bonus->setHorizontalAlignment(TextHAlignment::CENTER);
     bonus->setOpacity(0);
@@ -892,7 +915,8 @@ void GameScene::bonus_collision() {
             bonus_container[bonus_id]->getPositionY() + bonus_height / 2, bonus_width,
             bonus_height);
     if (player_bounding_box.intersectsRect(bonus_bounding_box)) {
-        float initial_y_pos = y_screen + bonus_container[BONUS_BULLET]->getContentSize().height / 2;
+        float initial_y_pos =
+                y_screen + bonus_container[BONUS_BULLET]->getContentSize().height / 2;
         if (bonus_id == BONUS_SPEED) {
             stop_bullet_shoot();
             bonus_active = bonus_id;
@@ -1103,7 +1127,7 @@ int GameScene::get_h_value() {
 void GameScene::start_game() {
     sdkbox::PluginAdMob::cache(CONTINUE_REWARD_AD_TEST);
     sdkbox::PluginAdMob::cache(TEST_AD);
-    //sdkbox::PluginAdMob::cache(BONUSX2_AD_TEST);
+    sdkbox::PluginAdMob::cache(BONUSX2_AD_TEST);
     game_already_resumed = false;
     game_shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
     if (game_shooter_type == SHIELD_TANK) {
@@ -1250,8 +1274,10 @@ bool GameScene::is_next_button_touched(Vec2 touch_location) {
 }
 
 bool GameScene::is_continue_button_touched(Vec2 touch_location) {
-    float x_pos = continue_button->getPosition().x - continue_button->getContentSize().width / 2;
-    float y_pos = continue_button->getPosition().y - continue_button->getContentSize().height / 2;
+    float x_pos =
+            continue_button->getPosition().x - continue_button->getContentSize().width / 2;
+    float y_pos =
+            continue_button->getPosition().y - continue_button->getContentSize().height / 2;
     return touch_location.x >= x_pos &&
            touch_location.x <= x_pos + continue_button->getContentSize().width &&
            touch_location.y >= y_pos &&
@@ -1453,6 +1479,11 @@ void GameScene::main_menu_coming_animation() {
     menu_best_img->runAction(fadeIn->clone());
 }
 
+void GameScene::multiply_game_score_adbonus() {
+    earned_point->setString(Utils::get_reduced_value(game_score * 2, VALUE_WITH_PLUS));
+    bonus_x2->setVisible(false);
+}
+
 Menu *GameScene::get_main_menu() {
     menu_title = MenuItemFont::create(TITLE, nullptr);
     char power_level[DEFAULT_CHAR_LENGHT];
@@ -1595,10 +1626,9 @@ Menu *GameScene::get_end_game_menu() {
     sprintf(current_speed, "LEVEL %i",
             UserLocalStore::get_achievement_variable(SPEED_LEVEL));
     stats = Menu::create();
-    Sprite *s = Sprite::create(BONUS_X2);
     Label *current_point = Label::createWithTTF(
             Utils::get_reduced_value(point_value, VALUE_WITH_POINT), FIRE_UP_FONT, 60);
-    Label *earned_point = Label::createWithTTF(
+    earned_point = Label::createWithTTF(
             Utils::get_reduced_value(game_score, VALUE_WITH_PLUS), FIRE_UP_FONT, 25);
     Label *speed_price_txt = Label::createWithTTF(
             Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT), FIRE_UP_FONT, 25);
@@ -1641,11 +1671,12 @@ Menu *GameScene::get_end_game_menu() {
                                                                        power_price_txt,
                                                                        current_point);
                                                            });
-    MenuItemImage *bonus_x2 = MenuItemImage::create(BONUS_X2,
-                                                    BONUS_X2,
-                                                    [=](Ref *sender) {
-
-                                                    });
+    bonus_x2 = MenuItemImage::create(BONUS_X2,
+                                     BONUS_X2,
+                                     [=](Ref *sender) {
+                                         if (bonus_x2->isVisible())
+                                             sdkbox::PluginAdMob::show(BONUSX2_AD_TEST);
+                                     });
     stats->setPosition(Size(x_screen / 2, static_cast<float>(y_screen +
                                                              stats->getContentSize().height *
                                                              1.3)));
@@ -1665,7 +1696,8 @@ Menu *GameScene::get_end_game_menu() {
                                                          1.5 *
                                                          back_to_main->getContentSize().height)));
     auto move_to_share_0 = MoveTo::create(0.2,
-                                          Vec2(x_screen / 2 - back_to_main->getContentSize().width,
+                                          Vec2(x_screen / 2 -
+                                               back_to_main->getContentSize().width,
                                                static_cast<float>(static_cast<float>(
                                                                           (static_cast<float>(
                                                                                   y_screen /
@@ -1685,10 +1717,12 @@ Menu *GameScene::get_end_game_menu() {
                                                             1.5 *
                                                             back_to_main->getContentSize().height)));
     auto move_to_rate_0 = MoveTo::create(0.2,
-                                         Vec2(x_screen / 2 + back_to_main->getContentSize().width,
+                                         Vec2(x_screen / 2 +
+                                              back_to_main->getContentSize().width,
                                               static_cast<float>(static_cast<float>(
                                                                          (static_cast<float>(
-                                                                                 y_screen / 1.75)) -
+                                                                                 y_screen /
+                                                                                 1.75)) -
                                                                          stats->getContentSize().height /
                                                                          2 -
                                                                          1.5 *

@@ -18,6 +18,7 @@ USING_NS_CC;
 #define HIT_CIRCLE                      "anim/explode.png"
 #define DEFAULT_SQUARE_TEXTURE          "green_b.png"
 #define SPLASH_BACKGROUND_TEXTURE       "splash_screen/splash_background.png"
+#define SPLASH_TRIPLEA_LOGO            "splash_screen/tripleAlogo.png"
 #define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
 #define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"
 #define NORMAL_BULLET_SIZE              1

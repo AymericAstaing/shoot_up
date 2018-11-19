@@ -58,6 +58,7 @@ private:
     Sprite*             continue_button;
     Menu*               game_menu;
     SimpleAudioEngine*  game_audio;
+    Label*              earned_point;
     MenuItemImage*      options_btn;
     MenuItemFont*       menu_title;
     MenuItemFont*       menu_surclassement_txt;
@@ -92,7 +93,6 @@ private:
     int                 options_state = 0;
     int                 next_bonus_spawn = 0;
     int                 bullet_state;
-    int                 game_state;
     int                 last_line_hited_id;
     int                 game_block_destroyed = 0;
     int                 game_power_up_collected = 0;
@@ -112,6 +112,10 @@ private:
 
 
 public:
+    int                 game_state;
+    bool                reward_possible = false;
+    MenuItemImage*      bonus_x2;
+
     CREATE_FUNC(GameScene);
     static cocos2d::Scene*  createScene();
     virtual bool            init();
@@ -130,6 +134,7 @@ public:
     void                    check_hit_color_change(Line*, Square*);
     void                    play_bullet_impact();
     void                    play_square_explode();
+    void                    open_end_menu();
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2, Square*);
     void                    bonus_collision();
@@ -163,6 +168,7 @@ public:
     void                    stop_game_loop();
     void                    move_active_lines();
     void                    check_into_line(int, int);
+    void                    multiply_game_score_adbonus();
     void                    increase_speed(Label*, Label*, Label *);
     void                    increase_power(Label*, Label*, Label *);
     void                    check_lines_out();
