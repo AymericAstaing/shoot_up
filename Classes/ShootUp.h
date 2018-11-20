@@ -6,18 +6,18 @@
 USING_NS_CC;
 
 /*********************OTHER***********************/
-#define WIDTH                           0
-#define HEIGHT                          1
-#define EMPTY_VALUE                     -1
-#define FIRE_UP_FONT                    "fonts/fire_up.ttf"
-#define FIRE_UP_FONT_NUMBERS            "fonts/numbers.ttf"
-#define LOGO_FONT                       "fonts/name_font.ttf"
-#define TITLE                           "S H O O T  U P !"
-#define SURCLASSEMENT                   "SURCLASSEMENT"
-#define BONUS_X2                        "end_of_game_menu/bonusx2.png"
-#define HIT_CIRCLE                      "anim/explode.png"
-#define DEFAULT_SQUARE_TEXTURE          "green_b.png"
-#define SPLASH_BACKGROUND_TEXTURE       "splash_screen/splash_background.png"
+#define WIDTH                          0
+#define HEIGHT                         1
+#define EMPTY_VALUE                    -1
+#define FIRE_UP_FONT                   "fonts/fire_up.ttf"
+#define FIRE_UP_FONT_NUMBERS           "fonts/numbers.ttf"
+#define LOGO_FONT                      "fonts/name_font.ttf"
+#define TITLE                          "S H O O T  U P !"
+#define SURCLASSEMENT                  "SURCLASSEMENT"
+#define BONUS_X2                       "end_of_game_menu/bonusx2.png"
+#define HIT_CIRCLE                     "anim/explode.png"
+#define DEFAULT_SQUARE_TEXTURE         "green_b.png"
+#define SPLASH_BACKGROUND_TEXTURE      "splash_screen/splash_background.png"
 #define SPLASH_TRIPLEA_LOGO            "splash_screen/tripleAlogo.png"
 #define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
 #define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"

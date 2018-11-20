@@ -128,6 +128,8 @@ public:
     void                    update_game_score(int);
     float                   get_shoot_interval();
     bool                    is_touch_on_player_zone(Vec2);
+    bool                    is_normal_launch();
+    bool                    is_bonus_launch();
     void                    show_bonus_particle_explode(Vec2);
     void                    check_full_destruction_bonus(Line*, int);
     void                    show_destruction_bonus(int, int);
@@ -180,6 +182,7 @@ public:
     void                    display_end_menu();
     void                    surclassement(cocos2d::Ref *);
     int                     get_next_line_id(int);
+    int                     get_lower_line_id(int);
     void                    init_pool_objects();
     void                    manage_options();
     void                    run_start_animation();

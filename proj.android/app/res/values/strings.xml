@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <string name="app_name">Risky</string>
+    <string name="app_name">ShootUp</string>
     <string name="google_app_id">google_app_id</string>
     <string name="service_id">nearby_service_id</string>
 </resources>

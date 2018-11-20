@@ -363,6 +363,25 @@ void GameScene::stop_bullet_shoot() {
     unschedule(schedule_selector(GameScene::launch_bullet));
 }
 
+int GameScene::get_lower_line_id(int current_line_id) {
+    float result = y_screen;
+    int lower_line_id = -1;
+
+    for (int i = 0; active_lines[i] != '\0'; i++) {
+        if (active_lines[i] != EMPTY_VALUE && i != current_line_id) {
+            float altitude = pool_container[active_lines[i]]->getPositionY();
+            if (altitude > player->getPositionY() + player->getContentSize().height / 2) {
+                if (altitude < result) {
+                    result = altitude;
+                    lower_line_id = active_lines[i];
+                }
+            }
+        }
+    }
+    log("LOWER LINE IS %i AND IS ALT = %f", lower_line_id, result);
+    return (lower_line_id);
+}
+
 void GameScene::surclassement(cocos2d::Ref *pSender) {
     if (game_state != MENU)
         return;
@@ -987,6 +1006,7 @@ void GameScene::generate_star_bonus() {
 }
 
 void GameScene::update(float ft) {
+    get_lower_line_id(-1);
     game_duration += ft;
     if (bonus_active != -1)
         bonus_time += ft;
@@ -1362,9 +1382,21 @@ void GameScene::play_square_explode() {
     game_audio->playEffect(SOUND_EXPLODE, false, 1.0f, 1.0f, 1.0f);
 }
 
-void GameScene::launch_bullet(float dt) {
+bool GameScene::is_normal_launch() {
     if (game_shooter_type != DOUBLE_TANK && game_shooter_type != SIDEWAY_TANK &&
-        game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET) {
+        game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET)
+        return true;
+    return false;
+}
+
+bool GameScene::is_bonus_launch() {
+    if (bonus_active == BONUS_BULLET)
+        return true;
+    return false;
+}
+
+void GameScene::launch_bullet(float dt) {
+    if (is_normal_launch()) {
         for (int i = 0; bullet_container[i] != NULL; i++) {
             if (!bullet_container[i]->bullet_active) {
                 bullet_container[i]->launch(bullet_state, player->getPosition(),
@@ -1379,7 +1411,7 @@ void GameScene::launch_bullet(float dt) {
                 return;
             }
         }
-    } else if (bonus_active == BONUS_BULLET) {
+    } else if (is_bonus_launch()) {
         int bullet_founded = 0;
         for (int i = 0; bullet_container[i] != NULL; i++) {
             if (!bullet_container[i]->bullet_active) {
