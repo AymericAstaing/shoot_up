@@ -165,6 +165,7 @@ public:
     int                     get_line_in_contact(int);
     void                    check_bullet_collision();
     void                    resume_game();
+    bool                    collison_need_detection(Line*);
     void                    generate_star_bonus();
     void                    run_game_loop();
     void                    stop_game_loop();
@@ -182,7 +183,6 @@ public:
     void                    display_end_menu();
     void                    surclassement(cocos2d::Ref *);
     int                     get_next_line_id(int);
-    int                     get_lower_line_id(int);
     void                    init_pool_objects();
     void                    manage_options();
     void                    run_start_animation();

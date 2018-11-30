@@ -363,25 +363,6 @@ void GameScene::stop_bullet_shoot() {
     unschedule(schedule_selector(GameScene::launch_bullet));
 }
 
-int GameScene::get_lower_line_id(int current_line_id) {
-    float result = y_screen;
-    int lower_line_id = -1;
-
-    for (int i = 0; active_lines[i] != '\0'; i++) {
-        if (active_lines[i] != EMPTY_VALUE && i != current_line_id) {
-            float altitude = pool_container[active_lines[i]]->getPositionY();
-            if (altitude > player->getPositionY() + player->getContentSize().height / 2) {
-                if (altitude < result) {
-                    result = altitude;
-                    lower_line_id = active_lines[i];
-                }
-            }
-        }
-    }
-    log("LOWER LINE IS %i AND IS ALT = %f", lower_line_id, result);
-    return (lower_line_id);
-}
-
 void GameScene::surclassement(cocos2d::Ref *pSender) {
     if (game_state != MENU)
         return;
@@ -791,11 +772,13 @@ void GameScene::move_active_lines() {
     }
 }
 
+bool GameScene::collison_need_detection(Line *l) {
+    return (l->getPositionY() + l->getContentSize().height / 2 >= player->getPositionY());
+}
+
 void GameScene::check_player_collision() {
     for (int i = 0; active_lines[i] != '\0'; i++) {
-        if (active_lines[i] != -1 && pool_container[active_lines[i]]->getPositionY() <
-                                     player->getPositionY() +
-                                     (1.1 * player->getContentSize().height / 2)) {
+        if (active_lines[i] != -1 && collison_need_detection(pool_container[active_lines[i]])) {
             Vec2 player_pos = player->getPosition();
             int index = 0;
             float player_y = player_pos.y - pool_container[active_lines[i]]->getPositionY();
@@ -1006,7 +989,6 @@ void GameScene::generate_star_bonus() {
 }
 
 void GameScene::update(float ft) {
-    get_lower_line_id(-1);
     game_duration += ft;
     if (bonus_active != -1)
         bonus_time += ft;
