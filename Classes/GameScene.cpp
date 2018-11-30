@@ -20,13 +20,6 @@
 using namespace std;
 using namespace CocosDenshion;
 
-namespace POPUP_MENU_PATH {
-    const char *POWER = "pop_up/power.png";
-    const char *POWER_SELECTED = "pop_up/power_selected.png";
-    const char *SPEED = "pop_up/speed.png";
-    const char *SPEED_SELECTED = "pop_up/speed_selected.png";
-}
-
 USING_NS_CC;
 
 class IMListener : public sdkbox::AdMobListener {
@@ -797,7 +790,7 @@ void GameScene::check_player_collision() {
                 Rect player_full_rect = Rect(player_pos.x - player_width / 2,
                                              player_y + player_height / 2,
                                              player_width, player_height);
-                Rect sq_bounding_box = Rect(sq->getPositionX() - sq_width / 2,
+                Rect sq_rect = Rect(sq->getPositionX() - sq_width / 2,
                                             sq->getPositionY() + sq_height / 2, sq_width,
                                             sq_height);
                 Rect player_crash_bounding_box = Rect(
@@ -814,15 +807,15 @@ void GameScene::check_player_collision() {
                         player_left_top_corner.y,
                         static_cast<float>(0.15 * player_width), player_height);
 
-                if (sq->isVisible() && sq_bounding_box.intersectsRect(player_full_rect)) {
+                if (sq->isVisible() && sq_rect.intersectsRect(player_full_rect)) {
                     if (sq->isVisible() &&
-                        sq_bounding_box.intersectsRect(player_crash_bounding_box)) {
+                        sq_rect.intersectsRect(player_crash_bounding_box)) {
                         last_line_hited_id = active_lines[i];
                         end_of_game();
-                    } else if (sq->isVisible() && sq_bounding_box.intersectsRect(
+                    } else if (sq->isVisible() && sq_rect.intersectsRect(
                             player_collision_left)) {
                         player->setPositionX(player->getPositionX() + player_width / 4);
-                    } else if (sq->isVisible() && sq_bounding_box.intersectsRect(
+                    } else if (sq->isVisible() && sq_rect.intersectsRect(
                             player_collision_right)) {
                         player->setPositionX(player->getPositionX() - player_width / 4);
                     }
@@ -1667,18 +1660,16 @@ Menu *GameScene::get_end_game_menu() {
     power_current_level->setColor(Color3B(255, 124, 124));
     auto move_to_stats = MoveTo::create(0.2, Vec2(x_screen / 2,
                                                   static_cast<float>(y_screen / 1.75)));
-    MenuItemImage *speed_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
-                                                           SPEED,
-                                                           POPUP_MENU_PATH::SPEED_SELECTED,
+    MenuItemImage *speed_level_btn = MenuItemImage::create(POPUP_SPEED,
+                                                           POPUP_SPEED_SELECTED,
                                                            [=](Ref *sender) {
                                                                GameScene::increase_speed(
                                                                        speed_current_level,
                                                                        speed_price_txt,
                                                                        current_point);
                                                            });
-    MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_MENU_PATH::
-                                                           POWER,
-                                                           POPUP_MENU_PATH::POWER_SELECTED,
+    MenuItemImage *power_level_btn = MenuItemImage::create(POPUP_POWER,
+                                                           POPUP_POWER_SELECTED,
                                                            [=](Ref *sender) {
                                                                GameScene::increase_power(
                                                                        power_current_level,
