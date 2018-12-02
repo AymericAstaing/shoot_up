@@ -5,58 +5,98 @@
 
 USING_NS_CC;
 
-/*********************OTHER***********************/
-#define WIDTH                          0
-#define HEIGHT                         1
+/********************* GLOBAL VARIABLES ***********************/
+#define WIDTH                           0
+#define HEIGHT                          1
 #define EMPTY_VALUE                    -1
-#define FIRE_UP_FONT                   "fonts/fire_up.ttf"
-#define FIRE_UP_FONT_NUMBERS           "fonts/numbers.ttf"
-#define LOGO_FONT                      "fonts/name_font.ttf"
-#define POPUP_POWER                   "pop_up/power.png"
-#define POPUP_POWER_SELECTED          "pop_up/power_selected.png"
-#define POPUP_SPEED                   "pop_up/speed.png"
-#define POPUP_SPEED_SELECTED          "pop_up/speed_selected.png"
-#define TITLE                          "S H O O T  U P !"
-#define SURCLASSEMENT                  "SURCLASSEMENT"
+#define GAME_MENU_NAME                 "S H O O T  U P !"
+#define NBR_LINE_BEFORE_DOWN_SCALING    8
+#define APP_INITIAL_OPEN                0
+#define APP_ALREADY_OPEN                1
+#define NOT_FROM_SHOP                   0
+#define INCREASE_POINTS_FACTOR          15
+#define DEFAULT_CHAR_LENGHT             10
+#define ZERO_SHOOTER_EARNED             2
+
+/********************* FONT ***********************/
+#define FIRE_UP_FONT_NAME              "fonts/fire_up.ttf"
+#define FIRE_UP_FONT_NAME_NUMBERS      "fonts/numbers.ttf"
+
+/********************* END OF GAME MENUS ***********************/
+#define POPUP_POWER                    "pop_up/power.png"
+#define POPUP_POWER_SELECTED           "pop_up/power_selected.png"
+#define POPUP_SPEED                    "pop_up/speed.png"
+#define POPUP_SPEED_SELECTED           "pop_up/speed_selected.png"
 #define BONUS_X2                       "end_of_game_menu/bonusx2.png"
-#define HIT_CIRCLE                     "anim/explode.png"
-#define DEFAULT_SQUARE_TEXTURE         "green_b.png"
+#define REPLAY_TEXTURE                 "end_of_game_menu/replay_btn.png"
+#define SHARE_TEXTURE                  "end_of_game_menu/share_btn.png"
+#define RATE_TEXTURE                   "end_of_game_menu/rate_btn.png"
+#define BACKGROUND_TEXTURE             "end_of_game_menu/background.png"
+#define NEXT_BUTTON_TEXTURE            "continue_menu/continue_btn.png"
+#define DEFAULT_CONTINUE_TEXTURE       "continue_0.png"
+
+/********************* MAIN GAME MENU ***********************/
+#define SURCLASSEMENT                  "SURCLASSEMENT"
+#define SHOP_ASSET_SELECTED(X)         (X == 0 ? SHOP_SELECTED : SHOP_SELECTED_NEW)
+#define SHOP_ASSET_UNSELECTED(X)       (X == 0 ? SHOP_UNSELECTED : SHOP_UNSELECTED_NEW)
+#define OPTIONS_HIDE                    0
+#define OPTIONS_DISPLAYED               1
+#define SURCLASSEMENT_UNSELECTED       "menu/surclassement.png"
+#define SURCLASSEMENT_SELECTED         "menu/surclassement_selected.png"
+#define OPTIONS_SOUND_ON               "menu/options/sound_on.png"
+#define OPTIONS_SOUND_OFF              "menu/options/sound_off.png"
+#define OPTIONS_TUTO                   "menu/options/tuto.png"
+#define OPTIONS                        "menu/options.png"
+#define STATS                          "menu/stats.png"
+#define HAND                           "menu/play_anim_hand.png"
+#define HAND_RAIL                      "menu/play_anim.png"
+#define BEST_IMG                       "menu/best_score.png"
+#define SHOP_UNSELECTED                "menu/shop.png"
+#define SHOP_SELECTED                  "menu/shop_selected.png"
+#define SHOP_UNSELECTED_NEW            "menu/shop_new.png"
+#define SHOP_SELECTED_NEW              "menu/shop_selected_new.png"
+
+/********************* HUD (GAME FLOW) ***********************/
+#define BEST_SCORE_IMG                 "hud/best_img.png"
+#define HIT_CIRCLE                     "hud/hit_circle.png"
+
+/********************* TEXT SIZE ***********************/
+#define SIZE_GAME_NAME                  85
+#define SIZE_BEST_SCORE_MENU            30
+#define SIZE_SURCLASSEMENT_TXT_BTN_MENU 20
+#define SIZE_UPGRADE_VALUES_MENU        20
+#define SIZE_CURRENT_SCORE_END_MENU     60
+#define SIZE_EARNED_POINTS_END_MENU     25
+#define SIZE_UPGRADE_PRICE_END_MENU     25
+#define SIZE_CURRENT_LEVEL_END_MENU     25
+#define SIZE_NAME_ITEMS_END_MENU        24
+
+/********************* SPLASH_SCREEN ***********************/
 #define SPLASH_BACKGROUND_TEXTURE      "splash_screen/splash_background.png"
 #define SPLASH_TRIPLEA_LOGO            "splash_screen/tripleAlogo.png"
-#define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
-#define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"
-#define NORMAL_BULLET_SIZE              1
-#define NORMAL_PARTICLE                 0
-#define MAX_PARTICLE                    1
-#define STAR_BONUS_TAG                  7
-#define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
-#define BIG_BULLET_SIZE                 1.3f
-#define TRANSITION_FROM_4_TO_5          8
-#define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"
-#define STARTUP_OF_3                    819
-#define STARTUP_OF_4                    2829
-#define MIN_LINE_BEFORE_BONUS_SPAWN     5
-#define COMPLEX_STRUCT_ELMTS            7
-#define NO_SHOOTER_UPGRADE              2
-#define BULLET_BATCH_TAG                12
-#define SQUARE_SIZE_5                   4.95
-#define NOT_FROM_SHOP                   0
+
+
+/********************* STANDARD SQUARE ***********************/
+#define DEFAULT_SQUARE_TEXTURE         "green_b.png"
 #define SQUARE_SIZE_4                   3.95
-#define INCREASE_FACTOR                 15
-#define POWER_LEVEL_BTN_TAG             34
-#define SPEED_LEVEL_BTN_TAG             35
-#define MAIN_MENU_TAG                   36
-#define DEFAULT_CHAR_LENGHT             10
-#define BULLET_LEFT                     0
-#define BULLET_RIGHT                    1
+#define SQUARE_SIZE_5                   4.95
+
+/********************* BULLETS ***********************/
+#define NORMAL_BULLET_SCALE             1.0f
+#define BIG_BULLET_SCALE                1.3f
+
+/********************* UTILS ***********************/
 #define VALUE_SIMPLE                    0
 #define VALUE_WITH_POINT                1
 #define VALUE_WITH_PLUS                 2
 #define VALUE_BONUS_COMMENT             3
-#define OPTIONS_HIDE                    0
-#define OPTIONS_DISPLAYED               1
-#define FIRST_OPEN                      0
-#define ALREADY_OPEN                    1
+
+/********************* TAGS ***********************/
+#define BULLET_BATCH_TAG                12
+#define POWER_LEVEL_BTN_TAG             34
+#define SPEED_LEVEL_BTN_TAG             35
+#define MAIN_MENU_TAG                   36
+#define STAR_BONUS_TAG                  7
 
 /******************* PLIST SPRITESHEETS ***************/
 #define PARTICLE_ANIM_PLIST             "spritesheet/hit.plist"
@@ -66,14 +106,13 @@ USING_NS_CC;
 #define BONUS_POWER_PLIST               "spritesheet/bonus_power.plist"
 #define BONUS_SPEED_PLIST               "spritesheet/bonus_speed.plist"
 #define BONUS_BULLET_PLIST              "spritesheet/bonus_bullet.plist"
-#define DEFAULT_BULLET_TEXTURE_PLIST    "spritesheet/bullets_game.png"
-#define DEFAULT_BLOCK_TEXTURE_PLIST     "spritesheet/block_color.png"
+#define SPRITESHEET_BULLETS             "spritesheet/bullets_game.png"
+#define SPRITESHEET_BLOCK_COLORS        "spritesheet/block_color.png"
 
 /******************* SOUND FILES ***************/
 #define SOUND_LAUNCH                    "sound/bullet_launch.wav"
 #define SOUND_HITED                     "sound/square_hited.wav"
 #define SOUND_EXPLODE                   "sound/square_explode.wav"
-
 
 /******************* ACHIEVEMENT CATEGORIES ***************/
 #define STARTER_TANK                    0
@@ -99,11 +138,13 @@ USING_NS_CC;
 #define BONUSX2_AD                      "bonusx2"
 #define BONUSX2_AD_TEST                 "bonusx2_test"
 
-
 /******************* BONUS ***************/
+#define MIN_LINE_BEFORE_BONUS_SPAWN     5
+#define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
 #define DEFAULT_SPEED_TEXTURE           "bonus_speed_0.png"
 #define DEFAULT_POWER_TEXTURE           "bonus_power_0.png"
 #define DEFAULT_BULLET_TEXTURE          "bonus_bullet_0.png"
+#define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"
 #define SPEED_RECT                      "player_effect/speed_effect.png"
 #define POWER_RECT                      "player_effect/power_effect.png"
 #define BULLET_RECT                     "player_effect/bullet_effect.png"
@@ -129,7 +170,6 @@ USING_NS_CC;
 #define RECT_POWER                      1
 #define RECT_SPEED                      2
 
-
 /******************* GAME STATES ***************/
 #define MENU                            0
 #define GAME_RUNNING                    1
@@ -139,7 +179,20 @@ USING_NS_CC;
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
 #define SIMPLE_LINE_NBR                 8
+#define BULLET_LEFT                     0
+#define BULLET_RIGHT                    1
 #define DEFAULT_BULLET_NBR              16 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
+
+/******************* INITIALISATION LINE TYPE  ***************/
+#define STARTUP_OF_3                    819
+#define STARTUP_OF_4                    2829
+#define COMPLEX_STRUCT_ELMTS_NBR        7
+#define SIMPLE_LINE_4                   0
+#define SIMPLE_LINE_5                   1
+#define STARTUP_LINE_2                  3
+#define STARTUP_LINE_3                  4
+#define STARTUP_LINE_4                  5
+#define STARTUP_LINE_5                  6
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0
@@ -189,37 +242,6 @@ USING_NS_CC;
 #define YELLOW                          2
 #define ORANGE                          1
 #define RED                             0
-
-
-/******************* INITIALISATION LINE TYPE  ***************/
-#define SIMPLE_LINE_4                   0
-#define SIMPLE_LINE_5                   1
-#define STARTUP_LINE_2                  3
-#define STARTUP_LINE_3                  4
-#define STARTUP_LINE_4                  5
-#define STARTUP_LINE_5                  6
-
-
-/******************* MENUS ***************/
-#define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
-#define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
-#define OPTIONS_TUTO                    "menu/options/tuto.png"
-#define SURCLASSEMENT_UNSELECTED        "menu/surclassement.png"
-#define SURCLASSEMENT_SELECTED          "menu/surclassement_selected.png"
-#define OPTIONS                         "menu/options.png"
-#define STATS                           "menu/stats.png"
-#define HAND                            "menu/play_anim_hand.png"
-#define HAND_RAIL                       "menu/play_anim.png"
-#define BEST_IMG                        "menu/best_score.png"
-#define BEST_SCORE_IMG                  "menu/best_img.png"
-#define SHOP_UNSELECTED                 "menu/shop.png"
-#define SHOP_SELECTED                   "menu/shop_selected.png"
-#define SHOP_UNSELECTED_NEW             "menu/shop_new.png"
-#define SHOP_SELECTED_NEW               "menu/shop_selected_new.png"
-#define REPLAY_TEXTURE                  "end_of_game_menu/replay_btn.png"
-#define SHARE_TEXTURE                   "end_of_game_menu/share_btn.png"
-#define RATE_TEXTURE                    "end_of_game_menu/rate_btn.png"
-#define BACKGROUND_TEXTURE              "end_of_game_menu/background.png"
 
 
 class ShootUp {

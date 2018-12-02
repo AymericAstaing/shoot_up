@@ -73,7 +73,7 @@ Square *Square::create(int line_size) {
         s->rect_size[0] = s->getContentSize().width;
         s->rect_size[1] = s->getContentSize().height;
         std::string st = StringUtils::format("%i", s->square_pv);
-        s->points = Label::createWithSystemFont(st, FIRE_UP_FONT_NUMBERS, 35);
+        s->points = Label::createWithSystemFont(st, FIRE_UP_FONT_NAME_NUMBERS, 35);
         s->points->setTextColor(Color4B::WHITE);
         s->points->setPosition(Vec2(s->rect_size[0] / 2, s->rect_size[1] / 2));
         s->addChild(s->points, 100);

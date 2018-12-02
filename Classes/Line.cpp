@@ -97,7 +97,7 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
         int max_h = static_cast<int>(h_factor +
                                      ceil(static_cast<float>(h_factor * 0.8)));
         total = Utils::get_random_number(min_h, max_h);
-        total += (Utils::get_random_number(0, line_generated) / INCREASE_FACTOR) * total;
+        total += (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
 
     }
     total += get_special_shooter_total(total);
@@ -130,7 +130,7 @@ void Line::assign_line_points_complex(int h_factor,
                                  ceil(static_cast<float>(h_factor * 0.4)));
     int total = static_cast<int>(Utils::get_random_number(min_h, max_h) * 1.4);
     total += get_special_shooter_total(total);
-    total += (Utils::get_random_number(0, line_generated) / INCREASE_FACTOR) * total;
+    total += (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
     half_total = total / 2;
     int *distrib = new int[this->square_nbr];
     distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
@@ -383,7 +383,7 @@ int Line::struct_element_nbr(int id) {
 SpriteBatchNode *Line::get_batch() {
     SpriteBatchNode *spriteBatchNode;
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile(BLOCK_COLOR_PLIST);
-    spriteBatchNode = SpriteBatchNode::create(DEFAULT_BLOCK_TEXTURE_PLIST);
+    spriteBatchNode = SpriteBatchNode::create(SPRITESHEET_BLOCK_COLORS);
     spriteBatchNode->setAnchorPoint(Vec2(0, 0));
     spriteBatchNode->setTag(LINE_BATCH_ID);
     return (spriteBatchNode);
@@ -493,6 +493,7 @@ int Line::get_type() {
 }
 
 int Line::get_complex_line_type(int type, Line *l) {
+
     switch (type) {
         case 7:
             l->square_nbr = 6;

@@ -92,9 +92,9 @@ void GameScene::init_main_variable() {
     y_screen = winSize.height;
     if (UserLocalStore::get_achievement_variable(SOUND) == SOUND_OFF)
         sound_activated = false;
-    check_first_open();
-    hit_played = 0;
-    launch_played = 0;
+    check_begining_of_session();
+    sound_hit_played = 0;
+    sound_shot_played = 0;
     options_state = OPTIONS_HIDE;
     bullet_state = 0;
     init_ui_components();
@@ -112,8 +112,8 @@ void GameScene::init_main_variable() {
         game_audio = SimpleAudioEngine::getInstance();
 }
 
-void GameScene::check_first_open() {
-    if (UserLocalStore::get_achievement_variable(APP_FIRST_OPEN) == ALREADY_OPEN)
+void GameScene::check_begining_of_session() {
+    if (UserLocalStore::get_achievement_variable(APP_FIRST_OPEN) == APP_ALREADY_OPEN)
         return;
     Sprite *splash_background = Sprite::create(SPLASH_BACKGROUND_TEXTURE);
     Sprite *logo = Sprite::create(SPLASH_TRIPLEA_LOGO);
@@ -128,13 +128,13 @@ void GameScene::check_first_open() {
     auto sequence = Sequence::create(delay, remove, nullptr);
     splash_background->runAction(sequence);
     logo->runAction(sequence->clone());
-    UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, ALREADY_OPEN);
+    UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, APP_ALREADY_OPEN);
 }
 
 void GameScene::init_ui_components() {
     player = Utils::get_player();
     this->addChild(player);
-    score = Label::createWithTTF("test", FIRE_UP_FONT_NUMBERS, 90);
+    score = Label::createWithTTF("test", FIRE_UP_FONT_NAME_NUMBERS, 90);
     score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen - 0.12 * y_screen)));
     score->setVisible(false);
     addChild(score, 10);
@@ -147,7 +147,7 @@ void GameScene::init_ui_components() {
                                                                 3)));
     best_img->setVisible(false);
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile(BULLETS_PLIST);
-    bullet_batch_node = SpriteBatchNode::create(DEFAULT_BULLET_TEXTURE_PLIST);
+    bullet_batch_node = SpriteBatchNode::create(SPRITESHEET_BULLETS);
     bullet_batch_node->setTag(BULLET_BATCH_TAG);
     addChild(bullet_batch_node, 10);
     addChild(best_img, 20);
@@ -165,7 +165,7 @@ void GameScene::init_listeners() {
 }
 
 void GameScene::init_pool_objects() {
-    int index_struct = COMPLEX_STRUCT_ELMTS;
+    int index_struct = COMPLEX_STRUCT_ELMTS_NBR;
     pool_container = new Line *[27];
     pool_circle = new Circle *[15];
     bullet_container = new Bullet *[101];
@@ -268,9 +268,9 @@ void GameScene::end_of_game() {
         shield_rect->setVisible(false);
     }
     show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED,
-                          MAX_PARTICLE);
-    hit_played = 0;
-    launch_played = 0;
+                          80);
+    sound_hit_played = 0;
+    sound_shot_played = 0;
     player->setScale(1);
     remove_bonus();
     value_to_update();
@@ -519,7 +519,7 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
         addChild(stars, 1, 1);
 }
 
-void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code, int extra) {
+void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code, int particle_nbr) {
     auto fileUtil = FileUtils::getInstance();
     auto plistData = fileUtil->getValueMapFromFile(explode_plist[RED]);
     switch (default_color_code) {
@@ -543,15 +543,9 @@ void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code, i
     if (!stars)
         return;
     stars->setScale(0.7);
-    if (extra == MAX_PARTICLE) {
-        stars->setDuration(0.5f);
-        stars->setPosition(square_pos);
-        stars->setTotalParticles(80);
-    } else {
-        stars->setDuration(0.5f);
-        stars->setPosition(square_pos);
-        stars->setTotalParticles(20);
-    }
+    stars->setDuration(0.5f);
+    stars->setPosition(square_pos);
+    stars->setTotalParticles(particle_nbr);
     stars->setAutoRemoveOnFinish(true);
     addChild(stars, 2);
 }
@@ -614,7 +608,7 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
         show_destruction_circle(Vec2(sq->getPositionX(), line_y));
         show_particle_explode(
                 Vec2(sq->getPositionX(), line_y - sq->getContentSize().height),
-                sq->initial_color, NORMAL_PARTICLE);
+                sq->initial_color, 20);
         sq->setVisible(false);
         sprite->setVisible(false);
         i++;
@@ -630,7 +624,7 @@ void GameScene::show_destruction_bonus(int value, int line_id) {
         return;
     pool_container[line_id]->half_animated = 1;
     Label *bonus = Label::createWithTTF(Utils::get_reduced_value(value, VALUE_BONUS_COMMENT),
-                                        FIRE_UP_FONT_NUMBERS, 40);
+                                        FIRE_UP_FONT_NAME_NUMBERS, 40);
     bonus->setAnchorPoint(Vec2(0, 0));
     bonus->setPosition(
             Vec2(x_screen / 2 - bonus->getContentSize().width / 2,
@@ -718,7 +712,7 @@ void GameScene::check_into_line(int bullet_id, int line_id) {
                 show_destruction_circle(square_pos);
                 show_particle_explode(
                         Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
-                        sq->initial_color, NORMAL_PARTICLE);
+                        sq->initial_color, 20);
                 game_block_destroyed++;
             } else {
                 update_game_score(bullet_hit);
@@ -791,8 +785,8 @@ void GameScene::check_player_collision() {
                                              player_y + player_height / 2,
                                              player_width, player_height);
                 Rect sq_rect = Rect(sq->getPositionX() - sq_width / 2,
-                                            sq->getPositionY() + sq_height / 2, sq_width,
-                                            sq_height);
+                                    sq->getPositionY() + sq_height / 2, sq_width,
+                                    sq_height);
                 Rect player_crash_bounding_box = Rect(
                         static_cast<float>(player_left_top_corner.x + (0.15 * player_width)),
                         player_left_top_corner.y,
@@ -855,7 +849,7 @@ void GameScene::load_bonus() {
 
 void GameScene::active_bonus() {
     bonus_container[bonus_id]->setTag(BONUS_IN_GAME);
-    if (LINE_GENERATED > TRANSITION_FROM_4_TO_5)
+    if (LINE_GENERATED > NBR_LINE_BEFORE_DOWN_SCALING)
         bonus_container[bonus_id]->setScale(1);
     else
         bonus_container[bonus_id]->setScale(1.2f);
@@ -990,7 +984,7 @@ void GameScene::update(float ft) {
     check_lines_out();
     move_active_lines();
     if (game_state == GAME_RUNNING) {
-        if (LINE_GENERATED == TRANSITION_FROM_4_TO_5 && shooter_never_updated == 0 &&
+        if (LINE_GENERATED == NBR_LINE_BEFORE_DOWN_SCALING && shooter_never_updated == 0 &&
             player->getScale() != 0.85)
             scale_animation();
         move_circles();
@@ -1047,7 +1041,7 @@ int GameScene::get_next_line_type() {
 void GameScene::run_game_loop() {
     int indicator = UserLocalStore::get_achievement_variable(POWER_LEVEL) +
                     UserLocalStore::get_achievement_variable(SPEED_LEVEL);
-    if (indicator == NO_SHOOTER_UPGRADE)
+    if (indicator == ZERO_SHOOTER_EARNED)
         shooter_never_updated = 1;
     else
         shooter_never_updated = 0;
@@ -1152,7 +1146,7 @@ void GameScene::resume_game() {
     destroy_all_lines();
     if (game_shooter_type == SHIELD_TANK && !shield_live_used)
         shield_rect->setVisible(true);
-    if (LINE_GENERATED > TRANSITION_FROM_4_TO_5)
+    if (LINE_GENERATED > NBR_LINE_BEFORE_DOWN_SCALING)
         player->setScale(0.85f);
     score->setVisible(true);
     player->setVisible(true);
@@ -1326,28 +1320,28 @@ bool GameScene::is_sound_button_touched(Vec2 touch_location) {
 void GameScene::play_bullet_sound() {
     if (!sound_activated)
         return;
-    if (launch_played != 0) {
-        if (launch_played == 1)
-            launch_played = 0;
+    if (sound_shot_played != 0) {
+        if (sound_shot_played == 1)
+            sound_shot_played = 0;
         else
-            launch_played++;
+            sound_shot_played++;
         return;
     }
-    launch_played++;
+    sound_shot_played++;
     game_audio->playEffect(SOUND_LAUNCH, false, 1.0f, 1.0f, 1.0f);
 }
 
 void GameScene::play_bullet_impact() {
     if (!sound_activated)
         return;
-    if (hit_played != 0) {
-        if (hit_played == 1)
-            hit_played = 0;
+    if (sound_hit_played != 0) {
+        if (sound_hit_played == 1)
+            sound_hit_played = 0;
         else
-            hit_played++;
+            sound_hit_played++;
         return;
     }
-    hit_played++;
+    sound_hit_played++;
     game_audio->playEffect(SOUND_HITED, false, 1.0f, 1.0f, 1.0f);
 }
 
@@ -1378,7 +1372,7 @@ void GameScene::launch_bullet(float dt) {
                                             player->getContentSize(), NORMAL_LAUNCH);
                 play_bullet_sound();
                 if (bonus_active == BONUS_POWER)
-                    bullet_container[i]->setScale(BIG_BULLET_SIZE);
+                    bullet_container[i]->setScale(BIG_BULLET_SCALE);
                 if (bullet_state == BULLET_LEFT)
                     bullet_state = BULLET_RIGHT;
                 else
@@ -1417,7 +1411,7 @@ void GameScene::launch_bullet(float dt) {
                                                     BULLET_SHOOT[type][i]);
             play_bullet_sound();
             if (bonus_active == BONUS_POWER)
-                bullet_container[i]->setScale(BIG_BULLET_SIZE);
+                bullet_container[i]->setScale(BIG_BULLET_SCALE);
         }
         return;
     }
@@ -1492,19 +1486,13 @@ void GameScene::multiply_game_score_adbonus() {
 }
 
 Menu *GameScene::get_main_menu() {
-    menu_title = MenuItemFont::create(TITLE, nullptr);
+    menu_title = MenuItemFont::create(GAME_MENU_NAME, nullptr);
     char power_level[DEFAULT_CHAR_LENGHT];
     sprintf(power_level, "%i",
             UserLocalStore::get_achievement_variable(POWER_VALUE));
     char speed_level[DEFAULT_CHAR_LENGHT];
     sprintf(speed_level, "%.1f",
             UserLocalStore::get_achievement_variable_float(SPEED_VALUE));
-    char best_score[DEFAULT_CHAR_LENGHT];
-    if (UserLocalStore::get_achievement_variable(SCORE) > 1000)
-        sprintf(best_score, "%.1fk",
-                static_cast<float>(UserLocalStore::get_achievement_variable(SCORE)) / 1000);
-    else
-        sprintf(best_score, "%i", UserLocalStore::get_achievement_variable(SCORE));
     menu_power_level = MenuItemFont::create(power_level);
     menu_power_level->setTag(POWER_LEVEL_BTN_TAG);
     menu_speed_level = MenuItemFont::create(speed_level);
@@ -1524,25 +1512,23 @@ Menu *GameScene::get_main_menu() {
                                                HAND);
     menu_anim_img = MenuItemImage::create(HAND_RAIL, HAND_RAIL);
     menu_best_img = MenuItemImage::create(BEST_IMG, BEST_IMG);
-    menu_best_txt = MenuItemFont::create(best_score);
-    if (UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT) == 0)
-        menu_shop_img = MenuItemImage::create(SHOP_UNSELECTED,
-                                              SHOP_SELECTED,
-                                              CC_CALLBACK_1(GameScene::shop, this));
-    else
-        menu_shop_img = MenuItemImage::create(SHOP_UNSELECTED_NEW,
-                                              SHOP_SELECTED_NEW,
-                                              CC_CALLBACK_1(GameScene::shop, this));
-    menu_title->setFontNameObj(FIRE_UP_FONT);
-    menu_power_level->setFontNameObj(FIRE_UP_FONT);
-    menu_power_level->setFontSizeObj(20);
-    menu_speed_level->setFontNameObj(FIRE_UP_FONT);
-    menu_speed_level->setFontSizeObj(20);
-    menu_surclassement_txt->setFontNameObj(FIRE_UP_FONT);
+    menu_best_txt = MenuItemFont::create(
+            Utils::get_reduced_value(UserLocalStore::get_achievement_variable(SCORE),
+                                     VALUE_SIMPLE));
+    int new_asset_check = UserLocalStore::get_achievement_variable(NEW_SHOP_ELEMENT);
+    menu_shop_img = MenuItemImage::create(SHOP_ASSET_UNSELECTED(new_asset_check),
+                                          SHOP_ASSET_SELECTED(new_asset_check),
+                                          CC_CALLBACK_1(GameScene::shop, this));
+    menu_title->setFontNameObj(FIRE_UP_FONT_NAME);
+    menu_power_level->setFontNameObj(FIRE_UP_FONT_NAME);
+    menu_power_level->setFontSizeObj(SIZE_UPGRADE_VALUES_MENU);
+    menu_speed_level->setFontNameObj(FIRE_UP_FONT_NAME);
+    menu_speed_level->setFontSizeObj(SIZE_UPGRADE_VALUES_MENU);
+    menu_surclassement_txt->setFontNameObj(FIRE_UP_FONT_NAME);
     menu_anim_img_hand->setAnchorPoint(Vec2(0.45, 0.75));
-    menu_title->setFontSizeObj(85);
-    menu_best_txt->setFontSizeObj(30);
-    menu_surclassement_txt->setFontSizeObj(20);
+    menu_title->setFontSizeObj(SIZE_GAME_NAME);
+    menu_best_txt->setFontSizeObj(SIZE_BEST_SCORE_MENU);
+    menu_surclassement_txt->setFontSizeObj(SIZE_SURCLASSEMENT_TXT_BTN_MENU);
     menu_surclassement_img->setAnchorPoint(Vec2(1, 1));
     menu_surclassement_img->setPosition(
             Vec2(static_cast<float>(x_screen * 0.95),
@@ -1566,11 +1552,11 @@ Menu *GameScene::get_main_menu() {
     menu_title->setPosition(Point(x_screen / 2,
                                   y_screen - (y_screen / 5)));
     options_btn->setPosition(
-            static_cast<float>(0 + (options_btn->getContentSize().height / 2) +
+            static_cast<float>(options_btn->getContentSize().height / 2 +
                                (0.3 * options_btn->getContentSize().height)),
             static_cast<float>(y_screen - (0.3 * options_btn->getContentSize().height +
                                            (options_btn->getContentSize().height / 2))));
-    menu_best_txt->setFontNameObj(FIRE_UP_FONT);
+    menu_best_txt->setFontNameObj(FIRE_UP_FONT_NAME);
     auto midle = x_screen / 2;
     float img_width = menu_best_img->getContentSize().width;
     float txt_width = menu_best_txt->getContentSize().width;
@@ -1634,17 +1620,25 @@ Menu *GameScene::get_end_game_menu() {
             UserLocalStore::get_achievement_variable(SPEED_LEVEL));
     stats = Menu::create();
     Label *current_point = Label::createWithTTF(
-            Utils::get_reduced_value(point_value, VALUE_WITH_POINT), FIRE_UP_FONT, 60);
+            Utils::get_reduced_value(point_value, VALUE_WITH_POINT), FIRE_UP_FONT_NAME,
+            SIZE_CURRENT_SCORE_END_MENU);
     earned_point = Label::createWithTTF(
-            Utils::get_reduced_value(game_score, VALUE_WITH_PLUS), FIRE_UP_FONT, 25);
+            Utils::get_reduced_value(game_score, VALUE_WITH_PLUS), FIRE_UP_FONT_NAME,
+            SIZE_EARNED_POINTS_END_MENU);
     Label *speed_price_txt = Label::createWithTTF(
-            Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT), FIRE_UP_FONT, 25);
+            Utils::get_reduced_value(speed_price_value, VALUE_WITH_POINT), FIRE_UP_FONT_NAME,
+            SIZE_UPGRADE_PRICE_END_MENU);
     Label *power_price_txt = Label::createWithTTF(
-            Utils::get_reduced_value(power_price_value, VALUE_WITH_POINT), FIRE_UP_FONT, 25);
-    Label *speed_info = Label::createWithTTF("SHOOTING SPEED", FIRE_UP_FONT, 24);
-    Label *power_info = Label::createWithTTF("SHOOTING POWER", FIRE_UP_FONT, 24);
-    Label *speed_current_level = Label::createWithTTF(current_speed, FIRE_UP_FONT, 25);
-    Label *power_current_level = Label::createWithTTF(current_power, FIRE_UP_FONT, 25);
+            Utils::get_reduced_value(power_price_value, VALUE_WITH_POINT), FIRE_UP_FONT_NAME,
+            SIZE_UPGRADE_PRICE_END_MENU);
+    Label *speed_info = Label::createWithTTF("SHOOTING SPEED", FIRE_UP_FONT_NAME,
+                                             SIZE_NAME_ITEMS_END_MENU);
+    Label *power_info = Label::createWithTTF("SHOOTING POWER", FIRE_UP_FONT_NAME,
+                                             SIZE_NAME_ITEMS_END_MENU);
+    Label *speed_current_level = Label::createWithTTF(current_speed, FIRE_UP_FONT_NAME,
+                                                      SIZE_CURRENT_LEVEL_END_MENU);
+    Label *power_current_level = Label::createWithTTF(current_power, FIRE_UP_FONT_NAME,
+                                                      SIZE_CURRENT_LEVEL_END_MENU);
     back_to_main = MenuItemImage::create(REPLAY_TEXTURE,
                                          REPLAY_TEXTURE,
                                          CC_CALLBACK_1(GameScene::back_to_menu, this));

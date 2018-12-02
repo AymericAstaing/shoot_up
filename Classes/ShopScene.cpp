@@ -72,7 +72,7 @@ void ShopScene::init_ui_components() {
     this->addChild(back_button);
     float point_value = UserLocalStore::get_achievement_variable(POINT);
     points = Label::createWithTTF(Utils::get_reduced_value(point_value, VALUE_WITH_POINT),
-                                  FIRE_UP_FONT, (50));
+                                  FIRE_UP_FONT_NAME, (50));
     points->setPosition(Vec2(static_cast<float>(winSize.width / 1.8), back_button->getPosition().y -
                                                                       back_button->getContentSize().height /
                                                                       2));
@@ -233,10 +233,10 @@ Menu *ShopScene::get_asset_menu(int grid_pos, int table_tag) {
     else
         achievement_txt = ball_achievement[grid_pos];
     Label *ach_infos = Label::createWithTTF(achievement_txt,
-                                            FIRE_UP_FONT, 40);
+                                            FIRE_UP_FONT_NAME, 40);
 
     Label *ach_progress = Label::createWithTTF("empty",
-                                               FIRE_UP_FONT, 30);
+                                               FIRE_UP_FONT_NAME, 30);
     ach_infos->setHorizontalAlignment(TextHAlignment::CENTER);
     MenuItemLabel *achievement_info = MenuItemLabel::create(ach_infos, nullptr);
     MenuItemLabel *achievement_progress = MenuItemLabel::create(ach_progress, nullptr);

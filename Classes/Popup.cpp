@@ -139,7 +139,7 @@ namespace UICustom {
                 MenuItemFont *speed_level_txt = MenuItemFont::create(speed_level,
                                                                      [=](Ref *sender) {
                                                                      });
-                point_nbr->setFontNameObj(FIRE_UP_FONT);
+                point_nbr->setFontNameObj(FIRE_UP_FONT_NAME);
                 point_nbr->setFontSizeObj(70);
                 MenuItemImage *power_btn = MenuItemImage::create(POPUP_PATH::POWER,
                                                                  POPUP_PATH::POWER_SELECTED,
@@ -170,10 +170,10 @@ namespace UICustom {
                                                                 point_nbr->getContentSize().height *
                                                                 0.9))));
                 Label *power_info_label = Label::createWithTTF("SHOOTING\nPOWER",
-                                                               FIRE_UP_FONT, 24);
+                                                               FIRE_UP_FONT_NAME, 24);
                 power_info_label->setHorizontalAlignment(TextHAlignment::CENTER);
                 Label *speed_info_label = Label::createWithTTF("SHOOTING\nSPEED",
-                                                               FIRE_UP_FONT, 24);
+                                                               FIRE_UP_FONT_NAME, 24);
                 speed_info_label->setHorizontalAlignment(TextHAlignment::CENTER);
                 MenuItemLabel *power_info_txt = MenuItemLabel::create(power_info_label,
                                                                       [=](Ref *sender) {
@@ -181,23 +181,23 @@ namespace UICustom {
                 MenuItemLabel *speed_info_txt = MenuItemLabel::create(speed_info_label,
                                                                       [=](Ref *sender) {
                                                                       });
-                power_price_txt->setFontNameObj(FIRE_UP_FONT);
+                power_price_txt->setFontNameObj(FIRE_UP_FONT_NAME);
                 power_price_txt->setFontSizeObj(25);
                 power_price_txt->setPosition(Vec2(power_btn->getPosition().x,
                                                   power_btn->getPosition().y -
                                                   (power_btn->getContentSize().height / 6)));
-                speed_price_txt->setFontNameObj(FIRE_UP_FONT);
+                speed_price_txt->setFontNameObj(FIRE_UP_FONT_NAME);
                 speed_price_txt->setFontSizeObj(25);
                 speed_price_txt->setPosition(Vec2(speed_btn->getPosition().x,
                                                   speed_btn->getPosition().y -
                                                   (speed_btn->getContentSize().height / 6)));
-                power_level_txt->setFontNameObj(FIRE_UP_FONT);
+                power_level_txt->setFontNameObj(FIRE_UP_FONT_NAME);
                 power_level_txt->setFontSizeObj(28);
                 power_level_txt->setColor(Color3B(255, 124, 124));
                 power_level_txt->setPosition(Vec2(power_btn->getPosition().x,
                                                   power_btn->getPosition().y +
                                                   (power_btn->getContentSize().height / 2 + 20)));
-                speed_level_txt->setFontNameObj(FIRE_UP_FONT);
+                speed_level_txt->setFontNameObj(FIRE_UP_FONT_NAME);
                 speed_level_txt->setColor(Color3B(124, 184, 255));
                 speed_level_txt->setFontSizeObj(28);
                 speed_level_txt->setPosition(Vec2(speed_btn->getPosition().x,

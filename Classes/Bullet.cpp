@@ -15,8 +15,8 @@ Bullet::~Bullet() {
 void Bullet::reset() {
     auto winSize = Director::getInstance()->getVisibleSize();
     this->stopAllActions();
-    if (getScale() != NORMAL_BULLET_SIZE)
-        setScale(NORMAL_BULLET_SIZE);
+    if (getScale() != NORMAL_BULLET_SCALE)
+        setScale(NORMAL_BULLET_SCALE);
     this->setVisible(false);
     this->bullet_active = false;
     this->setPosition(Vec2(winSize.width / 2, 0 - getContentSize().height));

@@ -106,8 +106,8 @@ private:
     float               NEW_SPAWN_Y;
 
     /******************* SOUND MANAGMENT ***************/
-    int                 hit_played = 0;
-    int                 launch_played = 0;
+    int                 sound_hit_played = 0;
+    int                 sound_shot_played = 0;
     bool                sound_activated = true;
 
 
@@ -145,7 +145,7 @@ public:
     void                    remove_bonus();
     void                    move_bonus();
     void                    bonus_managment();
-    void                    check_first_open();
+    void                    check_begining_of_session();
     void                    active_bonus();
     void                    move_circles();
     void                    scale_animation();

@@ -66,7 +66,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     spritecache->addSpriteFramesWithFile(BONUS_SPEED_PLIST);
     spritecache->addSpriteFramesWithFile(BONUS_BULLET_PLIST);
     UserLocalStore::store_achievement_variable(FROM_SHOP, 0);
-    UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, FIRST_OPEN);
+    UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, APP_INITIAL_OPEN);
     sdkbox::PluginAdMob::init();
     sdkbox::PluginAdMob::setTestDevices("791DC4365A94EB1A2E6CD5EB0F068CD5");
     auto gameScene = GameScene::createScene();
