@@ -45,21 +45,18 @@ void Line::attach_star_bonus() {
                              sq->points->getContentSize().height / 2);
 }
 
-void Line::change_square_color(int index, int color) {
-    Square *sq = ((Square *) getChildByTag(index));
-    sq->initial_color = color;
+void Line::change_square_color(int square_id, int color) {
+    ((Square *) getChildByTag(square_id))->initial_color = color;
     auto batchnode = getChildByTag(LINE_BATCH_TAG);
-    if (batchnode) {
-        auto sprite = batchnode->getChildByTag(index);
-        Sprite *e = ((Sprite *) sprite);
-        SpriteFrame *tmp = (SpriteFrame *) basic_colors[color];
-        if (e->getSpriteFrame() != tmp)
-            e->setSpriteFrame(basic_colors[color]);
-    }
+    if (!batchnode)
+        return;
+    auto sprite_child = batchnode->getChildByTag(square_id);
+    SpriteFrame *tmp = (SpriteFrame *) basic_colors[color];
+    if (((Sprite *) sprite_child)->getSpriteFrame() != tmp)
+        ((Sprite *) sprite_child)->setSpriteFrame(basic_colors[color]);
 }
 
 void Line::assign_color(int sq_id, int m_factor, int current_point) {
-
     float point = static_cast<float>(current_point);
     if (point <= static_cast<float>(m_factor * 0.85))
         change_square_color(sq_id, GREEN);
@@ -89,6 +86,9 @@ int Line::get_special_shooter_total(int total) { // AUGMENTATION DU NIVEAU QUAND
 
 void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LIGNES DE 4 ou 5
     int total = 0;
+    int *distrib = new int[this->square_nbr];
+    int *choosen = new int[this->square_nbr];
+
     if (get_type() == LINE_TYPE_SIMPLE_OF_4) {
         total = h_factor + ((line_generated / 10) * h_factor);
     } else {
@@ -96,27 +96,21 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
                                      ceil(static_cast<float>(h_factor * 0.6)));
         int max_h = static_cast<int>(h_factor +
                                      ceil(static_cast<float>(h_factor * 0.8)));
-        total = Utils::get_random_number(min_h, max_h);
-        total += (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
-
+        total = Utils::get_random_number(min_h, max_h) +
+                (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
     }
     total += get_special_shooter_total(total);
     half_total = total / 2;
-    int *distrib = new int[this->square_nbr];
-    int *choosen = new int[this->square_nbr];
     distrib = Utils::get_simple_distribution_points(distrib, total, get_type(), this->square_nbr);
     int index = 0;
     while (1) {
         auto child = getChildByTag(index);
         Square *sq = ((Square *) child);
-        if (!child || !sq) {
+        if (!child || !sq)
             return;
-        } else {
-            choosen[index] = get_index_random(choosen, this->square_nbr - 1);
-            sq->assign_point(distrib[choosen[index]]);
-            assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
-
-        }
+        choosen[index] = get_index_random(choosen, this->square_nbr - 1);
+        sq->assign_point(distrib[choosen[index]]);
+        assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
         index++;
     }
 }
@@ -124,23 +118,22 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
 void Line::assign_line_points_complex(int h_factor,
                                       int line_generated) { // POINTS FOR COMPLEX STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
+    int *distrib = new int[this->square_nbr];
+    int index = 0;
     int min_h = static_cast<int>(h_factor +
                                  ceil(static_cast<float>(h_factor * 0.3)));
     int max_h = static_cast<int>(h_factor +
                                  ceil(static_cast<float>(h_factor * 0.4)));
     int total = static_cast<int>(Utils::get_random_number(min_h, max_h) * 1.4);
-    total += get_special_shooter_total(total);
-    total += (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
+    total += get_special_shooter_total(total) +
+             (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
     half_total = total / 2;
-    int *distrib = new int[this->square_nbr];
     distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
-    int index = 0;
     while (1) {
-        auto child = getChildByTag(index);
-        if (!child)
+        auto square_child = getChildByTag(index);
+        if (!square_child)
             break;
-        Square *sq = ((Square *) child);
-        sq->assign_point(distrib[index]);
+        ((Square *) square_child)->assign_point(distrib[index]);
         assign_color(index, total / this->square_nbr, distrib[index]);
         index++;
     }
@@ -520,8 +513,8 @@ void Line::set_active(int factor_h, int line_generated) {
 
 void Line::check_for_transition_line() {
     if (this->getScale() == 0.85f) {
-       this->setScale(1);
-       this->setAnchorPoint(Vec2(0, 0));
+        this->setScale(1);
+        this->setAnchorPoint(Vec2(0, 0));
     }
 }
 

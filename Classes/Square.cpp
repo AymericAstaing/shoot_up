@@ -53,12 +53,7 @@ void Square::assign_point(int pv) {
         pv = 1;
     this->initial_pv = pv;
     this->square_pv = pv;
-    char pts[DEFAULT_CHAR_LENGHT];
-    if (square_pv > 1000)
-        sprintf(pts, "%.1fK", static_cast<float>(square_pv) / 1000);
-    else
-        sprintf(pts, "%i", square_pv);
-    this->points->setString(pts);
+    this->points->setString(Utils::get_reduced_value(square_pv, VALUE_SIMPLE));
 }
 
 Square *Square::create(int line_size) {
