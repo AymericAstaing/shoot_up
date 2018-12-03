@@ -1,7 +1,7 @@
 #include    "UserLocalStore.h"
 
-#define     SHOOTER_ARRAY   0
-#define     BALL_ARRAY      1
+#define     SHOOTER_ARRAY_TAG   0
+#define     BALL_ARRAY_TAG      1
 
 #define     LOCKED          0
 #define     UNLOCKED        1

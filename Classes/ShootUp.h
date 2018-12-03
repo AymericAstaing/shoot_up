@@ -17,6 +17,8 @@ USING_NS_CC;
 #define INCREASE_POINTS_FACTOR          15
 #define DEFAULT_CHAR_LENGHT             10
 #define ZERO_SHOOTER_EARNED             2
+#define SOUND_ON                        0
+#define SOUND_OFF                       1
 
 /********************* FONT ***********************/
 #define FIRE_UP_FONT_NAME              "fonts/fire_up.ttf"
@@ -97,6 +99,9 @@ USING_NS_CC;
 #define SPEED_LEVEL_BTN_TAG             35
 #define MAIN_MENU_TAG                   36
 #define STAR_BONUS_TAG                  7
+#define LINE_BATCH_TAG                  42
+#define SHOOTER_ARRAY_TAG               0
+#define BALL_ARRAY_TAG                  1
 
 /******************* PLIST SPRITESHEETS ***************/
 #define PARTICLE_ANIM_PLIST             "spritesheet/hit.plist"
@@ -138,16 +143,9 @@ USING_NS_CC;
 #define BONUSX2_AD                      "bonusx2"
 #define BONUSX2_AD_TEST                 "bonusx2_test"
 
-/******************* BONUS ***************/
-#define MIN_LINE_BEFORE_BONUS_SPAWN     5
-#define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
-#define DEFAULT_SPEED_TEXTURE           "bonus_speed_0.png"
-#define DEFAULT_POWER_TEXTURE           "bonus_power_0.png"
-#define DEFAULT_BULLET_TEXTURE          "bonus_bullet_0.png"
-#define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"
-#define SPEED_RECT                      "player_effect/speed_effect.png"
-#define POWER_RECT                      "player_effect/power_effect.png"
-#define BULLET_RECT                     "player_effect/bullet_effect.png"
+/******************* SHOT MANAGMENT ***************/
+#define BULLET_SIDE_LEFT                0
+#define BULLET_SIDE_RIGHT               1
 #define NORMAL_LAUNCH                   0
 #define BONUS_LAUNCH_LEFT               1
 #define BONUS_LAUNCH_RIGHT              2
@@ -159,6 +157,17 @@ USING_NS_CC;
 #define SIDEWAY_LAUNCH_LEFT             8
 #define SIDEWAY_LAUNCH_CENTER           9
 #define SIDEWAY_LAUNCH_RIGHT            10
+
+/******************* BONUS ***************/
+#define MIN_LINE_BEFORE_BONUS_SPAWN     5
+#define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
+#define DEFAULT_BONUS_SPEED_TEXTURE     "bonus_speed_0.png"
+#define DEFAULT_BONUS_POWER_TEXTURE     "bonus_power_0.png"
+#define DEFAULT_BONUS_BULLET_TEXTURE    "bonus_bullet_0.png"
+#define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"
+#define SPEED_RECT                      "player_effect/speed_effect.png"
+#define POWER_RECT                      "player_effect/power_effect.png"
+#define BULLET_RECT                     "player_effect/bullet_effect.png"
 #define BONUS_TIME_LIMIT                5.0f
 #define BONUS_TIME_MIDLE                2.5f
 #define BONUS_BULLET                    0
@@ -178,15 +187,16 @@ USING_NS_CC;
 
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
-#define SIMPLE_LINE_NBR                 8
-#define BULLET_LEFT                     0
-#define BULLET_RIGHT                    1
 #define DEFAULT_BULLET_NBR              16 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
-/******************* INITIALISATION LINE TYPE  ***************/
-#define STARTUP_OF_3                    819
-#define STARTUP_OF_4                    2829
-#define COMPLEX_STRUCT_ELMTS_NBR        7
+/******************* LINE INIT AND MANAGMENT  ***************/
+#define H_LIMIT_STARTUP_3               819
+#define H_LIMIT_STARTUP_4               2829
+#define SQUARE_SIZE_LINE_OF_4           4
+#define SQUARE_SIZE_LINE_OF_5           5
+#define COMPLEX_STRUCT_NBR              7
+
+
 #define SIMPLE_LINE_4                   0
 #define SIMPLE_LINE_5                   1
 #define STARTUP_LINE_2                  3
@@ -223,13 +233,6 @@ USING_NS_CC;
 #define SOUND                           "SOUND"
 #define POINT                           "POINT"
 #define FROM_SHOP                       "FROM_SHOP"
-#define LINE_BATCH_ID                   42
-#define SHOOTER_ARRAY                   0
-#define BALL_ARRAY                      1
-#define SOUND_ON                        0
-#define SOUND_OFF                       1
-#define SQUARE_SIZE_LINE_OF_4           4
-#define SQUARE_SIZE_LINE_OF_5           5
 
 /******************* COLORS ***************/
 #define BASIC_COLOR_GREEN               "green_b.png"

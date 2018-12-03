@@ -59,8 +59,8 @@ bool ShopScene::init() {
 void ShopScene::init_shop_grids() {
     shooter_content = UserLocalStore::get_final_shooter_array();
     ball_content = UserLocalStore::get_final_ball_array();
-    shooter_grid = init_grid(SHOOTER_ARRAY);
-    ball_grid = init_grid(BALL_ARRAY);
+    shooter_grid = init_grid(SHOOTER_ARRAY_TAG);
+    ball_grid = init_grid(BALL_ARRAY_TAG);
 }
 
 void ShopScene::init_ui_components() {
@@ -105,7 +105,7 @@ ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
         cell->autorelease();
 
         Sprite *sprite = nullptr;
-        if (table->getTag() == SHOOTER_ARRAY)
+        if (table->getTag() == SHOOTER_ARRAY_TAG)
             sprite = Sprite::create(shooter_content[idx]);
         else
             sprite = Sprite::create(ball_content[idx]);
@@ -116,7 +116,7 @@ ShopScene::tableCellAtIndex(cocos2d::extension::TableView *table, ssize_t idx) {
         cell->addChild(sprite);
     } else {
         auto sprite = (Sprite *) cell->getChildByTag(2);
-        if (table->getTag() == SHOOTER_ARRAY)
+        if (table->getTag() == SHOOTER_ARRAY_TAG)
             sprite->setTexture(shooter_content[idx]);
         else
             sprite->setTexture(ball_content[idx]);
@@ -134,7 +134,7 @@ GridView *ShopScene::init_grid(int tag) {
     gv->setColNum(3);
     gv->setDelegate(this);
     this->addChild(gv);
-    if (tag == BALL_ARRAY)
+    if (tag == BALL_ARRAY_TAG)
         gv->setVisible(false);
     gv->reloadData();
     return (gv);
@@ -174,11 +174,11 @@ Size ShopScene::tableCellSizeForIndex(cocos2d::extension::TableView *table, ssiz
 
 void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
                                  cocos2d::extension::TableViewCell *cell) {
-    if ((table->getTag() == SHOOTER_ARRAY && cell->getIdx() == 11) || cell->getIdx() == 25 ||
+    if ((table->getTag() == SHOOTER_ARRAY_TAG && cell->getIdx() == 11) || cell->getIdx() == 25 ||
         cell->getIdx() == 26)
         return;
     int cell_id = cell->getIdx();
-    if (table->getTag() == SHOOTER_ARRAY) {
+    if (table->getTag() == SHOOTER_ARRAY_TAG) {
         if (cell_id > 11 && cell_id < 26)
             cell_id = cell_id - 1;
         if (cell_id > 25)
@@ -218,9 +218,9 @@ void ShopScene::tableCellTouched(cocos2d::extension::TableView *table,
 
 ssize_t ShopScene::numberOfCellsInTableView(cocos2d::extension::TableView *table) {
 
-    if (table->getTag() == SHOOTER_ARRAY)
+    if (table->getTag() == SHOOTER_ARRAY_TAG)
         return (34);
-    else if (table->getTag() == BALL_ARRAY)
+    else if (table->getTag() == BALL_ARRAY_TAG)
         return (8);
     return 0;
 }
@@ -228,7 +228,7 @@ ssize_t ShopScene::numberOfCellsInTableView(cocos2d::extension::TableView *table
 Menu *ShopScene::get_asset_menu(int grid_pos, int table_tag) {
     auto winSize = Director::getInstance()->getVisibleSize();
     const char *achievement_txt = NULL;
-    if (table_tag == SHOOTER_ARRAY)
+    if (table_tag == SHOOTER_ARRAY_TAG)
         achievement_txt = shooter_achievement[grid_pos];
     else
         achievement_txt = ball_achievement[grid_pos];
@@ -243,7 +243,7 @@ Menu *ShopScene::get_asset_menu(int grid_pos, int table_tag) {
     int ach_score = 0;
     int ach_target = 0;
     double percent = 0;
-    if (table_tag == SHOOTER_ARRAY) {
+    if (table_tag == SHOOTER_ARRAY_TAG) {
         ach_score = UserLocalStore::get_achievement_variable(
                 UserLocalStore::get_shooter_key_with_index(
                         grid_pos));

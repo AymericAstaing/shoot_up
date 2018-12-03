@@ -48,7 +48,7 @@ void Line::attach_star_bonus() {
 void Line::change_square_color(int index, int color) {
     Square *sq = ((Square *) getChildByTag(index));
     sq->initial_color = color;
-    auto batchnode = getChildByTag(LINE_BATCH_ID);
+    auto batchnode = getChildByTag(LINE_BATCH_TAG);
     if (batchnode) {
         auto sprite = batchnode->getChildByTag(index);
         Sprite *e = ((Sprite *) sprite);
@@ -146,8 +146,7 @@ void Line::assign_line_points_complex(int h_factor,
     }
 }
 
-void
-Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
+void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
     int lines_nbr = square_nbr / 5;
     if (h_factor < 25)
@@ -155,17 +154,17 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
     for (int i = 0; i < lines_nbr; i++) {
         float ratio = 0;
         if (type == LINE_TYPE_STARTUP_3)
-            ratio = line_0[i];
+            ratio = line_division_0[i];
         if (type == LINE_TYPE_STARTUP_4)
-            ratio = line_1[i];
+            ratio = line_division_1[i];
         if (type == LINE_TYPE_STARTUP_5)
-            ratio = line_2[i];
+            ratio = line_division_2[i];
         int *distrib = new int[5];
         distrib = Utils::get_distribution_points(distrib, static_cast<int>(h_factor * ratio),
                                                  5);
         int index = i * 5;
         int k = 0;
-        auto batchnode = getChildByTag(LINE_BATCH_ID);
+        auto batchnode = getChildByTag(LINE_BATCH_TAG);
         for (int j = index; j < (i * 5 + 5); j++, k++) {
             auto child = getChildByTag(j);
             if (!child)
@@ -210,8 +209,8 @@ Size Line::get_line_size(int type) {
     }
 }
 
-/********************************** BLOCKS TRANSLATIONS ****************************/
 
+/********************************** BLOCKS TRANSLATIONS ****************************/
 void Line::apply_animation(Line *l, Sprite *s, Square *square, int struct_nbr, int index) {
     if (struct_nbr == 3) {
         if (index == 3)
@@ -232,8 +231,7 @@ void Line::apply_animation(Line *l, Sprite *s, Square *square, int struct_nbr, i
     }
 }
 
-void
-Line::apply_full_translation(Square *s, Sprite *sprite, float rect_size[2],
+void Line::apply_full_translation(Square *s, Sprite *sprite, float rect_size[2],
                              float line_size[2]) {
     float block_width = rect_size[WIDTH];
 
@@ -378,6 +376,7 @@ int Line::struct_element_nbr(int id) {
 
 /********************************** LINE STRUCTURES *****************************/
 
+
 /********************************** BATCHNODE LOADING *****************************/
 
 SpriteBatchNode *Line::get_batch() {
@@ -385,7 +384,7 @@ SpriteBatchNode *Line::get_batch() {
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile(BLOCK_COLOR_PLIST);
     spriteBatchNode = SpriteBatchNode::create(SPRITESHEET_BLOCK_COLORS);
     spriteBatchNode->setAnchorPoint(Vec2(0, 0));
-    spriteBatchNode->setTag(LINE_BATCH_ID);
+    spriteBatchNode->setTag(LINE_BATCH_TAG);
     return (spriteBatchNode);
 }
 
@@ -401,6 +400,7 @@ Sprite *Line::get_texture(int i, float *sq_size) {
 }
 
 /********************************** BATCHNODE LOADING *****************************/
+
 
 /********************************** LINES LOADING *****************************/
 
@@ -486,7 +486,6 @@ void Line::load_simple_line_4(Line *l) {
         }
     }
 }
-
 
 int Line::get_type() {
     return (line_type);
@@ -585,7 +584,7 @@ void Line::set_active(int factor_h, int line_generated) {
 
 void Line::reset() {
     int index = 0;
-    auto batchnode = getChildByTag(LINE_BATCH_ID);
+    auto batchnode = getChildByTag(LINE_BATCH_TAG);
 
     while (1) {
         auto child = this->getChildByTag(index);
@@ -611,12 +610,12 @@ void Line::reset() {
 Line *Line::create(int type) {
     auto winSize = Director::getInstance()->getVisibleSize();
     Line *l = new Line(type);
-    l->setAnchorPoint(Vec2(0, 0));
+    l->setAnchorPoint(Vec2::ZERO);
     auto size = get_line_size(type);
     l->line_size[WIDTH] = size.width;
+    l->line_size[HEIGHT] = size.height;
     l->half_total = 0;
     l->half_animated = 0;
-    l->line_size[HEIGHT] = size.height;
     l->initial_pos = Vec2(0, winSize.height + l->line_size[HEIGHT]);
     l->line_active = false;
     l->setContentSize(Size(l->line_size[WIDTH], l->line_size[HEIGHT]));

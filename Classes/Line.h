@@ -6,9 +6,9 @@
 
 USING_NS_CC;
 
-static const float line_0[3] = {0.20, 0.30, 0.50};
-static const float line_1[4] = {0.10, 0.20, 0.30, 0.40};
-static const float line_2[5] = {0.05, 0.10, 0.15, 0.20, 0.50};
+static const float line_division_0[3] = {0.20, 0.30, 0.50};
+static const float line_division_1[4] = {0.10, 0.20, 0.30, 0.40};
+static const float line_division_2[5] = {0.05, 0.10, 0.15, 0.20, 0.50};
 
 static const float DISTRIB_COMPLEX[8][9] = {{0.2, 0.06, 0.2, 0.17, 0.17, 0.2},
                                             {0.17, 0.2, 0.2, 0.17, 0.1, 0.17},
@@ -31,15 +31,14 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
 
         class Line :
         public cocos2d::Node {
-
             public:
-            float line_size[2];
-            int line_type;
-            int half_total;
-            int half_animated;
-            int square_nbr;
-            bool line_active;
-            Vec2 initial_pos;
+            float                       line_size[2];
+            int                         line_type;
+            int                         half_total;
+            int                         half_animated;
+            int                         square_nbr;
+            bool                        line_active;
+            Vec2                        initial_pos;
 
 
             Line(int);

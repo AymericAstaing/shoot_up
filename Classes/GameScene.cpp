@@ -165,7 +165,7 @@ void GameScene::init_listeners() {
 }
 
 void GameScene::init_pool_objects() {
-    int index_struct = COMPLEX_STRUCT_ELMTS_NBR;
+    int index_struct = COMPLEX_STRUCT_NBR;
     pool_container = new Line *[27];
     pool_circle = new Circle *[15];
     bullet_container = new Bullet *[101];
@@ -208,9 +208,9 @@ void GameScene::init_bonus_components() {
     shield_rect = Sprite::create(SHIELD_RECT_TEXTURE);
     shield_rect->setScale(player->getContentSize().height /
                           shield_rect->getContentSize().height);
-    bonus_container[BONUS_BULLET] = Sprite::createWithSpriteFrameName(DEFAULT_BULLET_TEXTURE);
-    bonus_container[BONUS_POWER] = Sprite::createWithSpriteFrameName(DEFAULT_POWER_TEXTURE);
-    bonus_container[BONUS_SPEED] = Sprite::createWithSpriteFrameName(DEFAULT_SPEED_TEXTURE);
+    bonus_container[BONUS_BULLET] = Sprite::createWithSpriteFrameName(DEFAULT_BONUS_BULLET_TEXTURE);
+    bonus_container[BONUS_POWER] = Sprite::createWithSpriteFrameName(DEFAULT_BONUS_POWER_TEXTURE);
+    bonus_container[BONUS_SPEED] = Sprite::createWithSpriteFrameName(DEFAULT_BONUS_SPEED_TEXTURE);
     rect_container[RECT_BULLET] = Sprite::create(BULLET_RECT);
     rect_container[RECT_POWER] = Sprite::create(POWER_RECT);
     rect_container[RECT_SPEED] = Sprite::create(SPEED_RECT);
@@ -568,7 +568,7 @@ void GameScene::check_hit_color_change(Line *l, Square *sq) {
     int pv = sq->square_pv;
     int step = 0;
 
-    auto batch = l->getChildByTag(LINE_BATCH_ID);
+    auto batch = l->getChildByTag(LINE_BATCH_TAG);
     Sprite *e = ((Sprite *) batch->getChildByTag(sq->getTag()));
 
     if (pv < default_pv_value && pv >= default_pv_value * (0.8))
@@ -598,7 +598,7 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
     if (!pool_container[line_id]->line_active)
         return;
     int i = 0;
-    auto batch = pool_container[line_id]->getChildByTag(LINE_BATCH_ID);
+    auto batch = pool_container[line_id]->getChildByTag(LINE_BATCH_TAG);
     while (1) {
         auto child = pool_container[line_id]->getChildByTag(i);
         if (!child)
@@ -676,7 +676,7 @@ void GameScene::check_bullet_collision() {
 void GameScene::check_into_line(int bullet_id, int line_id) {
     int index = 0;
     Line *current_line = pool_container[line_id];
-    auto batch = current_line->getChildByTag(LINE_BATCH_ID);
+    auto batch = current_line->getChildByTag(LINE_BATCH_TAG);
     while (1) {
         Square *sq = ((Square *) current_line->getChildByTag(index));
         if (!sq)
@@ -760,7 +760,7 @@ void GameScene::move_active_lines() {
 }
 
 bool GameScene::collison_need_detection(Line *l) {
-    return (l->getPositionY() + l->getContentSize().height / 2 >= player->getPositionY());
+    return (l->getPositionY() + (1.5 * l->getContentSize().height / 2) >= player->getPositionY());
 }
 
 void GameScene::check_player_collision() {
@@ -1030,9 +1030,9 @@ void GameScene::remove_active_line(int line_to_rm) {
 int GameScene::get_next_line_type() {
     if (shooter_never_updated)
         return (LINE_TYPE_SIMPLE_OF_4);
-    if (LINE_GENERATED < SIMPLE_LINE_NBR)
+    if (LINE_GENERATED < NBR_LINE_BEFORE_DOWN_SCALING)
         return (LINE_TYPE_SIMPLE_OF_4);
-    else if (LINE_GENERATED == SIMPLE_LINE_NBR)
+    else if (LINE_GENERATED == NBR_LINE_BEFORE_DOWN_SCALING)
         return (LINE_TYPE_SIMPLE_OF_5);
     else
         return (Utils::get_random_line_type());
@@ -1052,10 +1052,10 @@ void GameScene::run_game_loop() {
                                          pool_container[NEXT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->line_size);
     } else {
-        if (current_factor_h < STARTUP_OF_3) {
+        if (current_factor_h < H_LIMIT_STARTUP_3) {
             CURRENT_LINE_ID = 1;
             NEXT_LINE_ID = 4;
-        } else if (current_factor_h < STARTUP_OF_4) {
+        } else if (current_factor_h < H_LIMIT_STARTUP_4) {
             CURRENT_LINE_ID = 2;
             NEXT_LINE_ID = 4;
         } else {
@@ -1352,16 +1352,12 @@ void GameScene::play_square_explode() {
 }
 
 bool GameScene::is_normal_launch() {
-    if (game_shooter_type != DOUBLE_TANK && game_shooter_type != SIDEWAY_TANK &&
-        game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET)
-        return true;
-    return false;
+    return game_shooter_type != DOUBLE_TANK && game_shooter_type != SIDEWAY_TANK &&
+    game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET;
 }
 
 bool GameScene::is_bonus_launch() {
-    if (bonus_active == BONUS_BULLET)
-        return true;
-    return false;
+    return bonus_active == BONUS_BULLET;
 }
 
 void GameScene::launch_bullet(float dt) {
@@ -1373,10 +1369,10 @@ void GameScene::launch_bullet(float dt) {
                 play_bullet_sound();
                 if (bonus_active == BONUS_POWER)
                     bullet_container[i]->setScale(BIG_BULLET_SCALE);
-                if (bullet_state == BULLET_LEFT)
-                    bullet_state = BULLET_RIGHT;
+                if (bullet_state == BULLET_SIDE_LEFT)
+                    bullet_state = BULLET_SIDE_RIGHT;
                 else
-                    bullet_state = BULLET_LEFT;
+                    bullet_state = BULLET_SIDE_LEFT;
                 return;
             }
         }
