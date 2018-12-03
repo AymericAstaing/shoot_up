@@ -18,11 +18,13 @@ static const char *explode_plist[4] = {"spritesheet/explode_square_red.plist",
                                        "spritesheet/explode_square_yellow.plist",
                                        "spritesheet/explode_square_green.plist"};
 
-static const char *explode_bonus_plist[3] = {"spritesheet/explode_bonus_bullet.plist",
-                                       "spritesheet/explode_bonus_power.plist",
-                                       "spritesheet/explode_bonus_speed.plist"};
+static const char *explode_bonus_plist[3] =
+                                        {"spritesheet/explode_bonus_bullet.plist",
+                                         "spritesheet/explode_bonus_power.plist",
+                                            "spritesheet/explode_bonus_speed.plist"};
 
-static const char *default_bonus_texture[3] = {"bonus_bullet_0.png",
+static const char *default_bonus_texture[3] =
+                                        {"bonus_bullet_0.png",
                                                "bonus_power_0.png",
                                                "bonus_speed_0.png"};
 
@@ -39,82 +41,82 @@ using namespace CocosDenshion;
 class GameScene : public cocos2d::Scene {
 
 private:
-    Line**              pool_container;
-    Bullet**            bullet_container;
-    SpriteBatchNode*    bullet_batch_node;
-    Sprite*             player;
-    Sprite**            bonus_container;
-    Sprite**            rect_container;
-    Circle**            pool_circle;
-    MenuItemImage*      back_to_main;
-    MenuItemImage*      rate;
-    MenuItemImage*      share;
-    Label*              score;
-    Sprite*             sound;
-    Sprite*             best_img;
-    Sprite*             shield_rect;
-    Sprite*             tuto;
-    Sprite*             next_button;
-    Sprite*             continue_button;
-    Menu*               game_menu;
-    SimpleAudioEngine*  game_audio;
-    Label*              earned_point;
-    MenuItemImage*      options_btn;
-    MenuItemFont*       menu_title;
-    MenuItemFont*       menu_surclassement_txt;
-    MenuItemImage*      menu_surclassement_img;
-    MenuItemImage*      menu_shop_img;
-    MenuItemImage*      menu_best_img;
-    MenuItemFont*       menu_best_txt;
-    MenuItemFont*       menu_power_level;
-    MenuItemFont*       menu_speed_level;
-    MenuItemImage*      menu_anim_img_hand;
-    MenuItemImage*      menu_anim_img;
-    MenuItemImage*      menu_stats_img;
-    Menu*               end_menu;
-    Layer*              stats;
-    Sequence*           wait_sequence;
-    float               bonus_time = 0;
-    bool                bonus_selected = false;
-    bool                bonus_displayed = false;
-    bool                rect_animated = false;
-    bool                shield_live_used = false;
-    bool                star_bonus_active = false;
-    bool                game_already_resumed = false;
-    int                 star_line_id = -1;
-    int                 bonus_active = 0;
-    int                 bonus_id = -1;
-    float               x_screen;
-    float               y_screen;
-    float               game_duration;
-    int                 game_score;
-    int                 game_shooter_type = 0;
-    int                 *active_lines;
-    int                 options_state = 0;
-    int                 next_bonus_spawn = 0;
-    int                 bullet_state;
-    int                 last_line_hited_id;
-    int                 game_block_destroyed = 0;
-    int                 game_power_up_collected = 0;
-    int                 current_factor_h = 0;
-    bool                shooter_never_updated = true;
+    Line**                  pool_container;
+    Bullet**                bullet_container;
+    SpriteBatchNode*        bullet_batch_node;
+    Sprite*                 player;
+    Sprite**                bonus_container;
+    Sprite**                rect_container;
+    Circle**                pool_circle;
+    MenuItemImage*          back_to_main;
+    MenuItemImage*          rate;
+    MenuItemImage*          share;
+    Label*                  score;
+    Sprite*                 sound;
+    Sprite*                 best_img;
+    Sprite*                 shield_rect;
+    Sprite*                 tuto;
+    Sprite*                 next_button;
+    Sprite*                 continue_button;
+    Menu*                   game_menu;
+    SimpleAudioEngine*      game_audio;
+    Label*                  earned_point;
+    MenuItemImage*          options_btn;
+    MenuItemFont*           menu_title;
+    MenuItemFont*           menu_surclassement_txt;
+    MenuItemImage*          menu_surclassement_img;
+    MenuItemImage*          menu_shop_img;
+    MenuItemImage*          menu_best_img;
+    MenuItemFont*           menu_best_txt;
+    MenuItemFont*           menu_power_level;
+    MenuItemFont*           menu_speed_level;
+    MenuItemImage*          menu_anim_img_hand;
+    MenuItemImage*          menu_anim_img;
+    MenuItemImage*          menu_stats_img;
+    Menu*                   end_menu;
+    Layer*                  stats;
+    Sequence*               wait_sequence;
+    float                   bonus_time = 0;
+    bool                    bonus_selected = false;
+    bool                    bonus_displayed = false;
+    bool                    rect_animated = false;
+    bool                    shield_live_used = false;
+    bool                    star_bonus_active = false;
+    bool                    game_already_resumed = false;
+    int                     star_line_id = -1;
+    int                     bonus_active = 0;
+    int                     bonus_id = -1;
+    float                   x_screen;
+    float                   y_screen;
+    float                   game_duration;
+    int                     game_score;
+    int                     game_shooter_type = 0;
+    int*                    active_lines;
+    int                     options_state = 0;
+    int                     next_bonus_spawn = 0;
+    int                     bullet_state;
+    int                     last_line_hited_id;
+    int                     game_block_destroyed = 0;
+    int                     game_power_up_collected = 0;
+    int                     current_factor_h = 0;
+    bool                    shooter_never_updated = true;
 
     /******************* LINE MANAGMENT ***************/
-    int                 CURRENT_LINE_ID;
-    int                 NEXT_LINE_ID;
-    int                 LINE_GENERATED;
-    float               NEW_SPAWN_Y;
+    int                     CURRENT_LINE_ID;
+    int                     NEXT_LINE_ID;
+    int                     LINE_GENERATED;
+    float                   NEW_SPAWN_Y;
 
     /******************* SOUND MANAGMENT ***************/
-    int                 sound_hit_played = 0;
-    int                 sound_shot_played = 0;
-    bool                sound_activated = true;
+    int                     sound_hit_played = 0;
+    int                     sound_shot_played = 0;
+    bool                    sound_activated = true;
 
 
 public:
-    int                 game_state;
-    bool                reward_possible = false;
-    MenuItemImage*      bonus_x2;
+    int                     game_state;
+    bool                    reward_possible = false;
+    MenuItemImage*          bonus_x2;
 
     CREATE_FUNC(GameScene);
     static cocos2d::Scene*  createScene();

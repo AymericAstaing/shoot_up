@@ -173,57 +173,32 @@ static const char *shop_ball_selected[8] = {
 class UserLocalStore {
 
 public:
-    static void init_achievement_variables();
-
-    static int get_current_shooter();
-
-    static int get_current_ball();
-
-    static int get_first_launch();
-
-    static void set_first_launch();
-
-    static void init_asset_arrays();
-
-    static void store_shooter(int, int);
-
-    static void store_ball(int, int);
-
-    static int get_shooter(int);
-
-    static int get_ball(int);
-
-    static void check_for_shooter_unlocked(int);
-
-    static void update_achievements(int, int, int);
-
-    static void store_achievement_variable_float(const char *, float);
-
-    static void store_asset_shooter(int[31]);
-
-    static void store_asset_ball(int[8]);
-
-    static int *get_asset_shooter();
-
-    static int *get_asset_ball();
-
-    static const char **get_final_shooter_array();
-
-    static const char **get_final_ball_array();
-
-    static const char *get_shooter_key_with_index(int);
-
-    static const char *get_ball_key_with_index(int);
-
-    static int get_achievement_variable(const char *);
-
-    static float get_achievement_variable_float(const char *);
-
-    static void store_achievement_variable(const char *, int);
-
-    static int get_shooter_achievement_target(int);
-
-    static int get_ball_achievement_target(int);
+    static void             init_achievement_variables();
+    static int              get_current_shooter();
+    static int              get_current_ball();
+    static int              get_first_launch();
+    static void             set_first_launch();
+    static void             init_asset_arrays();
+    static void             store_shooter(int, int);
+    static void             store_ball(int, int);
+    static int              get_shooter(int);
+    static int              get_ball(int);
+    static void             check_for_shooter_unlocked(int);
+    static void             update_achievements(int, int, int);
+    static void             store_achievement_variable_float(const char *, float);
+    static void             store_asset_shooter(int[31]);
+    static void             store_asset_ball(int[8]);
+    static int*             get_asset_shooter();
+    static int*             get_asset_ball();
+    static const char**     get_final_shooter_array();
+    static const char**     get_final_ball_array();
+    static const char*      get_shooter_key_with_index(int);
+    static const char*      get_ball_key_with_index(int);
+    static int              get_achievement_variable(const char *);
+    static float            get_achievement_variable_float(const char *);
+    static void             store_achievement_variable(const char *, int);
+    static int              get_shooter_achievement_target(int);
+    static int              get_ball_achievement_target(int);
 
 private:
 };

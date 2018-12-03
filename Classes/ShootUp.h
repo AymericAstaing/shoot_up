@@ -8,8 +8,8 @@ USING_NS_CC;
 /********************* GLOBAL VARIABLES ***********************/
 #define WIDTH                           0
 #define HEIGHT                          1
-#define EMPTY_VALUE                    -1
-#define GAME_MENU_NAME                 "S H O O T  U P !"
+#define EMPTY_VALUE                     -1
+#define GAME_MENU_NAME                  "S H O O T  U P !"
 #define NBR_LINE_BEFORE_DOWN_SCALING    8
 #define APP_INITIAL_OPEN                0
 #define APP_ALREADY_OPEN                1
@@ -20,46 +20,46 @@ USING_NS_CC;
 #define SOUND_OFF                       1
 
 /********************* FONT ***********************/
-#define FIRE_UP_FONT_NAME              "fonts/fire_up.ttf"
-#define FIRE_UP_FONT_NAME_NUMBERS      "fonts/numbers.ttf"
+#define FIRE_UP_FONT_NAME               "fonts/fire_up.ttf"
+#define FIRE_UP_FONT_NAME_NUMBERS       "fonts/numbers.ttf"
 
 /********************* END OF GAME MENUS ***********************/
-#define POPUP_POWER                    "pop_up/power.png"
-#define POPUP_POWER_SELECTED           "pop_up/power_selected.png"
-#define POPUP_SPEED                    "pop_up/speed.png"
-#define POPUP_SPEED_SELECTED           "pop_up/speed_selected.png"
-#define BONUS_X2                       "end_of_game_menu/bonusx2.png"
-#define REPLAY_TEXTURE                 "end_of_game_menu/replay_btn.png"
-#define SHARE_TEXTURE                  "end_of_game_menu/share_btn.png"
-#define RATE_TEXTURE                   "end_of_game_menu/rate_btn.png"
-#define BACKGROUND_TEXTURE             "end_of_game_menu/background.png"
-#define NEXT_BUTTON_TEXTURE            "continue_menu/continue_btn.png"
-#define DEFAULT_CONTINUE_TEXTURE       "continue_0.png"
+#define POPUP_POWER                     "pop_up/power.png"
+#define POPUP_POWER_SELECTED            "pop_up/power_selected.png"
+#define POPUP_SPEED                     "pop_up/speed.png"
+#define POPUP_SPEED_SELECTED            "pop_up/speed_selected.png"
+#define BONUS_X2                        "end_of_game_menu/bonusx2.png"
+#define REPLAY_TEXTURE                  "end_of_game_menu/replay_btn.png"
+#define SHARE_TEXTURE                   "end_of_game_menu/share_btn.png"
+#define RATE_TEXTURE                    "end_of_game_menu/rate_btn.png"
+#define BACKGROUND_TEXTURE              "end_of_game_menu/background.png"
+#define NEXT_BUTTON_TEXTURE             "continue_menu/continue_btn.png"
+#define DEFAULT_CONTINUE_TEXTURE        "continue_0.png"
 
 /********************* MAIN GAME MENU ***********************/
-#define SURCLASSEMENT                  "SURCLASSEMENT"
-#define SHOP_ASSET_SELECTED(X)         (X == 0 ? SHOP_SELECTED : SHOP_SELECTED_NEW)
-#define SHOP_ASSET_UNSELECTED(X)       (X == 0 ? SHOP_UNSELECTED : SHOP_UNSELECTED_NEW)
+#define SURCLASSEMENT                   "SURCLASSEMENT"
+#define SHOP_ASSET_SELECTED(X)          (X == 0 ? SHOP_SELECTED : SHOP_SELECTED_NEW)
+#define SHOP_ASSET_UNSELECTED(X)        (X == 0 ? SHOP_UNSELECTED : SHOP_UNSELECTED_NEW)
 #define OPTIONS_HIDE                    0
 #define OPTIONS_DISPLAYED               1
-#define SURCLASSEMENT_UNSELECTED       "menu/surclassement.png"
-#define SURCLASSEMENT_SELECTED         "menu/surclassement_selected.png"
-#define OPTIONS_SOUND_ON               "menu/options/sound_on.png"
-#define OPTIONS_SOUND_OFF              "menu/options/sound_off.png"
-#define OPTIONS_TUTO                   "menu/options/tuto.png"
-#define OPTIONS                        "menu/options.png"
-#define STATS                          "menu/stats.png"
-#define HAND                           "menu/play_anim_hand.png"
-#define HAND_RAIL                      "menu/play_anim.png"
-#define BEST_IMG                       "menu/best_score.png"
-#define SHOP_UNSELECTED                "menu/shop.png"
-#define SHOP_SELECTED                  "menu/shop_selected.png"
-#define SHOP_UNSELECTED_NEW            "menu/shop_new.png"
-#define SHOP_SELECTED_NEW              "menu/shop_selected_new.png"
+#define SURCLASSEMENT_UNSELECTED        "menu/surclassement.png"
+#define SURCLASSEMENT_SELECTED          "menu/surclassement_selected.png"
+#define OPTIONS_SOUND_ON                "menu/options/sound_on.png"
+#define OPTIONS_SOUND_OFF               "menu/options/sound_off.png"
+#define OPTIONS_TUTO                    "menu/options/tuto.png"
+#define OPTIONS                         "menu/options.png"
+#define STATS                           "menu/stats.png"
+#define HAND                            "menu/play_anim_hand.png"
+#define HAND_RAIL                       "menu/play_anim.png"
+#define BEST_IMG                        "menu/best_score.png"
+#define SHOP_UNSELECTED                 "menu/shop.png"
+#define SHOP_SELECTED                   "menu/shop_selected.png"
+#define SHOP_UNSELECTED_NEW             "menu/shop_new.png"
+#define SHOP_SELECTED_NEW               "menu/shop_selected_new.png"
 
 /********************* HUD (GAME FLOW) ***********************/
-#define BEST_SCORE_IMG                 "hud/best_img.png"
-#define HIT_CIRCLE                     "hud/hit_circle.png"
+#define BEST_SCORE_IMG                  "hud/best_img.png"
+#define HIT_CIRCLE                      "hud/hit_circle.png"
 
 /********************* TEXT SIZE ***********************/
 #define SIZE_GAME_NAME                  85
@@ -73,12 +73,12 @@ USING_NS_CC;
 #define SIZE_NAME_ITEMS_END_MENU        24
 
 /********************* SPLASH_SCREEN ***********************/
-#define SPLASH_BACKGROUND_TEXTURE      "splash_screen/splash_background.png"
-#define SPLASH_TRIPLEA_LOGO            "splash_screen/tripleAlogo.png"
+#define SPLASH_BACKGROUND_TEXTURE       "splash_screen/splash_background.png"
+#define SPLASH_TRIPLEA_LOGO             "splash_screen/tripleAlogo.png"
 
 
 /********************* STANDARD SQUARE ***********************/
-#define DEFAULT_SQUARE_TEXTURE         "green_b.png"
+#define DEFAULT_SQUARE_TEXTURE          "green_b.png"
 #define SQUARE_SIZE_4                   3.95
 #define SQUARE_SIZE_5                   4.95
 
@@ -244,7 +244,6 @@ USING_NS_CC;
 class ShootUp {
 
 public:
-
 
 private:
 };
