@@ -16,7 +16,6 @@ USING_NS_CC;
 #define NOT_FROM_SHOP                   0
 #define INCREASE_POINTS_FACTOR          15
 #define DEFAULT_CHAR_LENGHT             10
-#define ZERO_SHOOTER_EARNED             2
 #define SOUND_ON                        0
 #define SOUND_OFF                       1
 
@@ -83,10 +82,6 @@ USING_NS_CC;
 #define SQUARE_SIZE_4                   3.95
 #define SQUARE_SIZE_5                   4.95
 
-/********************* BULLETS ***********************/
-#define NORMAL_BULLET_SCALE             1.0f
-#define BIG_BULLET_SCALE                1.3f
-
 /********************* UTILS ***********************/
 #define VALUE_SIMPLE                    0
 #define VALUE_WITH_POINT                1
@@ -118,6 +113,11 @@ USING_NS_CC;
 #define SOUND_LAUNCH                    "sound/bullet_launch.wav"
 #define SOUND_HITED                     "sound/square_hited.wav"
 #define SOUND_EXPLODE                   "sound/square_explode.wav"
+
+/******************* SCALES ***************/
+#define NORMAL_BULLET_SCALE             1.0f
+#define BIG_BULLET_SCALE                1.3f
+#define CIRCLE_SCALE                    0.5f
 
 /******************* ACHIEVEMENT CATEGORIES ***************/
 #define STARTER_TANK                    0
@@ -187,6 +187,7 @@ USING_NS_CC;
 
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
+#define SHOOTER_NEVER_UPDATED(X, Y)     ((X + Y) == 2 ? true : false)
 #define DEFAULT_BULLET_NBR              16 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE INIT AND MANAGMENT  ***************/
@@ -194,15 +195,8 @@ USING_NS_CC;
 #define H_LIMIT_STARTUP_4               2829
 #define SQUARE_SIZE_LINE_OF_4           4
 #define SQUARE_SIZE_LINE_OF_5           5
-#define COMPLEX_STRUCT_NBR              7
+#define COMPLEX_STRUCT_NBR              6
 
-
-#define SIMPLE_LINE_4                   0
-#define SIMPLE_LINE_5                   1
-#define STARTUP_LINE_2                  3
-#define STARTUP_LINE_3                  4
-#define STARTUP_LINE_4                  5
-#define STARTUP_LINE_5                  6
 
 /******************* LINE TYPE ***************/
 #define LINE_TYPE_STARTUP_2             0
@@ -220,7 +214,7 @@ USING_NS_CC;
 #define LINE_TYPE_COMPLEX_6             12
 #define LINE_TYPE_COMPLEX_7             13
 
-/*******************GAME VARIABLES ***************/
+/******************* ACHIEVEMENT VARIABLES KEY ***************/
 #define POWER_LEVEL                     "POWER_LEVEL"
 #define APP_FIRST_OPEN                  "FIRST_OPEN"
 #define SPEED_LEVEL                     "SPEED_LEVEL"

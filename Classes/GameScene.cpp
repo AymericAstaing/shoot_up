@@ -171,10 +171,10 @@ void GameScene::init_pool_objects() {
     bullet_container = new Bullet *[101];
     active_lines = new int[5];
 
-    pool_container[0] = Line::create(STARTUP_LINE_2);
-    pool_container[1] = Line::create(STARTUP_LINE_3);
-    pool_container[2] = Line::create(STARTUP_LINE_4);
-    pool_container[3] = Line::create(STARTUP_LINE_5);
+    pool_container[0] = Line::create(LINE_TYPE_STARTUP_2);
+    pool_container[1] = Line::create(LINE_TYPE_STARTUP_3);
+    pool_container[2] = Line::create(LINE_TYPE_STARTUP_4);
+    pool_container[3] = Line::create(LINE_TYPE_STARTUP_5);
 
     for (int i = 0; i < 15; i++) {
         pool_circle[i] = Circle::create();
@@ -190,9 +190,9 @@ void GameScene::init_pool_objects() {
     }
     bullet_container[100] = NULL;
     for (int i = 4; i < 7; i++)
-        pool_container[i] = Line::create(SIMPLE_LINE_4);
+        pool_container[i] = Line::create(LINE_TYPE_SIMPLE_OF_4);
     for (int i = 7; i < 10; i++)
-        pool_container[i] = Line::create(SIMPLE_LINE_5);
+        pool_container[i] = Line::create(LINE_TYPE_SIMPLE_OF_5);
     for (int i = 10; i < 26; i += 2, index_struct++) {
         pool_container[i] = Line::create(index_struct);
         pool_container[i + 1] = Line::create(index_struct);
@@ -622,7 +622,7 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
 void GameScene::show_destruction_bonus(int value, int line_id) {
     if (!pool_container[line_id] || !pool_container[line_id]->line_active)
         return;
-    pool_container[line_id]->half_animated = 1;
+    pool_container[line_id]->line_animated = true;
     Label *bonus = Label::createWithTTF(Utils::get_reduced_value(value, VALUE_BONUS_COMMENT),
                                         FIRE_UP_FONT_NAME_NUMBERS, 40);
     bonus->setAnchorPoint(Vec2(0, 0));
@@ -647,7 +647,7 @@ void GameScene::show_destruction_bonus(int value, int line_id) {
 void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
     if (!l || !l->line_active || l->square_nbr >= 15)
         return;
-    if (l->half_animated == 1)
+    if (l->line_animated)
         return;
     int index = 0;
     int square_dead = 0;
@@ -975,43 +975,53 @@ void GameScene::generate_star_bonus() {
     }
 }
 
+void GameScene::runtime_checks() {
+    if (LINE_GENERATED == NBR_LINE_BEFORE_DOWN_SCALING && !shooter_never_updated &&
+        player->getScale() != 0.85)
+        scale_animation();
+    move_circles();
+    bonus_managment();
+    check_bullet_collision();
+    check_player_collision();
+}
+
+void GameScene::line_flow_checks() {
+    check_lines_out();
+    move_active_lines();
+}
+
+bool GameScene::new_line_need_be_generate() {
+    return (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y);
+}
+
+void GameScene::select_next_line() {
+    NEXT_LINE_ID = get_next_line_id(get_next_line_type());
+    if (NEXT_LINE_ID != EMPTY_VALUE)
+        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
+                                         pool_container[NEXT_LINE_ID]->get_type(),
+                                         pool_container[NEXT_LINE_ID]->line_size);
+}
+
 void GameScene::update(float ft) {
     game_duration += ft;
     if (bonus_active != -1)
         bonus_time += ft;
     if (game_shooter_type == SHIELD_TANK && shield_rect->isVisible())
         shield_rect->setPosition(player->getPosition());
-    check_lines_out();
-    move_active_lines();
-    if (game_state == GAME_RUNNING) {
-        if (LINE_GENERATED == NBR_LINE_BEFORE_DOWN_SCALING && shooter_never_updated == 0 &&
-            player->getScale() != 0.85)
-            scale_animation();
-        move_circles();
-        bonus_managment();
-        check_bullet_collision();
-        check_player_collision();
-    }
-    if (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y) {
+    line_flow_checks();
+    if (game_state == GAME_RUNNING)
+        runtime_checks();
+    if (new_line_need_be_generate()) {
         if (!star_bonus_active)
             generate_star_bonus();
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
-        NEXT_LINE_ID = get_next_line_id(get_next_line_type());
         LINE_GENERATED++;
-        if (NEXT_LINE_ID != -1)
-            NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
-                                             pool_container[NEXT_LINE_ID]->get_type(),
-                                             pool_container[NEXT_LINE_ID]->line_size);
+        select_next_line();
     }
-    if (NEXT_LINE_ID == -1) {
-        NEXT_LINE_ID = get_next_line_id(get_next_line_type());
-        if (NEXT_LINE_ID != -1)
-            NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
-                                             pool_container[NEXT_LINE_ID]->get_type(),
-                                             pool_container[NEXT_LINE_ID]->line_size);
-    }
+    if (NEXT_LINE_ID == EMPTY_VALUE)
+        select_next_line();
 }
 
 void GameScene::store_active_line(int line_index) {
@@ -1039,13 +1049,10 @@ int GameScene::get_next_line_type() {
 }
 
 void GameScene::run_game_loop() {
-    int indicator = UserLocalStore::get_achievement_variable(POWER_LEVEL) +
-                    UserLocalStore::get_achievement_variable(SPEED_LEVEL);
-    if (indicator == ZERO_SHOOTER_EARNED)
-        shooter_never_updated = 1;
-    else
-        shooter_never_updated = 0;
-    if (shooter_never_updated == 1) {
+    shooter_never_updated = SHOOTER_NEVER_UPDATED(
+            UserLocalStore::get_achievement_variable(POWER_LEVEL),
+            UserLocalStore::get_achievement_variable(SPEED_LEVEL));
+    if (shooter_never_updated) {
         CURRENT_LINE_ID = 4;
         NEXT_LINE_ID = 5;
         NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
@@ -1353,7 +1360,7 @@ void GameScene::play_square_explode() {
 
 bool GameScene::is_normal_launch() {
     return game_shooter_type != DOUBLE_TANK && game_shooter_type != SIDEWAY_TANK &&
-    game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET;
+           game_shooter_type != TRIPLE_TANK && bonus_active != BONUS_BULLET;
 }
 
 bool GameScene::is_bonus_launch() {
@@ -1608,6 +1615,7 @@ Menu *GameScene::get_end_game_menu() {
     float speed_price_value = UserLocalStore::get_achievement_variable_float(SPEED_LEVEL_PRICE);
     float power_price_value = UserLocalStore::get_achievement_variable_float(POWER_LEVEL_PRICE);
     float point_value = UserLocalStore::get_achievement_variable(POINT);
+    log("POINTS = %f", point_value);
     char current_power[DEFAULT_CHAR_LENGHT];
     sprintf(current_power, "LEVEL %i",
             UserLocalStore::get_achievement_variable(POWER_LEVEL));

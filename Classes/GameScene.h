@@ -97,7 +97,7 @@ private:
     int                 game_block_destroyed = 0;
     int                 game_power_up_collected = 0;
     int                 current_factor_h = 0;
-    int                 shooter_never_updated = 0;
+    bool                shooter_never_updated = true;
 
     /******************* LINE MANAGMENT ***************/
     int                 CURRENT_LINE_ID;
@@ -123,12 +123,16 @@ public:
     void                    remove_active_line(int);
     void                    init_bonus_components();
     void                    reset_arrays();
+    void                    runtime_checks();
     void                    destroy_complete_line(int, float);
     void                    main_menu_coming_animation();
     void                    update_game_score(int);
     float                   get_shoot_interval();
     bool                    is_touch_on_player_zone(Vec2);
     bool                    is_normal_launch();
+    void                    line_flow_checks();
+    void                    select_next_line();
+    bool                    new_line_need_be_generate();
     bool                    is_bonus_launch();
     void                    show_bonus_particle_explode(Vec2);
     void                    check_full_destruction_bonus(Line*, int);

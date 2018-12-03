@@ -15,7 +15,7 @@ void Circle::reset() {
     this->setPosition(Vec2(getContentSize().width / 2,
                            winSize.height - getContentSize().height / 2));
     auto fadeIn = FadeIn::create(0);
-    setScale(0.5f);
+    setScale(CIRCLE_SCALE);
     runAction(fadeIn);
 }
 
@@ -37,7 +37,7 @@ Circle *Circle::create() {
     auto winSize = Director::getInstance()->getVisibleSize();
     Circle *c = new Circle();
     if (c->initWithFile(HIT_CIRCLE)) {
-        c->setScale(0.5f);
+        c->setScale(CIRCLE_SCALE);
         c->setPosition(Vec2(-c->getContentSize().width / 2,
                             winSize.height - c->getContentSize().height / 2));
         c->setVisible(false);

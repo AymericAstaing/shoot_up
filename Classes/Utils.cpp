@@ -156,7 +156,7 @@ int *Utils::get_simple_distribution_points(int *distribution, int total_nbr, int
     return (distribution);
 }
 
-int *Utils::get_distribution_points(int *distribution, int total_number, int nbr_of_group) {
+int *Utils::get_startup_distribution_points(int *distribution, int total_number, int nbr_of_group) {
     int t = 0;
     int loose_pcc = total_number / nbr_of_group;
 
@@ -278,43 +278,43 @@ int *Utils::get_container_range_research(int type) {
     int *range = new int[2];
 
     switch (type) {
-        case 4:
+        case LINE_TYPE_SIMPLE_OF_4:
             range[0] = 4;
             range[1] = 6;
             break;
-        case 5:
+        case LINE_TYPE_SIMPLE_OF_5:
             range[0] = 7;
             range[1] = 9;
             break;
-        case 6:
+        case LINE_TYPE_COMPLEX_0:
             range[0] = 10;
             range[1] = 11;
             break;
-        case 7:
+        case LINE_TYPE_COMPLEX_1:
             range[0] = 12;
             range[1] = 13;
             break;
-        case 8:
+        case LINE_TYPE_COMPLEX_2:
             range[0] = 14;
             range[1] = 15;
             break;
-        case 9:
+        case LINE_TYPE_COMPLEX_3:
             range[0] = 16;
             range[1] = 17;
             break;
-        case 10:
+        case LINE_TYPE_COMPLEX_4:
             range[0] = 18;
             range[1] = 19;
             break;
-        case 11:
+        case LINE_TYPE_COMPLEX_5:
             range[0] = 20;
             range[1] = 21;
             break;
-        case 12:
+        case LINE_TYPE_COMPLEX_6:
             range[0] = 22;
             range[1] = 23;
             break;
-        case 13:
+        case LINE_TYPE_COMPLEX_7:
             range[0] = 24;
             range[1] = 25;
             break;

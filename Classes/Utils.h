@@ -64,7 +64,7 @@ static const int random_type[8] = {LINE_TYPE_COMPLEX_0,
 class Utils {
 
 public:
-    static int *get_distribution_points(int *, int, int);
+    static int *get_startup_distribution_points(int *, int, int);
 
     static const std::string get_reduced_value(float, int);
 

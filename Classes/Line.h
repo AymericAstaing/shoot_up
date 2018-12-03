@@ -23,9 +23,9 @@ static const float DISTRIB_SIMPLE[2][5] = {{0.27, 0.3, 0.23, 0.2}, {0.23, 0.23, 
 
 
 static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_red_2.png", "hit_red_3.png", "hit_red_4.png"},
-                                            {"hit_orange_0.png", "hit_orange_1.png", "hit_orange_2.png", "hit_orange_3.png", "hit_orange_4.png"},
-                                            {"hit_yellow_0.png", "hit_yellow_1.png", "hit_yellow_2.png", "hit_yellow_3.png", "hit_yellow_4.png"},
-                                            { "hit_green_0.png", "hit_green_1.png", "hit_green_2.png", "hit_green_3.png", "hit_green_4.png"}};
+                                      {"hit_orange_0.png", "hit_orange_1.png", "hit_orange_2.png", "hit_orange_3.png", "hit_orange_4.png"},
+                                      {"hit_yellow_0.png", "hit_yellow_1.png", "hit_yellow_2.png", "hit_yellow_3.png", "hit_yellow_4.png"},
+                                      { "hit_green_0.png", "hit_green_1.png", "hit_green_2.png", "hit_green_3.png", "hit_green_4.png"}};
 
 
 
@@ -35,7 +35,7 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
             float                       line_size[2];
             int                         line_type;
             int                         half_total;
-            int                         half_animated;
+            bool                         line_animated;
             int                         square_nbr;
             bool                        line_active;
             Vec2                        initial_pos;
@@ -59,13 +59,11 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
             static void                 load_simple_line_5(Line *);
             void                        assign_line_points_complex(int, int);
             void                        assign_startup_line_points(int);
-            static const int*           struct_pos(int);
-            static int                  struct_element_nbr(int);
             void                        reset();
             void                        assign_line_points(int, int);
             static SpriteBatchNode*     get_batch();
             static Sprite*              get_texture(int, float*);
-            static int                  get_complex_line_type(int, Line *);
+            static int                  get_square_nbr(int);
             static void                 apply_animation(Line *, Sprite *, Square *, int, int);
             static void                 apply_full_translation(Square *, Sprite *, float[2], float[2]);
             static void                 apply_middle_left_translation(Square *, Sprite *, float[2], float[2]);

@@ -146,7 +146,8 @@ void Line::assign_line_points_complex(int h_factor,
     }
 }
 
-void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
+void
+Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
     int lines_nbr = square_nbr / 5;
     if (h_factor < 25)
@@ -160,8 +161,9 @@ void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STR
         if (type == LINE_TYPE_STARTUP_5)
             ratio = line_division_2[i];
         int *distrib = new int[5];
-        distrib = Utils::get_distribution_points(distrib, static_cast<int>(h_factor * ratio),
-                                                 5);
+        distrib = Utils::get_startup_distribution_points(distrib,
+                                                         static_cast<int>(h_factor * ratio),
+                                                         5);
         int index = i * 5;
         int k = 0;
         auto batchnode = getChildByTag(LINE_BATCH_TAG);
@@ -185,28 +187,27 @@ void Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STR
 
 Size Line::get_line_size(int type) {
     auto winSize = Director::getInstance()->getVisibleSize();
-    if (type == SIMPLE_LINE_4) {
+    if (type == LINE_TYPE_SIMPLE_OF_4)
         return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_4)) * 4,
                      static_cast<float>(winSize.height / 9.6)));
-    } else if (type == SIMPLE_LINE_5) {
+    else if (type == LINE_TYPE_SIMPLE_OF_5)
         return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5)) * 5,
                      winSize.height / 11));
-    } else {
-        int line_nbr = 0;
-        switch (type) {
-            case LINE_TYPE_STARTUP_4:
-                line_nbr = 4;
-                break;
-            case LINE_TYPE_STARTUP_5:
-                line_nbr = 5;
-                break;
-            default:
-                line_nbr = 5;
-                break;
-        }
-        return (Size((static_cast<float>(winSize.width / 4.95)) * 5,
-                     (static_cast<float>(winSize.height / 10.5)) * line_nbr));
+    int line_nbr = 0;
+    switch (type) {
+        case LINE_TYPE_STARTUP_4:
+            line_nbr = 4;
+            break;
+        case LINE_TYPE_STARTUP_5:
+            line_nbr = 5;
+            break;
+        default:
+            line_nbr = 5;
+            break;
     }
+    return (Size((static_cast<float>(winSize.width / 4.95)) * 5,
+                 (static_cast<float>(winSize.height / 10.5)) * line_nbr));
+
 }
 
 
@@ -232,7 +233,7 @@ void Line::apply_animation(Line *l, Sprite *s, Square *square, int struct_nbr, i
 }
 
 void Line::apply_full_translation(Square *s, Sprite *sprite, float rect_size[2],
-                             float line_size[2]) {
+                                  float line_size[2]) {
     float block_width = rect_size[WIDTH];
 
     auto actionMove1 = MoveBy::create(0.9,
@@ -326,54 +327,6 @@ Vec2 Line::get_square_grid_pos(int requiered_pos, float rect_size[2], int line_s
                  ((rect_size[HEIGHT]) / 2) + (req_pos.y * (rect_size[HEIGHT]))));
 }
 
-const int *Line::struct_pos(int id) {
-    switch (id) {
-        case 0:
-            return (pos_struct_0);
-        case 1:
-            return (pos_struct_1);
-        case 2:
-            return (pos_struct_2);
-        case 3:
-            return (pos_struct_3);
-        case 4:
-            return (pos_struct_4);
-        case 5:
-            return (pos_struct_5);
-        case 6:
-            return (pos_struct_6);
-        case 7:
-            return (pos_struct_7);
-        default:
-            break;
-    }
-    return (nullptr);
-}
-
-int Line::struct_element_nbr(int id) {
-    switch (id) {
-        case 0:
-            return (6);
-        case 1:
-            return (6);
-        case 2:
-            return (8);
-        case 3:
-            return (6);
-        case 4:
-            return (8);
-        case 5:
-            return (9);
-        case 6:
-            return (9);
-        case 7:
-            return (7);
-        default:
-            break;
-    }
-    return (0);
-}
-
 /********************************** LINE STRUCTURES *****************************/
 
 
@@ -408,9 +361,7 @@ void Line::load_startup_struct(Line *l) {
     SpriteBatchNode *spriteBatchNode = get_batch();
     spriteBatchNode->setContentSize(l->getContentSize());
     l->addChild(spriteBatchNode);
-
     int total_square = l->square_nbr;
-
     for (int i = 0; i < total_square; i++) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_5);
         if (sq) {
@@ -429,9 +380,9 @@ void Line::load_complex_struct(Line *l, int struct_number) {
     spriteBatchNode->setContentSize(l->getContentSize());
     l->addChild(spriteBatchNode);
 
-    struct_number -= 7; // REMOVE OTHER LINE TYPES
-    const int *pos_struct = struct_pos(struct_number);
-    int size = struct_element_nbr(struct_number);
+    int size = get_square_nbr(struct_number);
+    struct_number -= 6;
+    const int *pos_struct = SQUARE_POSITION_STRUCTURE[struct_number];
 
     for (int i = 0; i < size; i++) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_5);
@@ -491,33 +442,24 @@ int Line::get_type() {
     return (line_type);
 }
 
-int Line::get_complex_line_type(int type, Line *l) {
-
+int Line::get_square_nbr(int type) {
     switch (type) {
-        case 7:
-            l->square_nbr = 6;
-            return (LINE_TYPE_COMPLEX_0);
-        case 8:
-            l->square_nbr = 6;
-            return (LINE_TYPE_COMPLEX_1);
-        case 9:
-            l->square_nbr = 8;
-            return (LINE_TYPE_COMPLEX_2);
-        case 10:
-            l->square_nbr = 6;
-            return (LINE_TYPE_COMPLEX_3);
-        case 11:
-            l->square_nbr = 8;
-            return (LINE_TYPE_COMPLEX_4);
-        case 12:
-            l->square_nbr = 9;
-            return (LINE_TYPE_COMPLEX_5);
-        case 13:
-            l->square_nbr = 9;
-            return (LINE_TYPE_COMPLEX_6);
-        case 14:
-            l->square_nbr = 7;
-            return (LINE_TYPE_COMPLEX_7);
+        case LINE_TYPE_COMPLEX_0:
+            return (6);
+        case LINE_TYPE_COMPLEX_1:
+            return (6);
+        case LINE_TYPE_COMPLEX_2:
+            return (8);
+        case LINE_TYPE_COMPLEX_3:
+            return (6);
+        case LINE_TYPE_COMPLEX_4:
+            return (8);
+        case LINE_TYPE_COMPLEX_5:
+            return (9);
+        case LINE_TYPE_COMPLEX_6:
+            return (9);
+        case LINE_TYPE_COMPLEX_7:
+            return (7);
         default:
             break;
     }
@@ -525,39 +467,39 @@ int Line::get_complex_line_type(int type, Line *l) {
 }
 
 void Line::load_square(Line *l, int type) {
-
-    if (type > STARTUP_LINE_5) {
-        l->line_type = get_complex_line_type(type, l);
+    if (type > LINE_TYPE_SIMPLE_OF_5) {
+        l->line_type = type;
+        l->square_nbr = get_square_nbr(type);
         load_complex_struct(l, type);
         return;
     }
     switch (type) {
-        case SIMPLE_LINE_4:
+        case LINE_TYPE_SIMPLE_OF_4:
             l->square_nbr = 4;
             l->line_type = LINE_TYPE_SIMPLE_OF_4;
             load_simple_line_4(l);
             break;
-        case SIMPLE_LINE_5:
+        case LINE_TYPE_SIMPLE_OF_5:
             l->square_nbr = 5;
             l->line_type = LINE_TYPE_SIMPLE_OF_5;
             load_simple_line_5(l);
             break;
-        case STARTUP_LINE_2:
+        case LINE_TYPE_STARTUP_2:
             l->square_nbr = 10;
             l->line_type = LINE_TYPE_STARTUP_2;
             load_startup_struct(l);
             break;
-        case STARTUP_LINE_3:
+        case LINE_TYPE_STARTUP_3:
             l->square_nbr = 15;
             l->line_type = LINE_TYPE_STARTUP_3;
             load_startup_struct(l);
             break;
-        case STARTUP_LINE_4:
+        case LINE_TYPE_STARTUP_4:
             l->square_nbr = 20;
             l->line_type = LINE_TYPE_STARTUP_4;
             load_startup_struct(l);
             break;
-        case STARTUP_LINE_5:
+        case LINE_TYPE_STARTUP_5:
             l->square_nbr = 25;
             l->line_type = LINE_TYPE_STARTUP_5;
             load_startup_struct(l);
@@ -574,12 +516,12 @@ void Line::load_square(Line *l, int type) {
 void Line::set_active(int factor_h, int line_generated) {
     setVisible(true);
     line_active = true;
-    if (get_type() <= LINE_TYPE_STARTUP_5)
-        assign_startup_line_points(factor_h);
-    else if (get_type() < LINE_TYPE_COMPLEX_0)
+    if (get_type() > LINE_TYPE_SIMPLE_OF_5)
+        assign_line_points_complex(factor_h, line_generated);
+    else if (get_type() >= LINE_TYPE_SIMPLE_OF_4)
         assign_line_points(factor_h, line_generated);
     else
-        assign_line_points_complex(factor_h, line_generated);
+        assign_startup_line_points(factor_h);
 }
 
 void Line::reset() {
@@ -599,7 +541,7 @@ void Line::reset() {
             sq->setVisible(true);
         index++;
     }
-    half_animated = 0;
+    line_animated = false;
     half_total = 0;
     line_active = false;
     setVisible(false);
@@ -615,7 +557,7 @@ Line *Line::create(int type) {
     l->line_size[WIDTH] = size.width;
     l->line_size[HEIGHT] = size.height;
     l->half_total = 0;
-    l->half_animated = 0;
+    l->line_animated = false;
     l->initial_pos = Vec2(0, winSize.height + l->line_size[HEIGHT]);
     l->line_active = false;
     l->setContentSize(Size(l->line_size[WIDTH], l->line_size[HEIGHT]));
