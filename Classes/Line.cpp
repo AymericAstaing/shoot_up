@@ -149,17 +149,11 @@ void Line::assign_line_points_complex(int h_factor,
 void
 Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
     int type = get_type();
+    type -= 1;
     int lines_nbr = square_nbr / 5;
-    if (h_factor < 25)
-        h_factor = 25;
+    h_factor = H_FACTORE_STARTUP_STRUCT(h_factor);
     for (int i = 0; i < lines_nbr; i++) {
-        float ratio = 0;
-        if (type == LINE_TYPE_STARTUP_3)
-            ratio = line_division_0[i];
-        if (type == LINE_TYPE_STARTUP_4)
-            ratio = line_division_1[i];
-        if (type == LINE_TYPE_STARTUP_5)
-            ratio = line_division_2[i];
+        float ratio = LINE_DIVISION[type][i];
         int *distrib = new int[5];
         distrib = Utils::get_startup_distribution_points(distrib,
                                                          static_cast<int>(h_factor * ratio),
@@ -524,10 +518,17 @@ void Line::set_active(int factor_h, int line_generated) {
         assign_startup_line_points(factor_h);
 }
 
+void Line::check_for_transition_line() {
+    if (this->getScale() == 0.85f) {
+       this->setScale(1);
+       this->setAnchorPoint(Vec2(0, 0));
+    }
+}
+
 void Line::reset() {
     int index = 0;
     auto batchnode = getChildByTag(LINE_BATCH_TAG);
-
+    check_for_transition_line();
     while (1) {
         auto child = this->getChildByTag(index);
         if (!child)

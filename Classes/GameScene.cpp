@@ -667,24 +667,59 @@ void GameScene::check_full_destruction_bonus(Line *l, int line_id) {
 
 void GameScene::check_bullet_collision() {
     for (int i = 0; bullet_container[i] != NULL; i++) {
-        int into_line_id = get_line_in_contact(i);
-        if (bullet_container[i] && bullet_container[i]->bullet_active && into_line_id != -1)
-            check_into_line(i, into_line_id);
+        if (bullet_container[i] && bullet_container[i]->bullet_active) {
+            int into_line_id = get_line_in_contact(i);
+            if (into_line_id != -1)
+                check_into_line(i, into_line_id);
+        }
     }
+}
+
+void GameScene::destroy_square(Square *sq, Line *current_line, int line_id, int bullet_id) {
+    auto batch = current_line->getChildByTag(LINE_BATCH_TAG);
+    auto sprite = batch->getChildByTag(sq->getTag());
+    sprite->setVisible(false);
+    sq->setVisible(false);
+    Vec2 square_pos(sq->getPositionX(),
+                    current_line->getPositionY() + sq->getPositionY());
+    update_game_score(sq->square_pv);
+    play_square_explode();
+    if (sq->star_bonus == 1) {
+        destroy_all_lines();
+        game_block_destroyed++;
+        bullet_container[bullet_id]->reset();
+        return;
+    }
+    check_full_destruction_bonus(current_line, line_id);
+    show_destruction_circle(square_pos);
+    show_particle_explode(
+            Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
+            sq->initial_color, 20);
+    game_block_destroyed++;
+}
+
+void GameScene::update_square_data(Line *current_line, Square *sq, int bullet_id, int bullet_hit) {
+    update_game_score(bullet_hit);
+    play_bullet_impact();
+    show_particle(bullet_container[bullet_id]->getPosition(), sq);
+    sq->square_pv -= bullet_hit;
+    if (current_line->get_type() > LINE_TYPE_STARTUP_5)
+        check_hit_color_change(current_line, sq);
+    int sq_points_value = sq->square_pv;
+    sq->points->setString(
+            Utils::get_reduced_value(sq_points_value, VALUE_SIMPLE));
 }
 
 void GameScene::check_into_line(int bullet_id, int line_id) {
     int index = 0;
     Line *current_line = pool_container[line_id];
-    auto batch = current_line->getChildByTag(LINE_BATCH_TAG);
     while (1) {
-        Square *sq = ((Square *) current_line->getChildByTag(index));
-        if (!sq)
+        Square *sq = nullptr;
+        if (!(sq = ((Square *) current_line->getChildByTag(index))))
             break;
-        Vec2 bullet_pos;
-        bullet_pos.x = bullet_container[bullet_id]->getPositionX();
-        bullet_pos.y = bullet_container[bullet_id]->getPositionY() -
-                       (current_line->getPositionY());
+        Vec2 bullet_pos(bullet_container[bullet_id]->getPositionX(),
+                        bullet_container[bullet_id]->getPositionY() -
+                        (current_line->getPositionY()));
         if (bullet_pos.y < 0)
             bullet_pos.y = 0;
         if (sq->isVisible() && point_into_square(sq, bullet_pos)) {
@@ -693,38 +728,10 @@ void GameScene::check_into_line(int bullet_id, int line_id) {
                 bullet_hit *= 1.5;
             if (bonus_active == BONUS_POWER)
                 bullet_hit *= 2;
-            if (sq->get_square_pv() - bullet_hit <= 1) {
-                auto sprite = batch->getChildByTag(sq->getTag());
-                sprite->setVisible(false);
-                sq->setVisible(false);
-                Vec2 square_pos;
-                square_pos.x = sq->getPositionX();
-                square_pos.y = current_line->getPositionY() + sq->getPositionY();
-                update_game_score(sq->square_pv);
-                play_square_explode();
-                if (sq->star_bonus == 1) {
-                    destroy_all_lines();
-                    game_block_destroyed++;
-                    bullet_container[bullet_id]->reset();
-                    return;
-                }
-                check_full_destruction_bonus(current_line, line_id);
-                show_destruction_circle(square_pos);
-                show_particle_explode(
-                        Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
-                        sq->initial_color, 20);
-                game_block_destroyed++;
-            } else {
-                update_game_score(bullet_hit);
-                play_bullet_impact();
-                show_particle(bullet_container[bullet_id]->getPosition(), sq);
-                sq->square_pv -= bullet_hit;
-                if (current_line->get_type() > LINE_TYPE_STARTUP_5)
-                    check_hit_color_change(current_line, sq);
-                int sq_points_value = sq->square_pv;
-                sq->points->setString(
-                        Utils::get_reduced_value(sq_points_value, VALUE_SIMPLE));
-            }
+            if (sq->get_square_pv() - bullet_hit <= 1)
+                destroy_square(sq, current_line, line_id, bullet_id);
+            else
+                update_square_data(current_line, sq, bullet_id, bullet_hit);
             bullet_container[bullet_id]->reset();
             break;
         }
@@ -737,10 +744,6 @@ void GameScene::check_lines_out() {
         if (active_lines[i] != EMPTY_VALUE && pool_container[active_lines[i]]->getPositionY() +
                                               pool_container[active_lines[i]]->getContentSize().height <=
                                               0) {
-            if (pool_container[active_lines[i]]->getScale() == 0.85f) {
-                pool_container[active_lines[i]]->setScale(1);
-                pool_container[active_lines[i]]->setAnchorPoint(Vec2(0, 0));
-            }
             if (active_lines[i] == star_line_id) {
                 star_line_id = -1;
                 star_bonus_active = false;
@@ -766,9 +769,9 @@ bool GameScene::collison_need_detection(Line *l) {
 void GameScene::check_player_collision() {
     for (int i = 0; active_lines[i] != '\0'; i++) {
         if (active_lines[i] != -1 && collison_need_detection(pool_container[active_lines[i]])) {
-            Vec2 player_pos = player->getPosition();
             int index = 0;
-            float player_y = player_pos.y - pool_container[active_lines[i]]->getPositionY();
+            float player_y =
+                    player->getPositionY() - pool_container[active_lines[i]]->getPositionY();
             while (1) {
                 auto child = pool_container[active_lines[i]]->getChildByTag(index);
                 Square *sq = ((Square *) child);
@@ -778,10 +781,10 @@ void GameScene::check_player_collision() {
                 float sq_height = sq->getContentSize().height;
                 float player_width = player->getContentSize().width;
                 float player_height = player->getContentSize().height;
-                Vec2 player_left_top_corner = Vec2(player_pos.x - player_width / 2,
+                Vec2 player_left_top_corner = Vec2(player->getPositionX() - player_width / 2,
                                                    player_y + player_height / 2);
 
-                Rect player_full_rect = Rect(player_pos.x - player_width / 2,
+                Rect player_full_rect = Rect(player->getPositionX() - player_width / 2,
                                              player_y + player_height / 2,
                                              player_width, player_height);
                 Rect sq_rect = Rect(sq->getPositionX() - sq_width / 2,
@@ -996,10 +999,11 @@ bool GameScene::new_line_need_be_generate() {
 
 void GameScene::select_next_line() {
     NEXT_LINE_ID = get_next_line_id(get_next_line_type());
-    if (NEXT_LINE_ID != EMPTY_VALUE)
+    if (NEXT_LINE_ID != EMPTY_VALUE) {
         NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->line_size);
+    }
 }
 
 void GameScene::update(float ft) {
@@ -1060,14 +1064,14 @@ void GameScene::run_game_loop() {
                                          pool_container[NEXT_LINE_ID]->line_size);
     } else {
         if (current_factor_h < H_LIMIT_STARTUP_3) {
-            CURRENT_LINE_ID = 1;
-            NEXT_LINE_ID = 4;
+            CURRENT_LINE_ID = LINE_TYPE_STARTUP_3;
+            NEXT_LINE_ID = LINE_TYPE_SIMPLE_OF_4;
         } else if (current_factor_h < H_LIMIT_STARTUP_4) {
-            CURRENT_LINE_ID = 2;
-            NEXT_LINE_ID = 4;
+            CURRENT_LINE_ID = LINE_TYPE_STARTUP_4;
+            NEXT_LINE_ID = LINE_TYPE_SIMPLE_OF_4;
         } else {
-            CURRENT_LINE_ID = 3;
-            NEXT_LINE_ID = 4;
+            CURRENT_LINE_ID = LINE_TYPE_STARTUP_5;
+            NEXT_LINE_ID = LINE_TYPE_SIMPLE_OF_4;
         }
         NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
                                          pool_container[NEXT_LINE_ID]->get_type(),
@@ -1076,8 +1080,7 @@ void GameScene::run_game_loop() {
     bonus_selected = false;
     next_bonus_spawn = MIN_LINE_BEFORE_BONUS_SPAWN + Utils::get_random_number(0, 5);
     store_active_line(CURRENT_LINE_ID);
-    pool_container[CURRENT_LINE_ID]->set_active(
-            current_factor_h, LINE_GENERATED);
+    pool_container[CURRENT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
     LINE_GENERATED++;
     this->scheduleUpdate();
 }

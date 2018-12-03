@@ -168,6 +168,8 @@ public:
     void                    move_circles();
     void                    scale_animation();
     void                    play_bullet_sound();
+    void                    destroy_square(Square*, Line*, int, int);
+    void                    update_square_data(Line*, Square*, int, int);
     void                    show_particle_explode(Vec2, int, int);
     void                    start_game();
     void                    score_animation();

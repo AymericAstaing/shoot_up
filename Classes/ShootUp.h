@@ -188,6 +188,7 @@ USING_NS_CC;
 /******************* GAME PLAY MANAGMENT ***************/
 #define LINE_SPEED                      4
 #define SHOOTER_NEVER_UPDATED(X, Y)     ((X + Y) == 2 ? true : false)
+#define H_FACTORE_STARTUP_STRUCT(X)     (X < 25 ? 25 : X)
 #define DEFAULT_BULLET_NBR              16 //default bullet nbr shooted in 2sec (middle time between 2 lines, + donne des points plus élevés vice versa)
 
 /******************* LINE INIT AND MANAGMENT  ***************/
