@@ -563,6 +563,7 @@ void GameScene::show_bonus_particle_explode(Vec2 bonus_pos) {
 }
 
 void GameScene::check_hit_color_change(Line *l, Square *sq) {
+    return;
     int default_color_code = sq->initial_color;
     int default_pv_value = sq->initial_pv;
     int pv = sq->square_pv;

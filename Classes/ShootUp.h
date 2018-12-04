@@ -78,9 +78,11 @@ USING_NS_CC;
 
 
 /********************* STANDARD SQUARE ***********************/
-#define DEFAULT_SQUARE_TEXTURE          "green_b.png"
-#define SQUARE_SIZE_4                   3.95
-#define SQUARE_SIZE_5                   4.95
+#define DEFAULT_SQUARE_TEXTURE          "green.png"
+#define SQUARE_SIZE_4_WIDTH             3.95
+#define SQUARE_SIZE_5_WIDTH             4.95
+#define SQUARE_SIZE_4_HEIGHT            7.5
+#define SQUARE_SIZE_5_HEIGHT            10
 
 /********************* UTILS ***********************/
 #define VALUE_SIMPLE                    0
@@ -97,6 +99,7 @@ USING_NS_CC;
 #define LINE_BATCH_TAG                  42
 #define SHOOTER_ARRAY_TAG               0
 #define BALL_ARRAY_TAG                  1
+#define PROGRESS_CONTENT_TAG            37
 
 /******************* PLIST SPRITESHEETS ***************/
 #define PARTICLE_ANIM_PLIST             "spritesheet/hit.plist"
@@ -230,10 +233,10 @@ USING_NS_CC;
 #define FROM_SHOP                       "FROM_SHOP"
 
 /******************* COLORS ***************/
-#define BASIC_COLOR_GREEN               "green_b.png"
-#define BASIC_COLOR_RED                 "red_b.png"
-#define BASIC_COLOR_YELLOW              "yellow_b.png"
-#define BASIC_COLOR_ORANGE              "orange_b.png"
+#define BASIC_COLOR_GREEN               "green.png"
+#define BASIC_COLOR_RED                 "red.png"
+#define BASIC_COLOR_YELLOW              "yellow.png"
+#define BASIC_COLOR_ORANGE              "orange.png"
 
 /******************* DEFAULT COLOR CODE ***************/
 #define GREEN                           3

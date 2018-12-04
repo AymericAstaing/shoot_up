@@ -26,7 +26,10 @@ public:
     static Size     get_square_size(int);
     void            detach_square();
     void            assign_point(int);
+    static void     create_asset_views(Square*);
 
+    Layer*          asset_view;
+    Layer*          progress_view;
     int             star_bonus;
     int             square_pv;
     int             initial_pv;

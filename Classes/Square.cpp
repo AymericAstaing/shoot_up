@@ -15,13 +15,11 @@ Size Square::get_square_size(int line_size) {
 
     if (line_size > 5 || line_size < 4)
         return (Size(0, 0));
-    if (line_size == SQUARE_SIZE_LINE_OF_4) {
-        return (Size(static_cast<float>(winSize.width / 4),
-                     static_cast<float>(winSize.height / 9.6)));
-    } else if (line_size == SQUARE_SIZE_LINE_OF_5) {
-        return (Size(static_cast<float>(winSize.width / 5),
-                     static_cast<float>(winSize.height / 11)));
-    }
+    if (line_size == SQUARE_SIZE_LINE_OF_4)
+        return (Size(winSize.width / 4, static_cast<float>(winSize.height / SQUARE_SIZE_4_HEIGHT)));
+    else if (line_size == SQUARE_SIZE_LINE_OF_5)
+        return (Size(winSize.width / 5, winSize.height / SQUARE_SIZE_5_HEIGHT));
+
     return (Size(0, 0));
 }
 
@@ -54,6 +52,48 @@ void Square::assign_point(int pv) {
     this->initial_pv = pv;
     this->square_pv = pv;
     this->points->setString(Utils::get_reduced_value(square_pv, VALUE_SIMPLE));
+    ProgressTimer *progress = ((ProgressTimer *) this->progress_view->getChildByTag(
+            PROGRESS_CONTENT_TAG));
+    progress->setPercentage(100);
+}
+
+void Square::create_asset_views(Square *sq) {
+    sq->asset_view = Menu::create();
+    sq->asset_view->setContentSize(Size(sq->getContentSize().width,
+                                        static_cast<float>(sq->getContentSize().height * 0.80)));
+    sq->asset_view->setAnchorPoint(Vec2(0, 1));
+    sq->asset_view->setPosition(Vec2(0, sq->getPositionY() + sq->getContentSize().height / 2));
+    sq->addChild(sq->asset_view);
+    Sprite *border = Sprite::create("gauges/gauge_border.png");
+    ProgressTimer *progress = ProgressTimer::create(
+            Sprite::create("gauges/gauge_content.png"));
+    progress->setTag(PROGRESS_CONTENT_TAG);
+    progress->setType(ProgressTimerType::BAR);
+    progress->setMidpoint(Vec2(0, 0));
+    progress->setBarChangeRate(Vec2(1, 0));
+    progress->setPercentage(static_cast<float>(0));
+    sq->progress_view = Menu::create();
+    sq->progress_view->setAnchorPoint(Vec2(0, 0));
+    sq->progress_view->setContentSize(Size(sq->getContentSize().width,
+                                           static_cast<float>(sq->getContentSize().height * 0.12)));
+    sq->addChild(sq->progress_view);
+    sq->progress_view->setPosition(Vec2(0, 0));
+    border->setContentSize(
+            Size(static_cast<float>(sq->progress_view->getContentSize().width * 0.8),
+                 sq->progress_view->getContentSize().height));
+    sq->progress_view->addChild(border, 1);
+    sq->progress_view->addChild(progress, 2);
+    border->setPosition(
+            Vec2(sq->progress_view->getContentSize().width / 2, (sq->progress_view->getPositionY() -
+                                                                 sq->progress_view->getContentSize().height /
+                                                                 2) +
+                                                                border->getContentSize().height /
+                                                                2));
+    progress->setPosition(border->getPosition());
+    progress->setScaleX(static_cast<float>(border->getContentSize().width * 0.99 /
+                                           progress->getContentSize().width));
+    progress->setScaleY(static_cast<float>(border->getContentSize().height * 0.5 /
+                                           progress->getContentSize().height));
 }
 
 Square *Square::create(int line_size) {
@@ -72,6 +112,7 @@ Square *Square::create(int line_size) {
         s->points->setTextColor(Color4B::WHITE);
         s->points->setPosition(Vec2(s->rect_size[0] / 2, s->rect_size[1] / 2));
         s->addChild(s->points, 100);
+        create_asset_views(s);
         return (s);
     }
     CC_SAFE_DELETE(s);

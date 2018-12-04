@@ -164,7 +164,7 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
                 auto sprite = batchnode->getChildByTag(sq->getTag());
                 Sprite *e = ((Sprite *) sprite);
                 char color[15];
-                sprintf(color, "%s%i%s", "startup_", j, ".png");
+                sprintf(color, "%s", "red.png");
                 e->setSpriteFrame(color);
             }
             sq->assign_point(distrib[k]);
@@ -175,36 +175,35 @@ Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (
 Size Line::get_line_size(int type) {
     auto winSize = Director::getInstance()->getVisibleSize();
     if (type == LINE_TYPE_SIMPLE_OF_4)
-        return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_4)) * 4,
-                     static_cast<float>(winSize.height / 9.6)));
+        return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_4_WIDTH)) * 4,
+                     static_cast<float>(winSize.height / SQUARE_SIZE_4_HEIGHT)));
     else if (type == LINE_TYPE_SIMPLE_OF_5)
-        return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5)) * 5,
-                     winSize.height / 11));
-    int line_nbr = 0;
-    switch (type) {
-        case LINE_TYPE_STARTUP_4:
-            line_nbr = 4;
-            break;
-        case LINE_TYPE_STARTUP_5:
-            line_nbr = 5;
-            break;
-        default:
-            line_nbr = 5;
-            break;
-    }
-    return (Size((static_cast<float>(winSize.width / 4.95)) * 5,
-                 (static_cast<float>(winSize.height / 10.5)) * line_nbr));
+        return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5_WIDTH)) * 5,
+                     winSize.height / SQUARE_SIZE_5_HEIGHT));
+    float line_nbr = 0;
+    if (type == LINE_TYPE_STARTUP_3)
+        line_nbr = 3.4;
+    else if (type == LINE_TYPE_STARTUP_4)
+        line_nbr = 4.6;
+    else if (type == LINE_TYPE_STARTUP_5)
+        line_nbr = 5.8;
+    else
+        line_nbr = 3;
+    return (Size((static_cast<float>(winSize.width / SQUARE_SIZE_5_WIDTH)) * 5,
+                 (winSize.height / SQUARE_SIZE_5_HEIGHT)) * line_nbr);
 
 }
 
-
 /********************************** BLOCKS TRANSLATIONS ****************************/
-void Line::apply_animation(Line *l, Sprite *s, Square *square, int struct_nbr, int index) {
+void
+Line::apply_animation(Line *l, Sprite *s, Square *square, int struct_nbr, int index) {
     if (struct_nbr == 3) {
         if (index == 3)
-            apply_middle_left_translation(square, s, square->get_rect_size(), l->line_size);
+            apply_middle_left_translation(square, s, square->get_rect_size(),
+                                          l->line_size);
         if (index == 4)
-            apply_middle_right_translation(square, s, square->get_rect_size(), l->line_size);
+            apply_middle_right_translation(square, s, square->get_rect_size(),
+                                           l->line_size);
         if (index == 5)
             apply_full_translation(square, s, square->get_rect_size(), l->line_size);
     } else if (struct_nbr == 4) {
@@ -276,7 +275,8 @@ void Line::apply_middle_right_translation(Square *s, Sprite *sprite, float rect_
     sprite->runAction(RepeatForever::create(seq2));
 }
 
-void Line::apply_double_left_translation(Square *s, Sprite *sprite, float rect_size[2]) {
+void
+Line::apply_double_left_translation(Square *s, Sprite *sprite, float rect_size[2]) {
     float block_width = rect_size[0];
     auto actionMove1 = MoveBy::create(0.8, Vec2(block_width, 0));
     auto actionMove2 = MoveBy::create(0.8, Vec2(-block_width, 0));
@@ -288,7 +288,8 @@ void Line::apply_double_left_translation(Square *s, Sprite *sprite, float rect_s
     sprite->runAction(RepeatForever::create(seq2));
 }
 
-void Line::apply_double_right_translation(Square *s, Sprite *sprite, float rect_size[2]) {
+void
+Line::apply_double_right_translation(Square *s, Sprite *sprite, float rect_size[2]) {
     float block_width = rect_size[0];
     auto winSize = Director::getInstance()->getVisibleSize();
     auto actionMove1 = MoveBy::create(0.8, Vec2(-block_width, 0));
@@ -332,10 +333,10 @@ Sprite *Line::get_texture(int i, float *sq_size) {
     auto sprite = Sprite::createWithSpriteFrameName(DEFAULT_SQUARE_TEXTURE);
     sprite->setAnchorPoint(Vec2(0.5, 0.5));
     sprite->setTag(i);
-    float sprite_height = sprite->getContentSize().height;
-    float sprite_width = sprite->getContentSize().width;
-    sprite->setScaleY(sq_size[HEIGHT] / sprite_height);
-    sprite->setScaleX(static_cast<float>(sq_size[WIDTH] * 1.04 / sprite_width));
+    sq_size[HEIGHT] *= 0.85;
+    sprite->setScaleY((sq_size[HEIGHT] / sprite->getContentSize().height));
+    sprite->setScaleX(
+            static_cast<float>(sq_size[WIDTH] * 0.95 / sprite->getContentSize().width));
     return (sprite);
 }
 
@@ -353,10 +354,17 @@ void Line::load_startup_struct(Line *l) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_5);
         if (sq) {
             sq->setTag(i);
-            sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
+            sq->setPosition(
+                    get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
+            if (i > 4)
+                sq->setPositionY(
+                        static_cast<float>(sq->getPositionY() + (sq->getPositionY() * 0.2)));
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
-            sprite->setPosition(sq->getPosition());
+            sprite->setAnchorPoint(Vec2(0, 1));
+            sprite->setPosition(
+                    Vec2(sq->getPositionX() - sq->getContentSize().width / 2,
+                         sq->getPositionY() + sq->getContentSize().height / 2));
             spriteBatchNode->addChild(sprite);
         }
     }
@@ -380,7 +388,10 @@ void Line::load_complex_struct(Line *l, int struct_number) {
                                         SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
-            sprite->setPosition(sq->getPosition());
+            sprite->setAnchorPoint(Vec2(0, 1));
+            sprite->setPosition(
+                    Vec2(sq->getPositionX() - sq->getContentSize().width / 2,
+                         sq->getPositionY() + sq->getContentSize().height / 2));
             spriteBatchNode->addChild(sprite);
             if (struct_number == 3 || struct_number == 4)
                 apply_animation(l, sprite, sq, struct_number, i);
@@ -397,10 +408,14 @@ void Line::load_simple_line_5(Line *l) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_5);
         if (sq) {
             sq->setTag(i);
-            sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
+            sq->setPosition(
+                    get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
-            sprite->setPosition(sq->getPosition());
+            sprite->setAnchorPoint(Vec2(0, 1));
+            sprite->setPosition(
+                    Vec2(sq->getPositionX() - sq->getContentSize().width / 2,
+                         sq->getPositionY() + sq->getContentSize().height / 2));
             spriteBatchNode->addChild(sprite);
         }
     }
@@ -414,11 +429,15 @@ void Line::load_simple_line_4(Line *l) {
     for (int i = 0; i < 4; i++) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_4);
         if (sq) {
-            sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_4));
+            sq->setPosition(
+                    get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_4));
             sq->setTag(i);
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
-            sprite->setPosition(sq->getPosition());
+            sprite->setAnchorPoint(Vec2(0, 1));
+            sprite->setPosition(
+                    Vec2(sq->getPositionX() - sq->getContentSize().width / 2,
+                         sq->getPositionY() + sq->getContentSize().height / 2));
             spriteBatchNode->addChild(sprite);
 
         }
