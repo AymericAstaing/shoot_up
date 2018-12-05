@@ -100,6 +100,7 @@ USING_NS_CC;
 #define SHOOTER_ARRAY_TAG               0
 #define BALL_ARRAY_TAG                  1
 #define PROGRESS_CONTENT_TAG            37
+#define PROGRESS_BORDER_TAG             38
 
 /******************* PLIST SPRITESHEETS ***************/
 #define PARTICLE_ANIM_PLIST             "spritesheet/hit.plist"
@@ -202,7 +203,7 @@ USING_NS_CC;
 #define COMPLEX_STRUCT_NBR              6
 
 
-/******************* LINE TYPE ***************/
+/******************* LINE TYPE INDEX ***************/
 #define LINE_TYPE_STARTUP_2             0
 #define LINE_TYPE_STARTUP_3             1
 #define LINE_TYPE_STARTUP_4             2

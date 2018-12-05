@@ -269,14 +269,13 @@ void GameScene::end_of_game() {
     }
     show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED,
                           80);
+    shooter_dead_animation();
     sound_hit_played = 0;
     sound_shot_played = 0;
-    player->setScale(1);
     remove_bonus();
     value_to_update();
     game_state = GAME_END;
     score->setVisible(false);
-    player->setVisible(false);
     if (best_img->isVisible()) {
         best_img->setVisible(false);
         best_img->setPositionX(x_screen + best_img->getContentSize().height);
@@ -288,6 +287,23 @@ void GameScene::end_of_game() {
         end_menu = get_end_game_menu();
         addChild(end_menu);
     }
+}
+
+void GameScene::shooter_dead_animation() {
+    auto dead_rotation = RotateBy::create(0.15f, 10.0f);
+    auto dead_fall = MoveTo::create(3.0f, Vec2(player->getPositionX(),
+                                               -player->getContentSize().height));
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                player->stopAllActions();
+                if (player->getScale() != 1)
+                    player->setScale(1);
+                if (player->isVisible())
+                    player->setVisible(true);
+            });
+    auto sequence = Sequence::create(dead_fall, callback, nullptr);
+    player->runAction(RepeatForever::create(dead_rotation));
+    player->runAction(sequence);
 }
 
 void GameScene::display_end_menu() {
@@ -454,7 +470,7 @@ void GameScene::run_start_animation() {
 int GameScene::get_next_line_id(int type) {
     int *range = Utils::get_container_range_research(type);
     for (int i = range[0]; i <= range[1]; i++) {
-        if (pool_container[i]->get_type() == type && !pool_container[i]->line_active)
+        if (pool_container[i]->get_line_type() == type && !pool_container[i]->line_active)
             return (i);
     }
     return -1;
@@ -700,15 +716,20 @@ void GameScene::destroy_square(Square *sq, Line *current_line, int line_id, int 
 }
 
 void GameScene::update_square_data(Line *current_line, Square *sq, int bullet_id, int bullet_hit) {
+    if (!(sq->getChildByTag(PROGRESS_CONTENT_TAG)->isVisible())) {
+        sq->getChildByTag(PROGRESS_CONTENT_TAG)->setVisible(true);
+        sq->getChildByTag(PROGRESS_BORDER_TAG)->setVisible(true);
+    }
     update_game_score(bullet_hit);
     play_bullet_impact();
     show_particle(bullet_container[bullet_id]->getPosition(), sq);
     sq->square_pv -= bullet_hit;
-    if (current_line->get_type() > LINE_TYPE_STARTUP_5)
+    if (current_line->get_line_type() > LINE_TYPE_STARTUP_5)
         check_hit_color_change(current_line, sq);
     int sq_points_value = sq->square_pv;
-    sq->points->setString(
-            Utils::get_reduced_value(sq_points_value, VALUE_SIMPLE));
+    ProgressTimer *p = ((ProgressTimer*) sq->getChildByTag(PROGRESS_CONTENT_TAG));
+    double percent =  ((double) (sq_points_value * 100) / sq->initial_pv);
+    p->setPercentage(static_cast<float>(percent));
 }
 
 void GameScene::check_into_line(int bullet_id, int line_id) {
@@ -971,7 +992,7 @@ void GameScene::scale_animation() {
 }
 
 void GameScene::generate_star_bonus() {
-    if (pool_container[NEXT_LINE_ID]->get_type() == LINE_TYPE_SIMPLE_OF_5 &&
+    if (pool_container[NEXT_LINE_ID]->get_line_type() == LINE_TYPE_SIMPLE_OF_5 &&
         Utils::get_random_number(0, 5) == 5) {
         pool_container[NEXT_LINE_ID]->attach_star_bonus();
         star_bonus_active = true;
@@ -1001,8 +1022,8 @@ bool GameScene::new_line_need_be_generate() {
 void GameScene::select_next_line() {
     NEXT_LINE_ID = get_next_line_id(get_next_line_type());
     if (NEXT_LINE_ID != EMPTY_VALUE) {
-        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
-                                         pool_container[NEXT_LINE_ID]->get_type(),
+        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_line_type(),
+                                         pool_container[NEXT_LINE_ID]->get_line_type(),
                                          pool_container[NEXT_LINE_ID]->line_size);
     }
 }
@@ -1060,8 +1081,8 @@ void GameScene::run_game_loop() {
     if (shooter_never_updated) {
         CURRENT_LINE_ID = 4;
         NEXT_LINE_ID = 5;
-        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
-                                         pool_container[NEXT_LINE_ID]->get_type(),
+        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_line_type(),
+                                         pool_container[NEXT_LINE_ID]->get_line_type(),
                                          pool_container[NEXT_LINE_ID]->line_size);
     } else {
         if (current_factor_h < H_LIMIT_STARTUP_3) {
@@ -1074,8 +1095,8 @@ void GameScene::run_game_loop() {
             CURRENT_LINE_ID = LINE_TYPE_STARTUP_5;
             NEXT_LINE_ID = LINE_TYPE_SIMPLE_OF_4;
         }
-        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_type(),
-                                         pool_container[NEXT_LINE_ID]->get_type(),
+        NEW_SPAWN_Y = Utils::get_spawn_y(pool_container[CURRENT_LINE_ID]->get_line_type(),
+                                         pool_container[NEXT_LINE_ID]->get_line_type(),
                                          pool_container[CURRENT_LINE_ID]->line_size);
     }
     bonus_selected = false;
@@ -1161,7 +1182,10 @@ void GameScene::resume_game() {
         player->setScale(0.85f);
     score->setVisible(true);
     player->setVisible(true);
+    player->stopAllActions();
+    player->setRotation(0);
     player->setPositionX(x_screen / 2);
+    player->setPositionY(y_screen / 4);
     if (game_score >= UserLocalStore::get_achievement_variable(SCORE)) {
         best_img->setVisible(true);
         best_img->setPosition(Vec2(x_screen / 2, best_img->getPositionY()));
@@ -1188,7 +1212,10 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
                 LINE_GENERATED = 0;
                 if (!player->isVisible())
                     player->setVisible(true);
+                player->stopAllActions();
                 player->setPositionX(x_screen / 2);
+                player->setPositionY(y_screen / 4);
+                player->setRotation(0);
                 stop_game_loop();
                 reset_arrays();
                 game_state = MENU;

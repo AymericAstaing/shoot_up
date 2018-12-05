@@ -28,14 +28,11 @@ public:
     void            assign_point(int);
     static void     create_square_components(Square*);
 
-    Layer*          asset_view;
-    Layer*          progress_view;
     int             star_bonus;
     int             square_pv;
     int             initial_pv;
     int             particle_played;
     int             initial_color;
-    Label*          points;
 
 private:
     Color4F*        color;

@@ -155,6 +155,7 @@ public:
     void                    play_bullet_impact();
     void                    play_square_explode();
     void                    open_end_menu();
+    void                    shooter_dead_animation();
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2, Square*);
     void                    bonus_collision();

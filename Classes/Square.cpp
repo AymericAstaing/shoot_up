@@ -33,16 +33,16 @@ int Square::get_square_pv() {
 
 void Square::reset_square() {
     this->particle_played = 0;
+    this->getChildByTag(PROGRESS_CONTENT_TAG)->setVisible(false);
+    this->getChildByTag(PROGRESS_BORDER_TAG)->setVisible(false);
     this->square_pv = 0;
     std::string st = StringUtils::format("%i", this->square_pv);
-    this->points->setString(st);
     if (this->star_bonus == 1)
         detach_square();
 }
 
 void Square::detach_square() {
     removeChildByTag(STAR_BONUS_TAG);
-    this->points->setPosition(Vec2(this->rect_size[0] / 2, this->rect_size[1] / 2));
     this->star_bonus = 0;
 }
 
@@ -51,7 +51,6 @@ void Square::assign_point(int pv) {
         pv = 1;
     this->initial_pv = pv;
     this->square_pv = pv;
-    this->points->setString(Utils::get_reduced_value(square_pv, VALUE_SIMPLE));
     ProgressTimer *progress = ((ProgressTimer *) this->getChildByTag(
             PROGRESS_CONTENT_TAG));
     progress->setPercentage(100);
@@ -59,12 +58,15 @@ void Square::assign_point(int pv) {
 
 void Square::create_square_components(Square *sq) {
     Sprite *border = Sprite::create("gauges/gauge_border.png");
+    border->setTag(PROGRESS_BORDER_TAG);
+    border->setVisible(false);
     border->setContentSize(Size(static_cast<float>(sq->getContentSize().width * 0.9),
                                 static_cast<float>(sq->getContentSize().height * 0.13)));
     border->setAnchorPoint(Vec2(0, 0));
     border->setPosition(Vec2(static_cast<float>(0 + sq->getContentSize().width * 0.05), 0));
     ProgressTimer *progress = ProgressTimer::create(
             Sprite::create("gauges/gauge_content.png"));
+    progress->setVisible(false);
     progress->setTag(PROGRESS_CONTENT_TAG);
     progress->setType(ProgressTimerType::BAR);
     progress->setMidpoint(Vec2(0, 0));
@@ -83,7 +85,6 @@ Square *Square::create(int line_size) {
     auto winSize = Director::getInstance()->getVisibleSize();
     Square *s = new Square(line_size);
     if (s) {
-        //Sprite *e = Sprite::create("green_b.png");
         s->setAnchorPoint(Vec2(0.5, 0.5));
         s->square_pv = 10;
         s->star_bonus = 0;
@@ -92,14 +93,6 @@ Square *Square::create(int line_size) {
         s->rect_size[0] = s->getContentSize().width;
         s->rect_size[1] = s->getContentSize().height;
         std::string st = StringUtils::format("%i", s->square_pv);
-        s->points = Label::createWithSystemFont(st, FIRE_UP_FONT_NAME_NUMBERS, 35);
-        s->points->setTextColor(Color4B::WHITE);
-        s->points->setPosition(Vec2(s->rect_size[0] / 2, s->rect_size[1] / 2));
-        //e->setContentSize(s->getContentSize());
-        //s->addChild(e, -200);
-        //e->setPosition(Vec2(e->getPositionX() + s->getContentSize().width / 2,
-        //                    e->getPositionY() + s->getContentSize().height / 2));
-        s->addChild(s->points, 100);
         create_square_components(s);
         return (s);
     }

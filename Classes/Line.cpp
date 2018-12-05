@@ -19,7 +19,7 @@ Line::Line(int type) {
 Line::~Line() {
 }
 
-int Line::get_index_random(int *choosen, int max) {
+int Line::get_random_index(int *choosen, int max) {
     while (1) {
         int rand = Utils::get_random_number(0, max);
         if (!Utils::is_into_list(choosen, max, rand))
@@ -41,8 +41,6 @@ void Line::attach_star_bonus() {
     star->setTag(STAR_BONUS_TAG);
     star->setPosition(Vec2(sq->getContentSize().width / 2,
                            star->getPositionY() + star->getContentSize().height / 2));
-    sq->points->setPositionY(sq->getPositionY() + sq->getContentSize().height / 2 -
-                             sq->points->getContentSize().height / 2);
 }
 
 void Line::change_square_color(int square_id, int color) {
@@ -68,7 +66,7 @@ void Line::assign_color(int sq_id, int m_factor, int current_point) {
         change_square_color(sq_id, RED);
 }
 
-int Line::get_special_shooter_total(int total) { // AUGMENTATION DU NIVEAU QUAND SPECIAL SHOOTER
+int Line::get_special_shooter_total_point(int total) { // AUGMENTATION DU NIVEAU QUAND SPECIAL SHOOTER
     int shooter_type = Utils::get_shooter_type(UserLocalStore::get_current_shooter());
     switch (shooter_type) {
         case SPEED_TANK:
@@ -89,7 +87,7 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
     int *distrib = new int[this->square_nbr];
     int *choosen = new int[this->square_nbr];
 
-    if (get_type() == LINE_TYPE_SIMPLE_OF_4) {
+    if (get_line_type() == LINE_TYPE_SIMPLE_OF_4) {
         total = h_factor + ((line_generated / 10) * h_factor);
     } else {
         int min_h = static_cast<int>(h_factor +
@@ -99,25 +97,25 @@ void Line::assign_line_points(int h_factor, int line_generated) { // POUR LES LI
         total = Utils::get_random_number(min_h, max_h) +
                 (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
     }
-    total += get_special_shooter_total(total);
+    total += get_special_shooter_total_point(total);
     half_total = total / 2;
-    distrib = Utils::get_simple_distribution_points(distrib, total, get_type(), this->square_nbr);
+    distrib = Utils::get_simple_distribution_points(distrib, total, get_line_type(), this->square_nbr);
     int index = 0;
     while (1) {
         auto child = getChildByTag(index);
         Square *sq = ((Square *) child);
         if (!child || !sq)
             return;
-        choosen[index] = get_index_random(choosen, this->square_nbr - 1);
+        choosen[index] = get_random_index(choosen, this->square_nbr - 1);
         sq->assign_point(distrib[choosen[index]]);
         assign_color(index, total / this->square_nbr, distrib[choosen[index]]);
         index++;
     }
 }
 
-void Line::assign_line_points_complex(int h_factor,
+void Line::assign_complex_line_points(int h_factor,
                                       int line_generated) { // POINTS FOR COMPLEX STRUCT (MARTIN'S SYSTEM)
-    int type = get_type();
+    int type = get_line_type();
     int *distrib = new int[this->square_nbr];
     int index = 0;
     int min_h = static_cast<int>(h_factor +
@@ -125,7 +123,7 @@ void Line::assign_line_points_complex(int h_factor,
     int max_h = static_cast<int>(h_factor +
                                  ceil(static_cast<float>(h_factor * 0.4)));
     int total = static_cast<int>(Utils::get_random_number(min_h, max_h) * 1.4);
-    total += get_special_shooter_total(total) +
+    total += get_special_shooter_total_point(total) +
              (Utils::get_random_number(0, line_generated) / INCREASE_POINTS_FACTOR) * total;
     half_total = total / 2;
     distrib = Utils::get_complex_distribution_points(distrib, total, type, this->square_nbr);
@@ -141,7 +139,7 @@ void Line::assign_line_points_complex(int h_factor,
 
 void
 Line::assign_startup_line_points(int h_factor) {  // POINTS FOR STARTUP STRUCT (MARTIN'S SYSTEM)
-    int type = get_type();
+    int type = get_line_type();
     type -= 1;
     int lines_nbr = square_nbr / 5;
     h_factor = H_FACTORE_STARTUP_STRUCT(h_factor);
@@ -225,18 +223,11 @@ void Line::apply_full_translation(Square *s, Sprite *sprite, float rect_size[2],
                                       Vec2((line_size[WIDTH] - block_width / 2) -
                                            s->getPosition().x, 0));
     auto actionMove2 = MoveBy::create(0.9,
-                                      Vec2(-((line_size[WIDTH] - block_width / 2) -
-                                             s->getPosition().x),
-                                           0));
-    auto actionMove3 = MoveBy::create(0.9,
-                                      Vec2((line_size[WIDTH] - block_width / 2) -
-                                           s->getPosition().x, 0));
-    auto actionMove4 = MoveBy::create(0.9,
-                                      Vec2(-((line_size[WIDTH] - block_width / 2) -
-                                             s->getPosition().x),
-                                           0));
+                                                              Vec2(-((line_size[WIDTH] - block_width / 2) -
+                                                                     s->getPosition().x),
+                                                                   0));
     auto seq = Sequence::create(actionMove1, actionMove2, nullptr);
-    auto seq2 = Sequence::create(actionMove3, actionMove4, nullptr);
+    auto seq2 = Sequence::create(actionMove1->clone(), actionMove2->clone(), nullptr);
     s->runAction(RepeatForever::create(seq));
     sprite->runAction(RepeatForever::create(seq2));
 }
@@ -250,10 +241,7 @@ void Line::apply_middle_left_translation(Square *s, Sprite *sprite, float rect_s
                                                 0));
     auto actionMove2 = MoveBy::create(0.8, Vec2(-distance, 0));
     auto seq = Sequence::create(actionMove1, actionMove2, nullptr);
-    auto actionMove3 = MoveBy::create(0.8, Vec2(distance,
-                                                0));
-    auto actionMove4 = MoveBy::create(0.8, Vec2(-distance, 0));
-    auto seq2 = Sequence::create(actionMove3, actionMove4, nullptr);
+    auto seq2 = Sequence::create(actionMove1->clone(), actionMove2->clone(), nullptr);
     s->runAction(RepeatForever::create(seq));
     sprite->runAction(RepeatForever::create(seq2));
 }
@@ -267,9 +255,7 @@ void Line::apply_middle_right_translation(Square *s, Sprite *sprite, float rect_
     auto actionMove1 = MoveBy::create(0.8, Vec2(-distance, 0));
     auto actionMove2 = MoveBy::create(0.8, Vec2(distance, 0));
     auto seq = Sequence::create(actionMove1, actionMove2, nullptr);
-    auto actionMove3 = MoveBy::create(0.8, Vec2(-distance, 0));
-    auto actionMove4 = MoveBy::create(0.8, Vec2(distance, 0));
-    auto seq2 = Sequence::create(actionMove3, actionMove4, nullptr);
+    auto seq2 = Sequence::create(actionMove1->clone(), actionMove2->clone(), nullptr);
     s->runAction(RepeatForever::create(seq));
     sprite->runAction(RepeatForever::create(seq2));
 }
@@ -280,9 +266,7 @@ Line::apply_double_left_translation(Square *s, Sprite *sprite, float rect_size[2
     auto actionMove1 = MoveBy::create(0.8, Vec2(block_width, 0));
     auto actionMove2 = MoveBy::create(0.8, Vec2(-block_width, 0));
     auto seq = Sequence::create(actionMove1, actionMove2, nullptr);
-    auto actionMove3 = MoveBy::create(0.8, Vec2(block_width, 0));
-    auto actionMove4 = MoveBy::create(0.8, Vec2(-block_width, 0));
-    auto seq2 = Sequence::create(actionMove3, actionMove4, nullptr);
+    auto seq2 = Sequence::create(actionMove1->clone(), actionMove2->clone(), nullptr);
     s->runAction(RepeatForever::create(seq));
     sprite->runAction(RepeatForever::create(seq2));
 }
@@ -294,9 +278,7 @@ Line::apply_double_right_translation(Square *s, Sprite *sprite, float rect_size[
     auto actionMove1 = MoveBy::create(0.8, Vec2(-block_width, 0));
     auto actionMove2 = MoveBy::create(0.8, Vec2(block_width, 0));
     auto seq = Sequence::create(actionMove1, actionMove2, nullptr);
-    auto actionMove3 = MoveBy::create(0.8, Vec2(-block_width, 0));
-    auto actionMove4 = MoveBy::create(0.8, Vec2(block_width, 0));
-    auto seq2 = Sequence::create(actionMove3, actionMove4, nullptr);
+    auto seq2 = Sequence::create(actionMove1->clone(), actionMove2->clone(), nullptr);
     s->runAction(RepeatForever::create(seq));
     sprite->runAction(RepeatForever::create(seq2));
 }
@@ -304,7 +286,7 @@ Line::apply_double_right_translation(Square *s, Sprite *sprite, float rect_size[
 
 
 /********************************** LINE STRUCTURES *****************************/
-Vec2 Line::get_square_grid_pos(int requiered_pos, float rect_size[2], int line_size) {
+Vec2 Line::get_square_pos_into_line(int requiered_pos, float rect_size[2], int line_size) {
     Vec2 req_pos;
     if (line_size == SQUARE_SIZE_LINE_OF_5)
         req_pos = Utils::get_coordinate_from_id(requiered_pos, SQUARE_SIZE_LINE_OF_5);
@@ -353,7 +335,7 @@ void Line::load_startup_struct(Line *l) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_5);
         if (sq) {
             sq->setTag(i);
-            sq->setPosition(get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
+            sq->setPosition(get_square_pos_into_line(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
             sprite->setAnchorPoint(Vec2(0.5, 0.5));
@@ -370,7 +352,7 @@ void Line::load_complex_struct(Line *l, int struct_number) {
     spriteBatchNode->setContentSize(l->getContentSize());
     l->addChild(spriteBatchNode);
 
-    int size = get_square_nbr(struct_number);
+    int size = get_square_nbr_per_line(struct_number);
     struct_number -= 6;
     const int *pos_struct = SQUARE_POSITION_STRUCTURE[struct_number];
 
@@ -379,7 +361,7 @@ void Line::load_complex_struct(Line *l, int struct_number) {
         if (sq) {
             sq->setTag(i);
             sq->setPosition(
-                    get_square_grid_pos(pos_struct[i], sq->get_rect_size(),
+                    get_square_pos_into_line(pos_struct[i], sq->get_rect_size(),
                                         SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
@@ -404,7 +386,7 @@ void Line::load_simple_line_5(Line *l) {
         if (sq) {
             sq->setTag(i);
             sq->setPosition(
-                    get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
+                    get_square_pos_into_line(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_5));
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
             sprite->setAnchorPoint(Vec2(0.5, 0.5));
@@ -425,7 +407,7 @@ void Line::load_simple_line_4(Line *l) {
         Square *sq = Square::create(SQUARE_SIZE_LINE_OF_4);
         if (sq) {
             sq->setPosition(
-                    get_square_grid_pos(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_4));
+                    get_square_pos_into_line(i, sq->get_rect_size(), SQUARE_SIZE_LINE_OF_4));
             sq->setTag(i);
             l->addChild(sq);
             auto sprite = get_texture(i, sq->get_rect_size());
@@ -439,38 +421,18 @@ void Line::load_simple_line_4(Line *l) {
     }
 }
 
-int Line::get_type() {
+int Line::get_line_type() {
     return (line_type);
 }
 
-int Line::get_square_nbr(int type) {
-    switch (type) {
-        case LINE_TYPE_COMPLEX_0:
-            return (6);
-        case LINE_TYPE_COMPLEX_1:
-            return (6);
-        case LINE_TYPE_COMPLEX_2:
-            return (8);
-        case LINE_TYPE_COMPLEX_3:
-            return (6);
-        case LINE_TYPE_COMPLEX_4:
-            return (8);
-        case LINE_TYPE_COMPLEX_5:
-            return (9);
-        case LINE_TYPE_COMPLEX_6:
-            return (9);
-        case LINE_TYPE_COMPLEX_7:
-            return (7);
-        default:
-            break;
-    }
-    return (-1);
+int Line::get_square_nbr_per_line(int type) {
+    return (SQUARE_NBR_PER_LINE[type - 6]);
 }
 
-void Line::load_square(Line *l, int type) {
+void Line::load_squares_into_line(Line *l, int type) {
     if (type > LINE_TYPE_SIMPLE_OF_5) {
         l->line_type = type;
-        l->square_nbr = get_square_nbr(type);
+        l->square_nbr = get_square_nbr_per_line(type);
         load_complex_struct(l, type);
         return;
     }
@@ -517,9 +479,9 @@ void Line::load_square(Line *l, int type) {
 void Line::set_active(int factor_h, int line_generated) {
     setVisible(true);
     line_active = true;
-    if (get_type() > LINE_TYPE_SIMPLE_OF_5)
-        assign_line_points_complex(factor_h, line_generated);
-    else if (get_type() >= LINE_TYPE_SIMPLE_OF_4)
+    if (get_line_type() > LINE_TYPE_SIMPLE_OF_5)
+        assign_complex_line_points(factor_h, line_generated);
+    else if (get_line_type() >= LINE_TYPE_SIMPLE_OF_4)
         assign_line_points(factor_h, line_generated);
     else
         assign_startup_line_points(factor_h);
@@ -570,7 +532,7 @@ Line *Line::create(int type) {
     l->line_active = false;
     l->setContentSize(Size(l->line_size[WIDTH], l->line_size[HEIGHT]));
     l->setPosition(l->initial_pos);
-    load_square(l, type);
+    load_squares_into_line(l, type);
     l->setVisible(false);
     return (l);
     CC_SAFE_DELETE(l);
