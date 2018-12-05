@@ -18,7 +18,7 @@ Size Square::get_square_size(int line_size) {
     if (line_size == SQUARE_SIZE_LINE_OF_4)
         return (Size(winSize.width / 4, static_cast<float>(winSize.height / SQUARE_SIZE_4_HEIGHT)));
     else if (line_size == SQUARE_SIZE_LINE_OF_5)
-        return (Size(winSize.width / 5, winSize.height / SQUARE_SIZE_5_HEIGHT));
+        return (Size(winSize.width / 5, static_cast<float>(winSize.height / SQUARE_SIZE_5_HEIGHT)));
 
     return (Size(0, 0));
 }
@@ -52,19 +52,17 @@ void Square::assign_point(int pv) {
     this->initial_pv = pv;
     this->square_pv = pv;
     this->points->setString(Utils::get_reduced_value(square_pv, VALUE_SIMPLE));
-    ProgressTimer *progress = ((ProgressTimer *) this->progress_view->getChildByTag(
+    ProgressTimer *progress = ((ProgressTimer *) this->getChildByTag(
             PROGRESS_CONTENT_TAG));
     progress->setPercentage(100);
 }
 
-void Square::create_asset_views(Square *sq) {
-    sq->asset_view = Menu::create();
-    sq->asset_view->setContentSize(Size(sq->getContentSize().width,
-                                        static_cast<float>(sq->getContentSize().height * 0.80)));
-    sq->asset_view->setAnchorPoint(Vec2(0, 1));
-    sq->asset_view->setPosition(Vec2(0, sq->getPositionY() + sq->getContentSize().height / 2));
-    sq->addChild(sq->asset_view);
+void Square::create_square_components(Square *sq) {
     Sprite *border = Sprite::create("gauges/gauge_border.png");
+    border->setContentSize(Size(static_cast<float>(sq->getContentSize().width * 0.9),
+                                static_cast<float>(sq->getContentSize().height * 0.13)));
+    border->setAnchorPoint(Vec2(0, 0));
+    border->setPosition(Vec2(static_cast<float>(0 + sq->getContentSize().width * 0.05), 0));
     ProgressTimer *progress = ProgressTimer::create(
             Sprite::create("gauges/gauge_content.png"));
     progress->setTag(PROGRESS_CONTENT_TAG);
@@ -72,34 +70,20 @@ void Square::create_asset_views(Square *sq) {
     progress->setMidpoint(Vec2(0, 0));
     progress->setBarChangeRate(Vec2(1, 0));
     progress->setPercentage(static_cast<float>(0));
-    sq->progress_view = Menu::create();
-    sq->progress_view->setAnchorPoint(Vec2(0, 0));
-    sq->progress_view->setContentSize(Size(sq->getContentSize().width,
-                                           static_cast<float>(sq->getContentSize().height * 0.12)));
-    sq->addChild(sq->progress_view);
-    sq->progress_view->setPosition(Vec2(0, 0));
-    border->setContentSize(
-            Size(static_cast<float>(sq->progress_view->getContentSize().width * 0.8),
-                 sq->progress_view->getContentSize().height));
-    sq->progress_view->addChild(border, 1);
-    sq->progress_view->addChild(progress, 2);
-    border->setPosition(
-            Vec2(sq->progress_view->getContentSize().width / 2, (sq->progress_view->getPositionY() -
-                                                                 sq->progress_view->getContentSize().height /
-                                                                 2) +
-                                                                border->getContentSize().height /
-                                                                2));
-    progress->setPosition(border->getPosition());
+    progress->setPosition(border->getPosition() + border->getContentSize() / 2);
     progress->setScaleX(static_cast<float>(border->getContentSize().width * 0.99 /
                                            progress->getContentSize().width));
-    progress->setScaleY(static_cast<float>(border->getContentSize().height * 0.5 /
+    progress->setScaleY(static_cast<float>(border->getContentSize().height * 0.9 /
                                            progress->getContentSize().height));
+    sq->addChild(border);
+    sq->addChild(progress);
 }
 
 Square *Square::create(int line_size) {
     auto winSize = Director::getInstance()->getVisibleSize();
     Square *s = new Square(line_size);
     if (s) {
+        //Sprite *e = Sprite::create("green_b.png");
         s->setAnchorPoint(Vec2(0.5, 0.5));
         s->square_pv = 10;
         s->star_bonus = 0;
@@ -111,8 +95,12 @@ Square *Square::create(int line_size) {
         s->points = Label::createWithSystemFont(st, FIRE_UP_FONT_NAME_NUMBERS, 35);
         s->points->setTextColor(Color4B::WHITE);
         s->points->setPosition(Vec2(s->rect_size[0] / 2, s->rect_size[1] / 2));
+        //e->setContentSize(s->getContentSize());
+        //s->addChild(e, -200);
+        //e->setPosition(Vec2(e->getPositionX() + s->getContentSize().width / 2,
+        //                    e->getPositionY() + s->getContentSize().height / 2));
         s->addChild(s->points, 100);
-        create_asset_views(s);
+        create_square_components(s);
         return (s);
     }
     CC_SAFE_DELETE(s);

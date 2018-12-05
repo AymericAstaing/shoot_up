@@ -82,7 +82,7 @@ USING_NS_CC;
 #define SQUARE_SIZE_4_WIDTH             3.95
 #define SQUARE_SIZE_5_WIDTH             4.95
 #define SQUARE_SIZE_4_HEIGHT            7.5
-#define SQUARE_SIZE_5_HEIGHT            10
+#define SQUARE_SIZE_5_HEIGHT            9.5
 
 /********************* UTILS ***********************/
 #define VALUE_SIMPLE                    0
