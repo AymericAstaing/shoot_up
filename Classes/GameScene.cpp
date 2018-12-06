@@ -98,6 +98,7 @@ void GameScene::init_main_variable() {
     options_state = OPTIONS_HIDE;
     bullet_state = 0;
     init_ui_components();
+    init_hud_components();
     init_listeners();
     init_pool_objects();
     game_menu = get_main_menu();
@@ -110,6 +111,23 @@ void GameScene::init_main_variable() {
     init_bonus_components();
     if (!game_audio)
         game_audio = SimpleAudioEngine::getInstance();
+}
+
+void GameScene::init_hud_components() {
+    hud_bonus_messages = new Sprite *[3];
+    hud_bonus_messages[MESSAGE_SPEED] = Sprite::create(BONUS_MESSAGE_SPEED);
+    hud_bonus_messages[MESSAGE_POWER] = Sprite::create(BONUS_MESSAGE_POWER);
+    hud_bonus_messages[MESSAGE_BULLETS] = Sprite::create(BONUS_MESSAGE_SPEED);
+
+
+    for (int i = 0; i < 3; i++) {
+        hud_bonus_messages[i]->setPositionX(x_screen / 2);
+        hud_bonus_messages[i]->setScaleX((x_screen / 5) /
+                                         hud_bonus_messages[i]->getContentSize().width);
+        hud_bonus_messages[i]->setScaleY(hud_bonus_messages[i]->getScaleX());
+        hud_bonus_messages[i]->setPositionY(-hud_bonus_messages[i]->getContentSize().height);
+        this->addChild(hud_bonus_messages[i]);
+    }
 }
 
 void GameScene::check_begining_of_session() {
@@ -135,7 +153,7 @@ void GameScene::init_ui_components() {
     player = Utils::get_player();
     this->addChild(player);
     score = Label::createWithTTF("test", FIRE_UP_FONT_NAME_NUMBERS, 90);
-    score->setPosition(Vec2(x_screen / 2, static_cast<float>(y_screen - 0.12 * y_screen)));
+    score->setPosition(Vec2(x_screen / 2, static_cast<float>(0.88 * y_screen)));
     score->setVisible(false);
     addChild(score, 10);
     best_img = Sprite::create(BEST_SCORE_IMG);
@@ -267,8 +285,6 @@ void GameScene::end_of_game() {
         shield_live_used = false;
         shield_rect->setVisible(false);
     }
-    show_particle_explode(Vec2(player->getPositionX(), player->getPositionY()), RED,
-                          80);
     shooter_dead_animation();
     sound_hit_played = 0;
     sound_shot_played = 0;
@@ -290,7 +306,7 @@ void GameScene::end_of_game() {
 }
 
 void GameScene::shooter_dead_animation() {
-    auto dead_rotation = RotateBy::create(0.15f, 10.0f);
+    auto dead_rotation = RotateBy::create(0.05f, 20.0f);
     auto dead_fall = MoveTo::create(3.0f, Vec2(player->getPositionX(),
                                                -player->getContentSize().height));
     auto callback = CallFuncN::create(
@@ -535,35 +551,14 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
         addChild(stars, 1, 1);
 }
 
-void GameScene::show_particle_explode(Vec2 square_pos, int default_color_code, int particle_nbr) {
-    auto fileUtil = FileUtils::getInstance();
-    auto plistData = fileUtil->getValueMapFromFile(explode_plist[RED]);
-    switch (default_color_code) {
-        case RED:
-            plistData = fileUtil->getValueMapFromFile(explode_plist[RED]);
-            break;
-        case ORANGE:
-            plistData = fileUtil->getValueMapFromFile(explode_plist[ORANGE]);
-            break;
-        case YELLOW:
-            plistData = fileUtil->getValueMapFromFile(explode_plist[YELLOW]);
-            break;
-        case GREEN:
-            plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
-            break;
-        default:
-            plistData = fileUtil->getValueMapFromFile(explode_plist[GREEN]);
-            break;
-    }
-    ParticleSystemQuad *stars = ParticleSystemQuad::create(plistData);
-    if (!stars)
-        return;
-    stars->setScale(0.7);
-    stars->setDuration(0.5f);
-    stars->setPosition(square_pos);
-    stars->setTotalParticles(particle_nbr);
-    stars->setAutoRemoveOnFinish(true);
-    addChild(stars, 2);
+void GameScene::show_particle_explode(Square *sq, Vec2 square_pos) {
+    auto emitter = ParticleSystemQuad::create("hud/particle_texture.plist");
+    addChild(emitter, 2);
+    emitter->setDuration(0.4f);
+    emitter->setScale(0.3);
+    square_pos.y += sq->getContentSize().height / 2;
+    emitter->setPosition(square_pos);
+    emitter->setAutoRemoveOnFinish(true);
 }
 
 void GameScene::show_bonus_particle_explode(Vec2 bonus_pos) {
@@ -623,9 +618,8 @@ void GameScene::destroy_complete_line(int line_id, float line_y) {
         Square *sq = ((Square *) child);
         auto sprite = batch->getChildByTag(sq->getTag());
         show_destruction_circle(Vec2(sq->getPositionX(), line_y));
-        show_particle_explode(
-                Vec2(sq->getPositionX(), line_y - sq->getContentSize().height),
-                sq->initial_color, 20);
+        show_particle_explode(sq,
+                              Vec2(sq->getPositionX(), line_y - sq->getContentSize().height));
         sq->setVisible(false);
         sprite->setVisible(false);
         i++;
@@ -709,9 +703,8 @@ void GameScene::destroy_square(Square *sq, Line *current_line, int line_id, int 
     }
     check_full_destruction_bonus(current_line, line_id);
     show_destruction_circle(square_pos);
-    show_particle_explode(
-            Vec2(square_pos.x, square_pos.y - sq->getContentSize().height),
-            sq->initial_color, 20);
+    show_particle_explode(sq,
+                          Vec2(square_pos.x, square_pos.y - sq->getContentSize().height));
     game_block_destroyed++;
 }
 
@@ -727,8 +720,8 @@ void GameScene::update_square_data(Line *current_line, Square *sq, int bullet_id
     if (current_line->get_line_type() > LINE_TYPE_STARTUP_5)
         check_hit_color_change(current_line, sq);
     int sq_points_value = sq->square_pv;
-    ProgressTimer *p = ((ProgressTimer*) sq->getChildByTag(PROGRESS_CONTENT_TAG));
-    double percent =  ((double) (sq_points_value * 100) / sq->initial_pv);
+    ProgressTimer *p = ((ProgressTimer *) sq->getChildByTag(PROGRESS_CONTENT_TAG));
+    double percent = ((double) (sq_points_value * 100) / sq->initial_pv);
     p->setPercentage(static_cast<float>(percent));
 }
 
@@ -894,7 +887,13 @@ void GameScene::remove_bonus() {
         rect_container[bonus_id]->setVisible(false);
         rect_container[bonus_id]->stopAllActions();
     }
+    if (current_message != -1) {
+        hud_bonus_messages[current_message]->setPositionX(x_screen / 2);
+        hud_bonus_messages[current_message]->setPositionY(
+                -hud_bonus_messages[current_message]->getContentSize().height);
+    }
     bonus_id = -1;
+    current_message = -1;
     bonus_active = -1;
     bonus_time = 0;
     bonus_selected = false;
@@ -932,10 +931,12 @@ void GameScene::bonus_collision() {
         float initial_y_pos =
                 y_screen + bonus_container[BONUS_BULLET]->getContentSize().height / 2;
         if (bonus_id == BONUS_SPEED) {
+            current_message = MESSAGE_SPEED;
             stop_bullet_shoot();
             bonus_active = bonus_id;
             start_bullet_shoot();
         } else if (bonus_id == BONUS_POWER) {
+            current_message = MESSAGE_POWER;
             bonus_active = bonus_id;
             game_power_up_collected++;
         } else {
@@ -966,6 +967,13 @@ void GameScene::bonus_managment() {
         bonus_collision();
         move_bonus();
         if (bonus_active != -1) {
+            if (current_message != -1)
+                hud_bonus_messages[current_message]->setPosition(Vec2(player->getPositionX(),
+                                                                      player->getPositionY() -
+                                                                      player->getContentSize().height /
+                                                                      2 -
+                                                                      hud_bonus_messages[current_message]->getContentSize().height /
+                                                                      2));
             if (bonus_time >= BONUS_TIME_MIDLE && !rect_animated) {
                 rect_animated = true;
                 rect_container[bonus_id]->runAction(Utils::get_blink_animation());
@@ -1255,7 +1263,7 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
 void GameScene::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *event) {
     if (touch->getLocation().x > 0 + player->getContentSize().width / 2 &&
         touch->getLocation().x < x_screen - player->getContentSize().height / 2) {
-        if (game_state == MENU)
+        if (game_state != GAME_RUNNING)
             return;
         float current_location = touch->getLocation().x;
         float future_x = current_location +

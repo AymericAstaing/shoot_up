@@ -86,6 +86,7 @@ private:
     int                     star_line_id = -1;
     int                     bonus_active = 0;
     int                     bonus_id = -1;
+    int                     current_message = -1;
     int                     next_bonus_spawn = 0;
 
     /******************* MAIN MENU ***************/
@@ -120,6 +121,9 @@ private:
     int                     sound_hit_played = 0;
     int                     sound_shot_played = 0;
     bool                    sound_activated = true;
+
+    /******************* HUD ***************/
+    Sprite**                hud_bonus_messages;
 
 
 public:
@@ -156,6 +160,7 @@ public:
     void                    play_square_explode();
     void                    open_end_menu();
     void                    shooter_dead_animation();
+    void                    init_hud_components();
     void                    menuCloseCallback(cocos2d::Ref*);
     void                    show_particle(Vec2, Square*);
     void                    bonus_collision();
@@ -171,7 +176,7 @@ public:
     void                    play_bullet_sound();
     void                    destroy_square(Square*, Line*, int, int);
     void                    update_square_data(Line*, Square*, int, int);
-    void                    show_particle_explode(Vec2, int, int);
+    void                    show_particle_explode(Square*, Vec2);
     void                    start_game();
     void                    score_animation();
     bool                    is_sound_button_touched(Vec2);

@@ -60,6 +60,11 @@ USING_NS_CC;
 /********************* HUD (GAME FLOW) ***********************/
 #define BEST_SCORE_IMG                  "hud/best_img.png"
 #define HIT_CIRCLE                      "hud/hit_circle.png"
+#define BONUS_MESSAGE_SPEED             "hud/mega_speed.png"
+#define BONUS_MESSAGE_POWER             "hud/mega_power.png"
+#define MESSAGE_SPEED                   0
+#define MESSAGE_POWER                   1
+#define MESSAGE_BULLETS                 2
 
 /********************* TEXT SIZE ***********************/
 #define SIZE_GAME_NAME                  85
