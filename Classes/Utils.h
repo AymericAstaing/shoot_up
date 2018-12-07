@@ -52,6 +52,9 @@ static const char *balls[8] = {
 static const char *basic_colors[4] = {BASIC_COLOR_RED, BASIC_COLOR_ORANGE, BASIC_COLOR_YELLOW,
                                       BASIC_COLOR_GREEN};
 
+static const char *chest_step[8] = {CHEST_STEP_0, CHEST_STEP_1, CHEST_STEP_2, CHEST_STEP_3,
+                                    CHEST_STEP_4, CHEST_STEP_5, CHEST_STEP_6, CHEST_STEP_7};
+
 static const int random_type[8] = {LINE_TYPE_COMPLEX_0,
                                    LINE_TYPE_COMPLEX_1,
                                    LINE_TYPE_COMPLEX_2,

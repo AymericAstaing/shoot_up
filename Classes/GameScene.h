@@ -64,6 +64,7 @@ private:
     int                     bullet_state;
     int                     game_score;
     int                     game_shooter_type = 0;
+    int                     line_id_before_chest_attempts = -1;
 
     /******************* END MENU ***************/
     Sprite*                 next_button;
@@ -85,6 +86,7 @@ private:
     bool                    rect_animated = false;
     float                   bonus_time = 0;
     int                     star_line_id = -1;
+    int                     chest_gen_state = -1;
     int                     bonus_active = 0;
     int                     bonus_id = -1;
     int                     current_message = -1;
@@ -156,7 +158,7 @@ public:
     void                    show_bonus_particle_explode(Vec2);
     void                    check_full_destruction_bonus(Line*, int);
     void                    show_destruction_bonus(int, int);
-    void                    check_hit_color_change(Line*, Square*);
+    void                    update_chest_texture(Square*, Line*);
     void                    play_bullet_impact();
     void                    play_square_explode();
     void                    open_end_menu();
@@ -179,6 +181,7 @@ public:
     void                    update_square_data(Line*, Square*, int, int);
     void                    show_particle_explode(Square*, Vec2);
     void                    start_game();
+    void                    generate_chest();
     void                    score_animation();
     bool                    is_sound_button_touched(Vec2);
     bool                    is_next_button_touched(Vec2);

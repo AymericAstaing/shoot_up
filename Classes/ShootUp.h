@@ -171,17 +171,28 @@ USING_NS_CC;
 #define SIDEWAY_LAUNCH_RIGHT            10
 
 /******************* BONUS ***************/
-#define MIN_LINE_BEFORE_BONUS_SPAWN     5
 #define STAR_BONUS_TEXTURE              "spritesheet/star_bonus.png"
 #define DEFAULT_BONUS_SPEED_TEXTURE     "bonus_speed_0.png"
 #define DEFAULT_BONUS_POWER_TEXTURE     "bonus_power_0.png"
 #define DEFAULT_BONUS_BULLET_TEXTURE    "bonus_bullet_0.png"
+#define DEFAULT_CHEST_TEXTURE           "chest_0.png"
 #define SHIELD_RECT_TEXTURE             "player_effect/shield_effect.png"
 #define SPEED_RECT                      "player_effect/speed_effect.png"
 #define POWER_RECT                      "player_effect/power_effect.png"
 #define BULLET_RECT                     "player_effect/bullet_effect.png"
+#define CHEST_STEP_0                    "chest_1.png"
+#define CHEST_STEP_1                    "chest_2.png"
+#define CHEST_STEP_2                    "chest_3.png"
+#define CHEST_STEP_3                    "chest_4.png"
+#define CHEST_STEP_4                    "chest_5.png"
+#define CHEST_STEP_5                    "chest_6.png"
+#define CHEST_STEP_6                    "chest_7.png"
+#define CHEST_STEP_7                    "chest_8.png"
+#define CHEST_GENERATION_DELAY_MIN      15
+#define CHEST_GENERATION_DELAY_MAX      25
 #define BONUS_TIME_LIMIT                5.0f
 #define BONUS_TIME_MIDLE                2.5f
+#define MIN_LINE_BEFORE_BONUS_SPAWN     5
 #define BONUS_BULLET                    0
 #define BONUS_POWER                     1
 #define BONUS_SPEED                     2
@@ -190,6 +201,9 @@ USING_NS_CC;
 #define RECT_BULLET                     0
 #define RECT_POWER                      1
 #define RECT_SPEED                      2
+#define CHEST_INACTIVE                  0
+#define CHEST_ATTEMPT_1                 1
+#define CHEST_ACTIVE                    2
 
 /******************* GAME STATES ***************/
 #define MENU                            0

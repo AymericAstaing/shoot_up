@@ -43,7 +43,23 @@ void Line::attach_star_bonus() {
                            star->getPositionY() + star->getContentSize().height / 2));
 }
 
+void Line::attach_chest_bonus() {
+    int selected_square = Utils::get_random_number(0, 4);
+    auto square_child = getChildByTag(selected_square);
+    auto batchnode = getChildByTag(LINE_BATCH_TAG);
+    if (!batchnode)
+        return;
+    Square *sq = ((Square*) square_child);
+    sq->chest_bonus = true;
+    auto square_sprite = batchnode->getChildByTag(selected_square);
+    if (!square_sprite)
+        return;
+    ((Sprite *) square_sprite)->setSpriteFrame(DEFAULT_CHEST_TEXTURE);
+}
+
 void Line::change_square_color(int square_id, int color) {
+    if (((Square *) getChildByTag(square_id))->chest_bonus)
+        return;
     ((Square *) getChildByTag(square_id))->initial_color = color;
     auto batchnode = getChildByTag(LINE_BATCH_TAG);
     if (!batchnode)

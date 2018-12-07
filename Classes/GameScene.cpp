@@ -556,10 +556,10 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
 }
 
 int GameScene::get_free_particle_pool_index() {
-   for (int i = 0; i < 20; i++) {
-       if (pool_particle[i] == NULL)
-           return (i);
-   }
+    for (int i = 0; i < 20; i++) {
+        if (pool_particle[i] == NULL)
+            return (i);
+    }
     return (-1);
 }
 
@@ -597,31 +597,6 @@ void GameScene::show_bonus_particle_explode(Vec2 bonus_pos) {
     stars->setTotalParticles(10);
     stars->setAutoRemoveOnFinish(true);
     addChild(stars, 3, 1);
-}
-
-void GameScene::check_hit_color_change(Line *l, Square *sq) {
-    return;
-    int default_color_code = sq->initial_color;
-    int default_pv_value = sq->initial_pv;
-    int pv = sq->square_pv;
-    int step = 0;
-
-    auto batch = l->getChildByTag(LINE_BATCH_TAG);
-    Sprite *e = ((Sprite *) batch->getChildByTag(sq->getTag()));
-
-    if (pv < default_pv_value && pv >= default_pv_value * (0.8))
-        step = 0;
-    else if (pv >= default_pv_value * 0.6)
-        step = 1;
-    else if (pv >= default_pv_value * 0.4)
-        step = 2;
-    else if (pv >= default_pv_value * 0.2)
-        step = 3;
-    else
-        step = 4;
-    SpriteFrame *tmp = (SpriteFrame *) COLOR_HIT[default_color_code][step];
-    if (e->getSpriteFrame() != tmp)
-        e->setSpriteFrame(COLOR_HIT[default_color_code][step]);
 }
 
 void GameScene::destroy_all_lines() {
@@ -712,6 +687,35 @@ void GameScene::check_bullet_collision() {
     }
 }
 
+void GameScene::update_chest_texture(Square *sq, Line *line) {
+    int current_point = sq->square_pv;
+    int initial_point = sq->initial_pv;
+    auto batchnode = line->getChildByTag(LINE_BATCH_TAG);
+    auto square_sprite = batchnode->getChildByTag(sq->getTag());
+    int index_of_future_texture = -1;
+
+    if (current_point >= (initial_point * 0.875))
+        index_of_future_texture = 0;
+    else if (current_point >= (initial_point * 0.75))
+        index_of_future_texture = 1;
+    else if (current_point >= (initial_point * 0.625))
+        index_of_future_texture = 2;
+    else if (current_point >= (initial_point * 0.5))
+        index_of_future_texture = 3;
+    else if (current_point >= (initial_point * 0.375))
+        index_of_future_texture = 4;
+    else if (current_point >= (initial_point * 0.25))
+        index_of_future_texture = 5;
+    else if (current_point >= (initial_point * 0.125))
+        index_of_future_texture = 6;
+    else
+        index_of_future_texture = 7;
+
+    SpriteFrame *tmp = (SpriteFrame *) chest_step[index_of_future_texture];
+    if (((Sprite *) square_sprite)->getSpriteFrame() != tmp)
+        ((Sprite *) square_sprite)->setSpriteFrame(chest_step[index_of_future_texture]);
+}
+
 void GameScene::destroy_square(Square *sq, Line *current_line, int line_id, int bullet_id) {
     auto batch = current_line->getChildByTag(LINE_BATCH_TAG);
     auto sprite = batch->getChildByTag(sq->getTag());
@@ -743,8 +747,8 @@ void GameScene::update_square_data(Line *current_line, Square *sq, int bullet_id
     play_bullet_impact();
     show_particle(bullet_container[bullet_id]->getPosition(), sq);
     sq->square_pv -= bullet_hit;
-    if (current_line->get_line_type() > LINE_TYPE_STARTUP_5)
-        check_hit_color_change(current_line, sq);
+    if (sq->chest_bonus)
+        update_chest_texture(sq, current_line);
     int sq_points_value = sq->square_pv;
     ProgressTimer *p = ((ProgressTimer *) sq->getChildByTag(PROGRESS_CONTENT_TAG));
     double percent = ((double) (sq_points_value * 100) / sq->initial_pv);
@@ -942,10 +946,8 @@ void GameScene::move_bonus() {
 
 void GameScene::move_particles() {
     for (int i = 0; i < 20; i++) {
-        if (pool_particle[i] != NULL) {
-            pool_particle[i]->setPositionY(pool_particle[i]->getPositionY() -  LINE_SPEED);
-            log("MOVED");
-        }
+        if (pool_particle[i] != NULL)
+            pool_particle[i]->setPositionY(pool_particle[i]->getPositionY() - LINE_SPEED);
     }
 }
 
@@ -1063,6 +1065,23 @@ bool GameScene::new_line_need_be_generate() {
     return (pool_container[CURRENT_LINE_ID]->getPosition().y <= NEW_SPAWN_Y);
 }
 
+void GameScene::generate_chest() {
+    if (LINE_GENERATED >= line_id_before_chest_attempts) {
+        if (pool_container[NEXT_LINE_ID]->get_line_type() == LINE_TYPE_SIMPLE_OF_5) {
+            chest_gen_state = CHEST_ACTIVE;
+            line_id_before_chest_attempts += Utils::get_random_number(CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);
+            pool_container[NEXT_LINE_ID]->attach_chest_bonus();
+        } else {
+            if (chest_gen_state == CHEST_ATTEMPT_1) {
+                chest_gen_state = CHEST_INACTIVE;
+                line_id_before_chest_attempts += Utils::get_random_number(CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);;
+            } else {
+                chest_gen_state++;
+            }
+        }
+    }
+}
+
 void GameScene::select_next_line() {
     NEXT_LINE_ID = get_next_line_id(get_next_line_type());
     if (NEXT_LINE_ID != EMPTY_VALUE) {
@@ -1084,6 +1103,7 @@ void GameScene::update(float ft) {
     if (new_line_need_be_generate()) {
         if (!star_bonus_active)
             generate_star_bonus();
+        generate_chest();
         pool_container[NEXT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
         store_active_line(NEXT_LINE_ID);
         CURRENT_LINE_ID = NEXT_LINE_ID;
@@ -1146,6 +1166,7 @@ void GameScene::run_game_loop() {
     bonus_selected = false;
     next_bonus_spawn = MIN_LINE_BEFORE_BONUS_SPAWN + Utils::get_random_number(0, 5);
     store_active_line(CURRENT_LINE_ID);
+    line_id_before_chest_attempts = Utils::get_random_number(CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);
     pool_container[CURRENT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
     LINE_GENERATED++;
     this->scheduleUpdate();

@@ -39,6 +39,8 @@ void Square::reset_square() {
     std::string st = StringUtils::format("%i", this->square_pv);
     if (this->star_bonus == 1)
         detach_square();
+    if (this->chest_bonus)
+        detach_chest();
 }
 
 void Square::detach_square() {
@@ -46,6 +48,9 @@ void Square::detach_square() {
     this->star_bonus = 0;
 }
 
+void Square::detach_chest() {
+    this->chest_bonus = false;
+}
 void Square::assign_point(int pv) {
     if (pv == 0)
         pv = 1;
@@ -88,6 +93,7 @@ Square *Square::create(int line_size) {
         s->setAnchorPoint(Vec2(0.5, 0.5));
         s->square_pv = 10;
         s->star_bonus = 0;
+        s->chest_bonus = false;
         s->particle_played = 0;
         s->setContentSize(get_square_size(line_size));
         s->rect_size[0] = s->getContentSize().width;

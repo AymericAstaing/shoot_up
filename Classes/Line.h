@@ -22,12 +22,6 @@ static const float DISTRIB_SIMPLE[2][5] = {{0.27, 0.3, 0.23, 0.2}, {0.23, 0.23, 
 static const int SQUARE_NBR_PER_LINE[8] = {6, 6, 8, 6, 8, 9, 9, 7};
 
 
-static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_red_2.png", "hit_red_3.png", "hit_red_4.png"},
-                                      {"hit_orange_0.png", "hit_orange_1.png", "hit_orange_2.png", "hit_orange_3.png", "hit_orange_4.png"},
-                                      {"hit_yellow_0.png", "hit_yellow_1.png", "hit_yellow_2.png", "hit_yellow_3.png", "hit_yellow_4.png"},
-                                      { "hit_green_0.png", "hit_green_1.png", "hit_green_2.png", "hit_green_3.png", "hit_green_4.png"}};
-
-
 
         class Line :
         public cocos2d::Node {
@@ -48,6 +42,7 @@ static const char *COLOR_HIT[4][5] = {{"hit_red_0.png", "hit_red_1.png", "hit_re
             int                         get_line_type();
             void                        attach_star_bonus();
             void                        set_active(int, int);
+            void                        attach_chest_bonus();
             int                         get_special_shooter_total_point(int);
             void                        change_square_color(int, int);
             void                        assign_color(int, int, int);

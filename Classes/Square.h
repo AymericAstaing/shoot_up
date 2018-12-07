@@ -26,6 +26,7 @@ public:
     static Size     get_square_size(int);
     void            detach_square();
     void            assign_point(int);
+    void            detach_chest();
     static void     create_square_components(Square*);
 
     int             star_bonus;
@@ -33,6 +34,7 @@ public:
     int             initial_pv;
     int             particle_played;
     int             initial_color;
+    bool            chest_bonus = false;
 
 private:
     Color4F*        color;
