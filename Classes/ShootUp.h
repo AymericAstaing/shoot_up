@@ -62,6 +62,7 @@ USING_NS_CC;
 #define HIT_CIRCLE                      "hud/hit_circle.png"
 #define BONUS_MESSAGE_SPEED             "hud/mega_speed.png"
 #define BONUS_MESSAGE_POWER             "hud/mega_power.png"
+#define SQUARE_EXPLODE_PARTICLE_NBR     20
 #define MESSAGE_SPEED                   0
 #define MESSAGE_POWER                   1
 #define MESSAGE_BULLETS                 2
@@ -109,6 +110,7 @@ USING_NS_CC;
 
 /******************* PLIST SPRITESHEETS ***************/
 #define PARTICLE_ANIM_PLIST             "spritesheet/hit.plist"
+#define PARTICLE_SQUARE_ANIM_PLIST      "hud/particle_texture.plist"
 #define BLOCK_COLOR_PLIST               "spritesheet/block_color.plist"
 #define BULLETS_PLIST                   "spritesheet/bullets_game.plist"
 #define CONTINUE_PLIST                  "spritesheet/continue_animation.plist"
@@ -127,6 +129,7 @@ USING_NS_CC;
 #define NORMAL_BULLET_SCALE             1.0f
 #define BIG_BULLET_SCALE                1.3f
 #define CIRCLE_SCALE                    0.5f
+#define PARTICLE_SQUARE_DESTROY_SCALE   0.3f
 
 /******************* ACHIEVEMENT CATEGORIES ***************/
 #define STARTER_TANK                    0

@@ -44,6 +44,7 @@ private:
     /******************* RUNTIME VARIABLES ***************/
     SpriteBatchNode*        bullet_batch_node;
     SimpleAudioEngine*      game_audio;
+    ParticleSystemQuad**    pool_particle;
     Label*                  score;
     Sprite*                 sound;
     Sprite*                 player;
@@ -198,6 +199,8 @@ public:
     void                    move_active_lines();
     void                    check_into_line(int, int);
     void                    multiply_game_score_adbonus();
+    int                     get_free_particle_pool_index();
+    void                    move_particles();
     void                    increase_speed(Label*, Label*, Label *);
     void                    increase_power(Label*, Label*, Label *);
     void                    check_lines_out();

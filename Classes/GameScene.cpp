@@ -188,12 +188,16 @@ void GameScene::init_pool_objects() {
     pool_circle = new Circle *[15];
     bullet_container = new Bullet *[101];
     active_lines = new int[5];
+    pool_particle = new ParticleSystemQuad *[20];
 
     pool_container[0] = Line::create(LINE_TYPE_STARTUP_2);
     pool_container[1] = Line::create(LINE_TYPE_STARTUP_3);
     pool_container[2] = Line::create(LINE_TYPE_STARTUP_4);
     pool_container[3] = Line::create(LINE_TYPE_STARTUP_5);
 
+    for (int j = 0; j < 20; j++) {
+        pool_particle[j] = NULL;
+    }
     for (int i = 0; i < 15; i++) {
         pool_circle[i] = Circle::create();
         addChild(pool_circle[i]);
@@ -551,14 +555,36 @@ void GameScene::show_particle(Vec2 pos, Square *sq) {
         addChild(stars, 1, 1);
 }
 
+int GameScene::get_free_particle_pool_index() {
+   for (int i = 0; i < 20; i++) {
+       if (pool_particle[i] == NULL)
+           return (i);
+   }
+    return (-1);
+}
+
 void GameScene::show_particle_explode(Square *sq, Vec2 square_pos) {
-    auto emitter = ParticleSystemQuad::create("hud/particle_texture.plist");
-    addChild(emitter, 2);
-    emitter->setDuration(0.4f);
-    emitter->setScale(0.3);
-    square_pos.y += sq->getContentSize().height / 2;
-    emitter->setPosition(square_pos);
-    emitter->setAutoRemoveOnFinish(true);
+    int id = get_free_particle_pool_index();
+    if (id == -1)
+        return;
+    auto emitter = ParticleSystemQuad::create(PARTICLE_SQUARE_ANIM_PLIST);
+    emitter->setTag(id);
+    pool_particle[id] = emitter;
+    addChild(pool_particle[id], 2);
+    pool_particle[id]->setDuration(0.3f);
+    pool_particle[id]->setScale(PARTICLE_SQUARE_DESTROY_SCALE);
+    pool_particle[id]->setTotalParticles(SQUARE_EXPLODE_PARTICLE_NBR);
+    square_pos.y += sq->getContentSize().height / 1.5;
+    pool_particle[id]->setPosition(square_pos);
+    pool_particle[id]->setAutoRemoveOnFinish(true);
+    auto delay = DelayTime::create(pool_particle[id]->getDuration());
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                pool_particle[sender->getTag()] = NULL;
+            });
+    auto sequence = Sequence::create(delay, callback, nullptr);
+    pool_particle[id]->runAction(sequence);
+
 }
 
 void GameScene::show_bonus_particle_explode(Vec2 bonus_pos) {
@@ -914,6 +940,15 @@ void GameScene::move_bonus() {
     }
 }
 
+void GameScene::move_particles() {
+    for (int i = 0; i < 20; i++) {
+        if (pool_particle[i] != NULL) {
+            pool_particle[i]->setPositionY(pool_particle[i]->getPositionY() -  LINE_SPEED);
+            log("MOVED");
+        }
+    }
+}
+
 void GameScene::bonus_collision() {
     float player_width = player->getContentSize().width;
     float player_height = player->getContentSize().height;
@@ -1013,6 +1048,7 @@ void GameScene::runtime_checks() {
         player->getScale() != 0.85)
         scale_animation();
     move_circles();
+    move_particles();
     bonus_managment();
     check_bullet_collision();
     check_player_collision();
