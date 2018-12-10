@@ -13,7 +13,8 @@ USING_NS_CC;
 Action *Utils::get_blink_animation() {
     auto fadeout = FadeOut::create(0.5);
     auto fadein = FadeIn::create(0.5);
-    auto sequence = Sequence::create(fadein, fadeout, fadein->clone(), fadeout->clone(), fadein->clone(), nullptr);
+    auto sequence = Sequence::create(fadein, fadeout, fadein->clone(), fadeout->clone(),
+                                     fadein->clone(), nullptr);
     return (sequence);
 }
 
@@ -180,7 +181,7 @@ const std::string Utils::get_reduced_value(float value, int type) {
         if (value > 1000)
             return (StringUtils::format("%.1fK pts", value / 1000));
         return (StringUtils::format("%1.f pts", value));
-    } else if (type == VALUE_SIMPLE){
+    } else if (type == VALUE_SIMPLE) {
         if (value > 1000000000)
             return (StringUtils::format("%.1fB", value / 1000000000));
         if (value > 1000000)
@@ -188,7 +189,7 @@ const std::string Utils::get_reduced_value(float value, int type) {
         if (value > 1000)
             return (StringUtils::format("%.1fK", value / 1000));
         return (StringUtils::format("%1.f", value));
-    } else if (type == VALUE_WITH_PLUS){
+    } else if (type == VALUE_WITH_PLUS) {
         if (value > 1000000000)
             return (StringUtils::format("+%.1fB pts", value / 1000000000));
         if (value > 1000000)
@@ -268,6 +269,12 @@ int Utils::get_random_line_type() {
         return (LINE_TYPE_SIMPLE_OF_5);
     else
         return (random_type[result]);
+}
+float Utils::get_random_float_number(float min, float max) {
+    assert(max > min);
+    float random = ((float) rand()) / (float) RAND_MAX;
+    float range = max - min;
+    return (random*range) + min;
 }
 
 int Utils::get_random_number(int min, int max) {

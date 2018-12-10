@@ -70,6 +70,7 @@ public:
     static int*                 get_startup_distribution_points(int *, int, int);
     static const std::string    get_reduced_value(float, int);
     static int                  get_random_number(int, int);
+    static float                get_random_float_number(float, float);
     static bool                 is_into_list(int *, int, int);
     static int                  get_bullet_nbr(int);
     static float                get_finger_move_factor(float, int);

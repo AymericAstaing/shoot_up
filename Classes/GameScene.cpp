@@ -111,6 +111,41 @@ void GameScene::init_main_variable() {
     init_bonus_components();
     if (!game_audio)
         game_audio = SimpleAudioEngine::getInstance();
+
+}
+
+void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_start) {
+    Vec2 pos_1 = Vec2(0, 0);
+    Vec2 pos_2 = Vec2(0, 0);
+    Vec2 pos_end = Vec2(0, 0);
+    float max_width = 0;
+    float min_width = 0;
+    float sq_height = static_cast<float>(y_screen / SQUARE_SIZE_5_HEIGHT);
+    float sq_width = x_screen / 5;
+    for (int i = 0; i < particle_nbr; i++) {
+        pool_coins[i]->setPosition(pos_start);
+        ccBezierConfig bezier;
+        if (square_id == 0) {
+            min_width = pos_start.x - (sq_width / 4 - (pool_coins[i]->getContentSize().height * pool_coins[i]->getScale()) / 2);
+            max_width = pos_start.x + sq_width / 2;
+        } else if (square_id == 4) {
+            max_width = pos_start.x + (sq_width / 4 + (pool_coins[i]->getContentSize().height * pool_coins[i]->getScale()) / 2);
+            min_width = pos_start.x - sq_width / 2;
+        } else {
+            max_width = pos_start.x + sq_width / 2;
+            min_width = pos_start.x - sq_width / 2;
+        }
+        pos_1 = Vec2(Utils::get_random_number(static_cast<int>(min_width),
+                                              static_cast<int>(max_width)),
+                     Utils::get_random_number(static_cast<int>(pos_start.y + sq_height / 2),
+                                              static_cast<int>(pos_start.y + 1.5 * sq_height)));
+        pos_2 = Vec2((pos_1.x - (pos_start.x - pos_1.x)), pos_start.y);
+        pos_end = Vec2(pos_2.x, -pool_coins[i]->getContentSize().height);
+        bezier.controlPoint_1 = pos_1;
+        bezier.controlPoint_2 = pos_2;
+        bezier.endPosition = pos_end;
+        pool_coins[i]->runAction(BezierTo::create(Utils::get_random_float_number(2, 2.5), bezier));
+    }
 }
 
 void GameScene::init_hud_components() {
@@ -189,7 +224,7 @@ void GameScene::init_pool_objects() {
     bullet_container = new Bullet *[101];
     active_lines = new int[5];
     pool_particle = new ParticleSystemQuad *[20];
-
+    pool_coins = new Sprite *[40];
     pool_container[0] = Line::create(LINE_TYPE_STARTUP_2);
     pool_container[1] = Line::create(LINE_TYPE_STARTUP_3);
     pool_container[2] = Line::create(LINE_TYPE_STARTUP_4);
@@ -202,6 +237,15 @@ void GameScene::init_pool_objects() {
         pool_circle[i] = Circle::create();
         addChild(pool_circle[i]);
     }
+
+    for (int i = 0; i < 40; i++) {
+        pool_coins[i] = Sprite::createWithSpriteFrameName(DEFAULT_TEXTURE_COIN);
+        pool_coins[i]->setPosition(Vec2(y_screen / 2, 0 - pool_coins[i]->getContentSize().height));
+        bullet_batch_node->addChild(pool_coins[i]);
+        pool_coins[i]->setScale(1.5);
+
+    }
+    pool_coins[40] = NULL;
     pool_circle[15] = NULL;
     for (int i = 0; i < 4; i++)
         active_lines[i] = EMPTY_VALUE;
@@ -210,6 +254,7 @@ void GameScene::init_pool_objects() {
         bullet_container[j] = Bullet::create();
         bullet_batch_node->addChild(bullet_container[j]);
     }
+
     bullet_container[100] = NULL;
     for (int i = 4; i < 7; i++)
         pool_container[i] = Line::create(LINE_TYPE_SIMPLE_OF_4);
@@ -1069,12 +1114,14 @@ void GameScene::generate_chest() {
     if (LINE_GENERATED >= line_id_before_chest_attempts) {
         if (pool_container[NEXT_LINE_ID]->get_line_type() == LINE_TYPE_SIMPLE_OF_5) {
             chest_gen_state = CHEST_ACTIVE;
-            line_id_before_chest_attempts += Utils::get_random_number(CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);
+            line_id_before_chest_attempts += Utils::get_random_number(CHEST_GENERATION_DELAY_MIN,
+                                                                      CHEST_GENERATION_DELAY_MAX);
             pool_container[NEXT_LINE_ID]->attach_chest_bonus();
         } else {
             if (chest_gen_state == CHEST_ATTEMPT_1) {
                 chest_gen_state = CHEST_INACTIVE;
-                line_id_before_chest_attempts += Utils::get_random_number(CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);;
+                line_id_before_chest_attempts += Utils::get_random_number(
+                        CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);;
             } else {
                 chest_gen_state++;
             }
@@ -1166,7 +1213,8 @@ void GameScene::run_game_loop() {
     bonus_selected = false;
     next_bonus_spawn = MIN_LINE_BEFORE_BONUS_SPAWN + Utils::get_random_number(0, 5);
     store_active_line(CURRENT_LINE_ID);
-    line_id_before_chest_attempts = Utils::get_random_number(CHEST_GENERATION_DELAY_MIN, CHEST_GENERATION_DELAY_MAX);
+    line_id_before_chest_attempts = Utils::get_random_number(CHEST_GENERATION_DELAY_MIN,
+                                                             CHEST_GENERATION_DELAY_MAX);
     pool_container[CURRENT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
     LINE_GENERATED++;
     this->scheduleUpdate();

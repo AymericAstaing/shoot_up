@@ -45,6 +45,7 @@ private:
     SpriteBatchNode*        bullet_batch_node;
     SimpleAudioEngine*      game_audio;
     ParticleSystemQuad**    pool_particle;
+    Sprite**                pool_coins;
     Label*                  score;
     Sprite*                 sound;
     Sprite*                 player;
@@ -153,6 +154,7 @@ public:
     bool                    is_normal_launch();
     void                    line_flow_checks();
     void                    select_next_line();
+    void                    play_particle_fall(int, int, Vec2);
     bool                    new_line_need_be_generate();
     bool                    is_bonus_launch();
     void                    show_bonus_particle_explode(Vec2);

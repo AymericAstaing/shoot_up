@@ -124,6 +124,21 @@
                 <key>textureRotated</key>
                 <false/>
             </dict>
+            <key>coins.png</key>
+            <dict>
+                <key>aliases</key>
+                <array/>
+                <key>spriteOffset</key>
+                <string>{0,0}</string>
+                <key>spriteSize</key>
+                <string>{20,21}</string>
+                <key>spriteSourceSize</key>
+                <string>{20,21}</string>
+                <key>textureRect</key>
+                <string>{{40, 40},{20,21}}</string>
+                <key>textureRotated</key>
+                <false/>
+            </dict>
         </dict>
         <key>metadata</key>
         <dict>
