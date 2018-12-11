@@ -10,6 +10,7 @@
 #include    "Square.h"
 #include    "ShootUp.h"
 #include    "Circle.h"
+#include    "Background.h"
 #include    "Bullet.h"
 #include    "Line.h"
 
@@ -47,6 +48,7 @@ private:
     ParticleSystemQuad**    pool_particle;
     Sprite**                pool_coins;
     Label*                  score;
+    Background**            pool_background_scroll;
     Sprite*                 sound;
     Sprite*                 player;
     Sprite*                 tuto;
@@ -58,6 +60,7 @@ private:
     float                   x_screen;
     float                   y_screen;
     float                   game_duration;
+    int                     highter_background_id = -1;
     int                     game_block_destroyed = 0;
     int                     game_power_up_collected = 0;
     int                     current_factor_h = 0;
@@ -154,6 +157,9 @@ public:
     bool                    is_normal_launch();
     void                    line_flow_checks();
     void                    select_next_line();
+    void                    init_scrolling_background();
+    void                    background_scroll_managment();
+    int                     find_available_background(int*);
     void                    play_particle_fall(int, int, Vec2);
     bool                    new_line_need_be_generate();
     bool                    is_bonus_launch();

@@ -17,6 +17,7 @@ LOCAL_SRC_FILES := $(LOCAL_PATH)/hellocpp/main.cpp \
 $(LOCAL_PATH)/../../../Classes/AppDelegate.cpp \
 $(LOCAL_PATH)/../../../Classes/Square.cpp \
 $(LOCAL_PATH)/../../../Classes/Popup.cpp \
+$(LOCAL_PATH)/../../../Classes/Background.cpp \
 $(LOCAL_PATH)/../../../Classes/Utils.cpp \
 $(LOCAL_PATH)/../../../Classes/GridView.cpp \
 $(LOCAL_PATH)/../../../Classes/ShopScene.cpp \

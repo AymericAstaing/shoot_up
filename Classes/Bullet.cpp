@@ -22,7 +22,6 @@ void Bullet::reset() {
     this->setPosition(Vec2(winSize.width / 2, 0 - getContentSize().height));
 }
 
-
 void Bullet::launch(int bullet_state, Vec2 player_pos, Size player_size, int launch_mode) {
     auto winSize = Director::getInstance()->getVisibleSize();
 

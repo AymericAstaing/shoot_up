@@ -9,6 +9,7 @@
 #include    "Square.h"
 #include    "Line.h"
 #include    "Utils.h"
+#include    "Bullet.h"
 #include    "ShopScene.h"
 #include    "Popup.h"
 #include    "GridView.h"
@@ -101,6 +102,7 @@ void GameScene::init_main_variable() {
     init_hud_components();
     init_listeners();
     init_pool_objects();
+    init_scrolling_background();
     game_menu = get_main_menu();
     addChild(game_menu);
     if (UserLocalStore::get_achievement_variable(FROM_SHOP) == NOT_FROM_SHOP)
@@ -112,6 +114,22 @@ void GameScene::init_main_variable() {
     if (!game_audio)
         game_audio = SimpleAudioEngine::getInstance();
 
+}
+
+void GameScene::init_scrolling_background() {
+    pool_background_scroll = new Background *[3];
+
+    int *p0 = new int[2];
+    int *p1 = new int[2];
+    p0[0] = 1;
+    p0[1] = -1;
+    p1[0] = 0;
+    p1[1] = -1;
+    pool_background_scroll[0] = Background::create("background/p0.png", p0, 0);
+    addChild(pool_background_scroll[0], -10);
+    pool_background_scroll[1] = Background::create("background/p1.png", p1, 1);
+    addChild(pool_background_scroll[1], -10);
+    pool_background_scroll[2] = NULL;
 }
 
 void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_start) {
@@ -126,10 +144,12 @@ void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_sta
         pool_coins[i]->setPosition(pos_start);
         ccBezierConfig bezier;
         if (square_id == 0) {
-            min_width = pos_start.x - (sq_width / 4 - (pool_coins[i]->getContentSize().height * pool_coins[i]->getScale()) / 2);
+            min_width = pos_start.x - (sq_width / 4 - (pool_coins[i]->getContentSize().height *
+                                                       pool_coins[i]->getScale()) / 2);
             max_width = pos_start.x + sq_width / 2;
         } else if (square_id == 4) {
-            max_width = pos_start.x + (sq_width / 4 + (pool_coins[i]->getContentSize().height * pool_coins[i]->getScale()) / 2);
+            max_width = pos_start.x + (sq_width / 4 + (pool_coins[i]->getContentSize().height *
+                                                       pool_coins[i]->getScale()) / 2);
             min_width = pos_start.x - sq_width / 2;
         } else {
             max_width = pos_start.x + sq_width / 2;
@@ -219,12 +239,15 @@ void GameScene::init_listeners() {
 
 void GameScene::init_pool_objects() {
     int index_struct = COMPLEX_STRUCT_NBR;
+
     pool_container = new Line *[27];
     pool_circle = new Circle *[15];
     bullet_container = new Bullet *[101];
     active_lines = new int[5];
     pool_particle = new ParticleSystemQuad *[20];
     pool_coins = new Sprite *[40];
+
+
     pool_container[0] = Line::create(LINE_TYPE_STARTUP_2);
     pool_container[1] = Line::create(LINE_TYPE_STARTUP_3);
     pool_container[2] = Line::create(LINE_TYPE_STARTUP_4);
@@ -237,7 +260,6 @@ void GameScene::init_pool_objects() {
         pool_circle[i] = Circle::create();
         addChild(pool_circle[i]);
     }
-
     for (int i = 0; i < 40; i++) {
         pool_coins[i] = Sprite::createWithSpriteFrameName(DEFAULT_TEXTURE_COIN);
         pool_coins[i]->setPosition(Vec2(y_screen / 2, 0 - pool_coins[i]->getContentSize().height));
@@ -1138,6 +1160,34 @@ void GameScene::select_next_line() {
     }
 }
 
+int GameScene::find_available_background(int *possible_next_background) {
+    for (int i = 0; possible_next_background[i] != -1; i++) {
+        if (!pool_background_scroll[possible_next_background[i]]->alive)
+            return (possible_next_background[i]);
+    }
+    return (-1);
+}
+
+void GameScene::background_scroll_managment() {
+    for (int i = 0; pool_background_scroll[i] != NULL; i++) {
+        if (pool_background_scroll[i]->alive) {
+            pool_background_scroll[i]->setPositionY(
+                    pool_background_scroll[i]->getPositionY() - LINE_SPEED / 2);
+            if (highter_background_id == i &&
+                pool_background_scroll[i]->getPositionY() <= y_screen) {
+                int next = find_available_background(
+                        pool_background_scroll[i]->next_possible_background);
+                if (next != -1) {
+                    highter_background_id = next;
+                    pool_background_scroll[next]->alive = true;
+                }
+            }
+            if (pool_background_scroll[i]->getPositionY() <= 0)
+                pool_background_scroll[i]->reset();
+        }
+    }
+}
+
 void GameScene::update(float ft) {
     game_duration += ft;
     if (bonus_active != -1)
@@ -1145,6 +1195,7 @@ void GameScene::update(float ft) {
     if (game_shooter_type == SHIELD_TANK && shield_rect->isVisible())
         shield_rect->setPosition(player->getPosition());
     line_flow_checks();
+    background_scroll_managment();
     if (game_state == GAME_RUNNING)
         runtime_checks();
     if (new_line_need_be_generate()) {
@@ -1216,6 +1267,8 @@ void GameScene::run_game_loop() {
     line_id_before_chest_attempts = Utils::get_random_number(CHEST_GENERATION_DELAY_MIN,
                                                              CHEST_GENERATION_DELAY_MAX);
     pool_container[CURRENT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
+    pool_background_scroll[0]->alive = 1;
+    highter_background_id = 0;
     LINE_GENERATED++;
     this->scheduleUpdate();
 }
