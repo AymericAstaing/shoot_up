@@ -62,7 +62,10 @@ USING_NS_CC;
 #define HIT_CIRCLE                      "hud/hit_circle.png"
 #define BONUS_MESSAGE_SPEED             "hud/mega_speed.png"
 #define BONUS_MESSAGE_POWER             "hud/mega_power.png"
+#define HUD_DOOR_LEFT                   0
+#define HUD_DOOR_RIGHT                  1
 #define DEFAULT_TEXTURE_COIN            "coins.png"
+#define NBR_OF_BACKGROUND_SCROLL        17
 #define SQUARE_EXPLODE_PARTICLE_NBR     20
 #define MESSAGE_SPEED                   0
 #define MESSAGE_POWER                   1

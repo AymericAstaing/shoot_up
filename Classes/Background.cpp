@@ -7,9 +7,9 @@ Background::~Background() {
 }
 
 void Background::reset() {
+    this->alive = false;
     auto winSize = Director::getInstance()->getVisibleSize();
     this->setPositionY(winSize.height + this->getContentSize().height);
-    this->alive = false;
 }
 
 Background *Background::create(const std::string &filename, int *possible_background, int tag) {

@@ -241,6 +241,15 @@ int Utils::get_bullet_shoot_index(int tank_type) {
     }
 }
 
+int Utils::need_background_transition(int step) {
+    if (step == 10) {
+        return (5);
+    } else if (step == 30) {
+        return (10);
+    }
+    return (-1);
+}
+
 int Utils::get_shooter_type(int shooter_id) {
 
     if (shooter_id >= 0 && shooter_id < 6) {

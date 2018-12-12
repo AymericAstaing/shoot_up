@@ -105,31 +105,28 @@ void GameScene::init_main_variable() {
     init_scrolling_background();
     game_menu = get_main_menu();
     addChild(game_menu);
-    if (UserLocalStore::get_achievement_variable(FROM_SHOP) == NOT_FROM_SHOP)
+    if (UserLocalStore::get_achievement_variable(FROM_SHOP) == NOT_FROM_SHOP) {
         main_menu_coming_animation();
-    else
+    } else {
+        initialisation_over = true;
         UserLocalStore::store_achievement_variable(FROM_SHOP, NOT_FROM_SHOP);
+    }
     init_options_menu();
     init_bonus_components();
     if (!game_audio)
         game_audio = SimpleAudioEngine::getInstance();
-
 }
 
 void GameScene::init_scrolling_background() {
-    pool_background_scroll = new Background *[3];
-
-    int *p0 = new int[2];
-    int *p1 = new int[2];
-    p0[0] = 1;
-    p0[1] = -1;
-    p1[0] = 0;
-    p1[1] = -1;
-    pool_background_scroll[0] = Background::create("background/p0.png", p0, 0);
-    addChild(pool_background_scroll[0], -10);
-    pool_background_scroll[1] = Background::create("background/p1.png", p1, 1);
-    addChild(pool_background_scroll[1], -10);
-    pool_background_scroll[2] = NULL;
+    pool_background_scroll = new Background *[NBR_OF_BACKGROUND_SCROLL];
+    for (int i = 0; i < NBR_OF_BACKGROUND_SCROLL; i++) {
+        char filename[20];
+        sprintf(filename, "background/p%i.png", i);
+        pool_background_scroll[i] = Background::create(filename, background_linked_list[i], i);
+        addChild(pool_background_scroll[i], -10);
+    }
+    pool_background_scroll[NBR_OF_BACKGROUND_SCROLL] = NULL;
+    pool_background_scroll[0]->setPositionY(y_screen);
 }
 
 void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_start) {
@@ -169,12 +166,22 @@ void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_sta
 }
 
 void GameScene::init_hud_components() {
+    hud_doors = new Sprite *[2];
+    hud_doors[HUD_DOOR_LEFT] = Sprite::create("hud/door_left.png");
+    hud_doors[HUD_DOOR_RIGHT] = Sprite::create("hud/door_right.png");
+    hud_doors[HUD_DOOR_LEFT]->setAnchorPoint(Vec2(1, 1));
+    hud_doors[HUD_DOOR_RIGHT]->setAnchorPoint(Vec2(0, 1));
+    hud_doors[HUD_DOOR_LEFT]->setContentSize(
+            Size(static_cast<float>((x_screen / 2) * 1.2), y_screen));
+    hud_doors[HUD_DOOR_RIGHT]->setContentSize(Size(x_screen / 2, y_screen));
+    hud_doors[HUD_DOOR_LEFT]->setPosition(Vec2(0, y_screen));
+    hud_doors[HUD_DOOR_RIGHT]->setPosition(Vec2(x_screen, y_screen));
+    addChild(hud_doors[HUD_DOOR_LEFT], 100);
+    addChild(hud_doors[HUD_DOOR_RIGHT], 100);
     hud_bonus_messages = new Sprite *[3];
     hud_bonus_messages[MESSAGE_SPEED] = Sprite::create(BONUS_MESSAGE_SPEED);
     hud_bonus_messages[MESSAGE_POWER] = Sprite::create(BONUS_MESSAGE_POWER);
     hud_bonus_messages[MESSAGE_BULLETS] = Sprite::create(BONUS_MESSAGE_SPEED);
-
-
     for (int i = 0; i < 3; i++) {
         hud_bonus_messages[i]->setPositionX(x_screen / 2);
         hud_bonus_messages[i]->setScaleX((x_screen / 5) /
@@ -196,9 +203,13 @@ void GameScene::check_begining_of_session() {
     splash_background->setPosition(Vec2(x_screen / 2, y_screen / 2));
     addChild(splash_background, 200);
     addChild(logo, 201);
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                initialisation_over = true;
+            });
     auto delay = DelayTime::create(1.5f);
     auto remove = RemoveSelf::create();
-    auto sequence = Sequence::create(delay, remove, nullptr);
+    auto sequence = Sequence::create(delay, remove, callback, nullptr);
     splash_background->runAction(sequence);
     logo->runAction(sequence->clone());
     UserLocalStore::store_achievement_variable(APP_FIRST_OPEN, APP_ALREADY_OPEN);
@@ -332,6 +343,25 @@ void GameScene::init_options_menu() {
     tuto->setVisible(false);
     this->addChild(tuto);
     this->addChild(sound);
+}
+
+void GameScene::play_door_start_animation() {
+    auto delay = DelayTime::create(0.2f);
+    auto move_left = MoveTo::create(0.3f, Vec2(static_cast<float>((x_screen / 2) * 1.18),
+                                               hud_doors[HUD_DOOR_LEFT]->getPositionY()));
+    auto move_right = MoveTo::create(0.3f,
+                                     Vec2(x_screen / 2, hud_doors[HUD_DOOR_LEFT]->getPositionY()));
+    auto move_left_back = MoveTo::create(0.15f, Vec2(0, hud_doors[HUD_DOOR_LEFT]->getPositionY()));
+    auto move_right_back = MoveTo::create(0.15f,
+                                          Vec2(x_screen, hud_doors[HUD_DOOR_LEFT]->getPositionY()));
+    auto callback = CallFuncN::create(
+            [&](Node *sender) {
+                start_game();
+            });
+    auto left = Sequence::create(move_left, delay, move_left_back, nullptr);
+    auto right = Sequence::create(move_right, delay, move_right_back, callback, nullptr);
+    hud_doors[HUD_DOOR_LEFT]->runAction(left);
+    hud_doors[HUD_DOOR_RIGHT]->runAction(right);
 }
 
 void GameScene::value_to_update() {
@@ -1160,11 +1190,28 @@ void GameScene::select_next_line() {
     }
 }
 
-int GameScene::find_available_background(int *possible_next_background) {
-    for (int i = 0; possible_next_background[i] != -1; i++) {
-        if (!pool_background_scroll[possible_next_background[i]]->alive)
-            return (possible_next_background[i]);
+void GameScene::reset_scrolling_background() {
+    for (int i = 0; pool_background_scroll[i]; i++) {
+        pool_background_scroll[i]->reset();
     }
+    pool_background_scroll[0]->setPositionY(y_screen);
+}
+
+int GameScene::find_available_background(int *possible_next_background) {
+    int transition = Utils::need_background_transition(background_displayed_nbr);
+    if (transition != -1)
+        return (transition);
+    int *possible_id = new int[5];
+    int possible_index = 0;
+
+    for (int i = 0; possible_next_background[i] != -1; i++) {
+        if (!pool_background_scroll[possible_next_background[i]]->alive) {
+            possible_id[possible_index] = possible_next_background[i];
+            possible_index++;
+        }
+    }
+    if (possible_index >= 0)
+        return (possible_id[Utils::get_random_number(0, possible_index - 1)]);
     return (-1);
 }
 
@@ -1178,8 +1225,9 @@ void GameScene::background_scroll_managment() {
                 int next = find_available_background(
                         pool_background_scroll[i]->next_possible_background);
                 if (next != -1) {
-                    highter_background_id = next;
                     pool_background_scroll[next]->alive = true;
+                    highter_background_id = next;
+                    background_displayed_nbr++;
                 }
             }
             if (pool_background_scroll[i]->getPositionY() <= 0)
@@ -1269,6 +1317,7 @@ void GameScene::run_game_loop() {
     pool_container[CURRENT_LINE_ID]->set_active(current_factor_h, LINE_GENERATED);
     pool_background_scroll[0]->alive = 1;
     highter_background_id = 0;
+    background_displayed_nbr = 0;
     LINE_GENERATED++;
     this->scheduleUpdate();
 }
@@ -1328,10 +1377,8 @@ void GameScene::start_game() {
     current_factor_h = get_h_value();
     char score_value[DEFAULT_CHAR_LENGHT];
     sprintf(score_value, "%i", game_score);
-    game_state = GAME_RUNNING;
     score->setVisible(true);
     score->setString(score_value);
-    run_start_animation();
     start_bullet_shoot();
     run_game_loop();
     game_duration = 0;
@@ -1373,6 +1420,7 @@ void GameScene::back_to_menu(cocos2d::Ref *pSender) {
                 UserLocalStore::update_achievements(
                         Utils::get_shooter_type(UserLocalStore::get_current_shooter()),
                         game_block_destroyed, game_power_up_collected);
+                reset_scrolling_background();
                 game_block_destroyed = 0;
                 game_power_up_collected = 0;
                 LINE_GENERATED = 0;
@@ -1478,6 +1526,8 @@ bool GameScene::is_continue_button_touched(Vec2 touch_location) {
 }
 
 bool GameScene::onTouchBegan(Touch *touch, Event *event) {
+    if (!initialisation_over)
+        return false;
     if (game_state == GAME_RUNNING && !is_touch_on_player_zone(touch->getLocation()))
         return false;
     if (game_state == RESUME && continue_button &&
@@ -1507,8 +1557,11 @@ bool GameScene::onTouchBegan(Touch *touch, Event *event) {
         manage_options();
         return true;
     }
-    if (game_state == MENU)
-        start_game();
+    if (game_state == MENU) {
+        game_state = GAME_RUNNING;
+        run_start_animation();
+        play_door_start_animation();
+    }
     return true;
 }
 
