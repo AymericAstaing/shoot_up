@@ -58,6 +58,7 @@ USING_NS_CC;
 #define SHOP_SELECTED_NEW               "menu/shop_selected_new.png"
 
 /********************* HUD (GAME FLOW) ***********************/
+#define COINS_IMG                       "hud/coin.png"
 #define BEST_SCORE_IMG                  "hud/best_img.png"
 #define HIT_CIRCLE                      "hud/hit_circle.png"
 #define BONUS_MESSAGE_SPEED             "hud/mega_speed.png"

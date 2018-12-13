@@ -148,7 +148,6 @@ private:
 
     /******************* HUD ***************/
     Sprite **hud_bonus_messages;
-    Sprite **hud_doors;
 
 
 public:
@@ -224,7 +223,6 @@ public:
     bool collison_need_detection(Line *);
     void generate_star_bonus();
     void run_game_loop();
-    void play_door_start_animation();
     void stop_game_loop();
     void move_active_lines();
     void check_into_line(int, int);

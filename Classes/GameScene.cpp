@@ -126,7 +126,6 @@ void GameScene::init_scrolling_background() {
         addChild(pool_background_scroll[i], -10);
     }
     pool_background_scroll[NBR_OF_BACKGROUND_SCROLL] = NULL;
-    pool_background_scroll[0]->setPositionY(y_screen);
 }
 
 void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_start) {
@@ -166,18 +165,6 @@ void GameScene::play_particle_fall(int particle_nbr, int square_id, Vec2 pos_sta
 }
 
 void GameScene::init_hud_components() {
-    hud_doors = new Sprite *[2];
-    hud_doors[HUD_DOOR_LEFT] = Sprite::create("hud/door_left.png");
-    hud_doors[HUD_DOOR_RIGHT] = Sprite::create("hud/door_right.png");
-    hud_doors[HUD_DOOR_LEFT]->setAnchorPoint(Vec2(1, 1));
-    hud_doors[HUD_DOOR_RIGHT]->setAnchorPoint(Vec2(0, 1));
-    hud_doors[HUD_DOOR_LEFT]->setContentSize(
-            Size(static_cast<float>((x_screen / 2) * 1.2), y_screen));
-    hud_doors[HUD_DOOR_RIGHT]->setContentSize(Size(x_screen / 2, y_screen));
-    hud_doors[HUD_DOOR_LEFT]->setPosition(Vec2(0, y_screen));
-    hud_doors[HUD_DOOR_RIGHT]->setPosition(Vec2(x_screen, y_screen));
-    addChild(hud_doors[HUD_DOOR_LEFT], 100);
-    addChild(hud_doors[HUD_DOOR_RIGHT], 100);
     hud_bonus_messages = new Sprite *[3];
     hud_bonus_messages[MESSAGE_SPEED] = Sprite::create(BONUS_MESSAGE_SPEED);
     hud_bonus_messages[MESSAGE_POWER] = Sprite::create(BONUS_MESSAGE_POWER);
@@ -343,25 +330,6 @@ void GameScene::init_options_menu() {
     tuto->setVisible(false);
     this->addChild(tuto);
     this->addChild(sound);
-}
-
-void GameScene::play_door_start_animation() {
-    auto delay = DelayTime::create(0.2f);
-    auto move_left = MoveTo::create(0.3f, Vec2(static_cast<float>((x_screen / 2) * 1.18),
-                                               hud_doors[HUD_DOOR_LEFT]->getPositionY()));
-    auto move_right = MoveTo::create(0.3f,
-                                     Vec2(x_screen / 2, hud_doors[HUD_DOOR_LEFT]->getPositionY()));
-    auto move_left_back = MoveTo::create(0.15f, Vec2(0, hud_doors[HUD_DOOR_LEFT]->getPositionY()));
-    auto move_right_back = MoveTo::create(0.15f,
-                                          Vec2(x_screen, hud_doors[HUD_DOOR_LEFT]->getPositionY()));
-    auto callback = CallFuncN::create(
-            [&](Node *sender) {
-                start_game();
-            });
-    auto left = Sequence::create(move_left, delay, move_left_back, nullptr);
-    auto right = Sequence::create(move_right, delay, move_right_back, callback, nullptr);
-    hud_doors[HUD_DOOR_LEFT]->runAction(left);
-    hud_doors[HUD_DOOR_RIGHT]->runAction(right);
 }
 
 void GameScene::value_to_update() {
@@ -1194,7 +1162,6 @@ void GameScene::reset_scrolling_background() {
     for (int i = 0; pool_background_scroll[i]; i++) {
         pool_background_scroll[i]->reset();
     }
-    pool_background_scroll[0]->setPositionY(y_screen);
 }
 
 int GameScene::find_available_background(int *possible_next_background) {
@@ -1377,8 +1344,10 @@ void GameScene::start_game() {
     current_factor_h = get_h_value();
     char score_value[DEFAULT_CHAR_LENGHT];
     sprintf(score_value, "%i", game_score);
+    game_state = GAME_RUNNING;
     score->setVisible(true);
     score->setString(score_value);
+    run_start_animation();
     start_bullet_shoot();
     run_game_loop();
     game_duration = 0;
@@ -1557,11 +1526,8 @@ bool GameScene::onTouchBegan(Touch *touch, Event *event) {
         manage_options();
         return true;
     }
-    if (game_state == MENU) {
-        game_state = GAME_RUNNING;
-        run_start_animation();
-        play_door_start_animation();
-    }
+    if (game_state == MENU)
+        start_game();
     return true;
 }
 

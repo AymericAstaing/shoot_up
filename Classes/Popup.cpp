@@ -106,7 +106,7 @@ namespace UICustom {
         Size winSize = Director::getInstance()->getVisibleSize();
 
         double popup_width = winSize.width / 1.10;
-        double popup_height = winSize.height / 2.58;
+        double popup_height = popup_width;
 
         if (node && node->init()) {
             if (YesFunc) {
