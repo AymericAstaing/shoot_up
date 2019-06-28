@@ -9,10 +9,11 @@ To use this project you have to install Cocos2DX Game Library (open source)
       https://www.cocos.com/en/products#Cocos2d-x
 
 Game made with:
-      
+
+      - C++ langage      
       - Android Studio
       - Xcode
-      - Cocos2dx
+      - Cocos2dx v3.x C++
       - No Box2d (manual collision detection)
       - Texture packer
       - Particle Editor for Cocos2d
