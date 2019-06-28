@@ -10,7 +10,7 @@ To use this project you have to install Cocos2DX Game Library (open source)
 
 Game made with:
 
-      - C++ langage      
+      - C++ language      
       - Android Studio
       - Xcode
       - Cocos2dx v3.x C++
