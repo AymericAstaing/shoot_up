@@ -21,6 +21,10 @@ Game made with:
 
 Thanks P.S, Martin, Tony and more...
 
+SEE ALSO (SCREENS, APK):
+
+      https://github.com/tripleAgames/APK-FILES/tree/master/SHOOTUP%20V1
+
 Aymeric Astaing 2020
 
 aymeric.astaing@hotmail.com
