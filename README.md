@@ -1,4 +1,4 @@
-#ShootUp project
+# ShootUp project
 
 ![alt text](https://i.ytimg.com/vi/rsf6Rpfw0Vg/maxresdefault.jpg)
 
