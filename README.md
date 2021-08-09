@@ -28,4 +28,4 @@ SEE ALSO (SCREENS, APK):
 
 Aymeric Astaing 2020
 
-aymeric.astaing@hotmail.com
+aymeric-astaing@hotmail.com
