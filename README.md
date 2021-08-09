@@ -1,6 +1,8 @@
+**ShootUp project**
+
 ![alt text](https://i.ytimg.com/vi/rsf6Rpfw0Vg/maxresdefault.jpg)
 
-ShootUp project, a copy of FIRE UP (voodoo).
+a copy of FIRE UP (voodoo).
 
       https://play.google.com/store/apps/details?id=io.voodoo.firedup&hl=fr
       
