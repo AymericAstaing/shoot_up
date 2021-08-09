@@ -1,4 +1,4 @@
-![alt text](https://cdn6.aptoide.com/imgs/4/d/a/4da2dff741dbcbec9527c64f98bce346_screen.png?h=500)
+![alt text](https://i.ytimg.com/vi/rsf6Rpfw0Vg/maxresdefault.jpg)
 
 ShootUp project, a copy of FIRE UP (voodoo).
 
